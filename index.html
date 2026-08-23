@@ -52,7 +52,7 @@
   .dot.ok{background:var(--green)}
   .dot.warn{background:var(--amber)}
   .main-wrap{flex:1;overflow-y:auto}
-  .main{max-width:820px;margin:0 auto;padding:30px 40px 90px}
+  .main{max-width:1600px;margin:0 auto;padding:30px clamp(24px,3vw,64px) 90px}
   .section{display:none}
   .section.active{display:block;animation:fadein .22s ease}
   @keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
@@ -200,7 +200,6 @@
 
   .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
   .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .grid-cal-row{display:grid;grid-template-columns:1.65fr 1fr;gap:16px}
   .perf-svg{width:100%;height:200px;display:block}
   .perf-area{transition:opacity 1.2s ease .3s}
   .ring-wrap,.donut-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:8px 0}
@@ -213,31 +212,25 @@
   .legend{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:10px;flex-wrap:wrap}
   .legend span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
   .dotc{width:9px;height:9px;border-radius:50%;display:inline-block}
-  .hm-grid{display:flex;gap:4px;overflow-x:auto;padding-bottom:6px}
-  .hm-col{display:flex;flex-direction:column;gap:4px}
-  .hm-cell{width:13px;height:13px;border-radius:3px;background:var(--surface2);transition:transform .15s}
-  .hm-cell:hover{transform:scale(1.35)}
-  .hm-cell.empty{background:transparent}
-  .hm-0{background:var(--surface2)}.hm-zero{background:var(--surface3)}
-  .hm-pos1{background:rgba(52,211,153,0.45)}.hm-pos2{background:rgba(52,211,153,0.9)}
-  .hm-neg1{background:rgba(248,113,113,0.45)}.hm-neg2{background:rgba(248,113,113,0.9)}
-  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .cal-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-family:inherit}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .cal-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px;font-family:inherit}
   .cal-nav button:hover{background:var(--surface3)}
-  .cal-month-label{font-weight:600;font-size:14px}
-  .cal-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px}
-  .cal-weekdays span{text-align:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;width:100%}
-  .cal-cell{aspect-ratio:1;border-radius:10px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:48px;min-width:0;box-sizing:border-box;overflow:hidden}
+  .cal-month-label{font-weight:600;font-size:16px}
+  .cal-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:8px}
+  .cal-weekdays span{text-align:center;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;width:100%}
+  .cal-cell{border-radius:12px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:120px;min-width:0;box-sizing:border-box;overflow:hidden;padding:10px 6px}
   .cal-cell.empty{background:transparent}
-  .cal-daynum{font-size:12px;color:var(--muted);position:absolute;top:6px;left:8px}
+  .cal-daynum{font-size:13px;font-weight:600;color:var(--muted);position:absolute;top:9px;left:11px}
   .cal-cell.cal-pos{background:rgba(52,211,153,0.16);border:1px solid rgba(52,211,153,0.4)}
   .cal-cell.cal-neg{background:rgba(248,113,113,0.16);border:1px solid rgba(248,113,113,0.4)}
   .cal-cell.cal-zero{background:var(--surface3);border:1px solid var(--border2)}
-  .cal-pnl{font-weight:700;font-size:13px;margin-top:4px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-  .cal-pos .cal-pnl{color:#34d399}
-  .cal-neg .cal-pnl{color:#f87171}
+  .cal-pnl{font-weight:700;font-size:20px;margin-top:6px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .cal-pos .cal-pnl{color:var(--green)}
+  .cal-neg .cal-pnl{color:var(--red)}
   .cal-zero .cal-pnl{color:var(--muted)}
+  .cal-count{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);margin-top:7px;padding:3px 10px;border-radius:20px;background:var(--surface3)}
+  @media (max-width:760px){.cal-cell{min-height:76px;padding:7px 4px}.cal-pnl{font-size:14px}.cal-count{font-size:9.5px;padding:2px 7px;margin-top:4px}}
   .sbar-row{display:flex;align-items:center;gap:12px;padding:9px 0}
   .sbar-name{width:74px;font-size:13px;font-weight:500}
   .sbar-track{flex:1;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
@@ -253,7 +246,7 @@
   .pt-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text)}
   .pt-sub{font-size:11px;color:var(--muted);margin-top:2px}
   #sec-stats .page-head{position:relative;z-index:2}
-  @media (max-width:760px){.kpi-row{grid-template-columns:1fr 1fr}.grid-2col{grid-template-columns:1fr}.grid-cal-row{grid-template-columns:1fr}}
+  @media (max-width:760px){.kpi-row{grid-template-columns:1fr 1fr}.grid-2col{grid-template-columns:1fr}}
 
   /* ===== TRADE WIZARD ===== */
   .wz-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:8px}
@@ -403,11 +396,6 @@
   .donut-card .donut-wrap{padding:0;flex-shrink:0}
   .donut-card .legend{flex-direction:column;align-items:flex-start;gap:9px;margin-top:0}
   .donut-card .legend span{white-space:nowrap}
-  .setup-rank{display:flex;flex-direction:column;gap:13px}
-  .srk-head{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text);margin-bottom:5px}
-  .srk-n{font-size:11px;color:var(--muted);margin-left:7px}
-  .srk-track{height:6px;border-radius:4px;background:var(--surface2);overflow:hidden}
-  .srk-fill{height:100%;border-radius:4px;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
   @media(max-width:900px){.stats-hero{grid-template-columns:1fr}.donut-card{justify-content:flex-start}}
 
   /* ===== Cross-page upgrades ===== */
@@ -1347,15 +1335,6 @@ function pnlCurveSVG(data){
   return {last,col,svg:'<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="perf-svg"><defs><linearGradient id="pnlArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity="0.22"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="var(--border2)" stroke-dasharray="4 4"/><path class="perf-area" d="'+area+'" fill="url(#pnlArea)" opacity="0"/><path class="perf-line" d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'};
 }
 
-function setupRankHTML(trades){
-  const map={};
-  trades.forEach(t=>{ (t.setup||[]).forEach(tag=>{ map[tag]=map[tag]||{w:0,l:0,pnl:0}; if(t.result==='Win')map[tag].w++; else if(t.result==='Loss')map[tag].l++; map[tag].pnl+=pnlOf(t); }); });
-  const rows=Object.keys(map).map(k=>{ const m=map[k], dec=m.w+m.l; return {name:k,dec:dec,wr:dec?Math.round(m.w/dec*100):0,w:m.w,pnl:m.pnl}; })
-    .filter(r=>r.dec>=2).sort((a,b)=>b.wr-a.wr||b.dec-a.dec).slice(0,5);
-  if(!rows.length) return '<p style="color:var(--muted);font-size:13px">Noch zu wenig Daten \u2014 ab 2 entschiedenen Trades pro Setup.</p>';
-  return '<div class="setup-rank">'+rows.map(r=>'<div><div class="srk-head"><span>'+r.name+'<span class="srk-n">'+r.w+'/'+r.dec+'</span></span><span style="color:'+wrColor(r.wr)+';font-weight:600">'+r.wr+'%</span></div><div class="srk-track"><div class="srk-fill" data-w="'+r.wr+'%" style="background:'+wrColor(r.wr)+'"></div></div></div>').join('')+'</div>';
-}
-
 function perfCurveSVG(data){
   const arr=[...data].reverse(); let cum=0; const pts=[{i:0,v:0}];
   arr.forEach((t,idx)=>{ cum+=t.result==='Win'?1:t.result==='Loss'?-1:0; pts.push({i:idx+1,v:cum}); });
@@ -1392,20 +1371,27 @@ function fmtCompact(n){
   return (n>=0?'+':'-')+'$'+s;
 }
 function calendarHTML(trades,y,m){
-  const map={}; trades.forEach(t=>{ if(!t.date||t.pnl===undefined||t.pnl===null||t.pnl==='')return; map[t.date]=(map[t.date]||0)+Number(t.pnl); });
+  const pnlMap={}, countMap={};
+  trades.forEach(t=>{
+    if(!t.date)return;
+    countMap[t.date]=(countMap[t.date]||0)+1;
+    if(t.pnl===undefined||t.pnl===null||t.pnl==='')return;
+    pnlMap[t.date]=(pnlMap[t.date]||0)+Number(t.pnl);
+  });
   const first=new Date(y,m,1), startOffset=(first.getDay()+6)%7, daysInMonth=new Date(y,m+1,0).getDate();
   const monthLabel=first.toLocaleDateString('en-US',{month:'long',year:'numeric'});
   const wdLabels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let cells='';
   for(let i=0;i<startOffset;i++) cells+='<div class="cal-cell empty"></div>';
-  let monthTotal=0, tradedDays=0;
+  let monthTotal=0, tradedDays=0, monthTrades=0;
   for(let d=1; d<=daysInMonth; d++){
     const key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const val=map[key];
-    if(val!==undefined){
-      monthTotal+=val; tradedDays++;
-      const cls=val>0?'cal-pos':val<0?'cal-neg':'cal-zero';
-      cells+='<div class="cal-cell '+cls+'" title="'+(val>=0?'+':'-')+'$'+Math.abs(Math.round(val))+'"><span class="cal-daynum">'+d+'</span><span class="cal-pnl">'+fmtCompact(val)+'</span></div>';
+    const count=countMap[key], val=pnlMap[key];
+    if(count){
+      tradedDays++; monthTrades+=count; if(val!==undefined) monthTotal+=val;
+      const cls=val===undefined?'cal-zero':val>0?'cal-pos':val<0?'cal-neg':'cal-zero';
+      const pnlLabel=val!==undefined?fmtCompact(val):'–';
+      cells+='<div class="cal-cell '+cls+'" title="'+count+' Trade'+(count!==1?'s':'')+(val!==undefined?' · '+(val>=0?'+':'-')+'$'+Math.abs(Math.round(val)):'')+'"><span class="cal-daynum">'+d+'</span><span class="cal-pnl">'+pnlLabel+'</span><span class="cal-count">'+count+' Trade'+(count!==1?'s':'')+'</span></div>';
     } else {
       cells+='<div class="cal-cell"><span class="cal-daynum">'+d+'</span></div>';
     }
@@ -1414,7 +1400,7 @@ function calendarHTML(trades,y,m){
   return '<div class="cal-nav"><button onclick="changeCalMonth(-1)">← Prev</button><span class="cal-month-label">'+monthLabel+'</span><button onclick="changeCalMonth(1)">Next →</button></div>'+
     '<div class="cal-weekdays">'+wdLabels.map(w=>'<span>'+w+'</span>').join('')+'</div>'+
     '<div class="cal-grid">'+cells+'</div>'+
-    '<div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--muted)"><span>'+tradedDays+' trading day'+(tradedDays!==1?'s':'')+'</span><span>Month P&L: <span style="color:'+totalCol+';font-weight:700">'+(monthTotal>=0?'+':'-')+'$'+Math.abs(Math.round(monthTotal))+'</span></span></div>';
+    '<div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--muted)"><span>'+tradedDays+' trading day'+(tradedDays!==1?'s':'')+' · '+monthTrades+' trade'+(monthTrades!==1?'s':'')+'</span><span>Month P&L: <span style="color:'+totalCol+';font-weight:700">'+(monthTotal>=0?'+':'-')+'$'+Math.abs(Math.round(monthTotal))+'</span></span></div>';
 }
 function renderCalendar(){
   const el=document.getElementById('cal-container'); if(!el||!window._statsTrades)return;
@@ -1430,27 +1416,6 @@ function barBlock(title,rows){
   if(!rows.length) return '<div class="fcard"><div class="fcard-title">'+title+'</div><p style="color:var(--muted);font-size:13px">Not enough data yet.</p></div>';
   const body=rows.map(r=>'<div class="sbar-row"><span class="sbar-name">'+r.name+'</span><div class="sbar-track"><div class="sbar-fill" data-w="'+r.wr+'%" style="background:'+wrColor(r.wr)+'"></div></div><span class="sbar-val" style="color:'+wrColor(r.wr)+'">'+r.wr+'%</span><span class="sbar-n">'+r.w+'/'+(r.w+r.l)+'</span></div>').join('');
   return '<div class="fcard"><div class="fcard-title">'+title+'</div>'+body+'</div>';
-}
-
-function statsInsights(data){
-  const out=[]; const days=['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'];
-  const byDay={}; data.forEach(t=>{ const wd=weekday(t.date); if(wd<0)return; byDay[wd]=byDay[wd]||{w:0,l:0}; if(t.result==='Win')byDay[wd].w++; else if(t.result==='Loss')byDay[wd].l++; });
-  let bestD=null,bestWR=-1; Object.entries(byDay).forEach(([wd,v])=>{ const d=v.w+v.l; if(d>=2){ const x=v.w/d*100; if(x>bestWR){bestWR=x;bestD=days[wd];} } });
-  if(bestD) out.push('You trade best on '+bestD+' — '+Math.round(bestWR)+'% win rate.');
-  const rbW=data.filter(t=>t.rulebased==='yes'&&t.result==='Win').length, rbL=data.filter(t=>t.rulebased==='yes'&&t.result==='Loss').length;
-  const dvW=data.filter(t=>t.rulebased==='no'&&t.result==='Win').length, dvL=data.filter(t=>t.rulebased==='no'&&t.result==='Loss').length;
-  const rbWR=(rbW+rbL)?Math.round(rbW/(rbW+rbL)*100):null, dvWR=(dvW+dvL)?Math.round(dvW/(dvW+dvL)*100):null;
-  if(rbWR!==null&&dvWR!==null) out.push('Rule-based trades win '+rbWR+'% vs '+dvWR+'% when you deviate.');
-  const arr=[...data].reverse(); let awTot=0,awLoss=0;
-  for(let i=1;i<arr.length;i++){ if(arr[i-1].result==='Win'){ awTot++; if(arr[i].result==='Loss')awLoss++; } }
-  if(awTot>=3){ const p=Math.round(awLoss/awTot*100); if(p>=50) out.push(p+'% of trades right after a win became losses — watch for overconfidence.'); }
-  if(data.length>=6){ const half=Math.floor(arr.length/2); const fh=arr.slice(0,half), sh=arr.slice(half);
-    const wrf=a=>{const w=a.filter(t=>t.result==='Win').length,l=a.filter(t=>t.result==='Loss').length;return (w+l)?Math.round(w/(w+l)*100):null;};
-    const a=wrf(fh),b=wrf(sh); if(a!==null&&b!==null){ if(b>a) out.push('Your win rate is improving: '+a+'% then '+b+'%. Keep going.'); else if(b<a) out.push('Win rate dipped lately: '+a+'% then '+b+'%. Review recent setups.'); } }
-  const calm=data.filter(t=>t.emotion&&(t.emotion.indexOf('Calm')>=0||t.emotion.indexOf('Neutral')>=0)).length;
-  if(data.length>=4) out.push('You logged a calm/neutral mindset in '+Math.round(calm/data.length*100)+'% of trades.');
-  if(!out.length) out.push('Log a handful of trades and this coach will surface real patterns.');
-  return out.slice(0,5);
 }
 
 function perfTimelineHTML(data){
@@ -1522,17 +1487,12 @@ async function renderStats(){
       '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+stt.streak+'" style="color:var(--amber)">0</div><div class="g-sub">rule-based in a row</div></div>'+
       '<div class="gcard"><div class="g-label">\uD83D\uDEAB No-Trade Days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
     '</div>'+
-    '<div class="grid-cal-row">'+
-      '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
-      '<div class="fcard"><div class="fcard-title">Top Setups</div>'+setupRankHTML(trades)+'</div>'+
-    '</div>'+
+    '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
     '<div class="grid-2col">'+
       '<div class="fcard"><div class="fcard-title">Discipline Score</div><div class="ring-wrap">'+ringSVG(ds)+'<div class="ring-center"><div class="ring-score count" data-to="'+ds+'" style="color:'+(ds>=75?'var(--green)':ds>=50?'var(--amber)':'var(--red)')+'">0</div><div class="ring-cap">/ 100</div></div></div><p style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">60% rules \u00B7 20% win rate \u00B7 20% emotional control</p></div>'+
       barBlock('Performance by Instrument',instRows)+
     '</div>'+
-    '<div class="grid-2col">'+barBlock('Performance by HTF Bias',biasRows)+'<div class="fcard"><div class="fcard-title">Performance Timeline</div><div class="pt-row">'+perfTimelineHTML(data)+'</div></div></div>'+
-    '<div class="insight-card"><div class="insight-head"><span class="insight-badge">\u2726</span><span class="insight-title">AI Insights \u2014 your trading coach</span></div>'+
-      statsInsights(data).map(t=>'<div class="insight-item"><span class="insight-dot">\u25C6</span><span>'+t+'</span></div>').join('')+'</div>';
+    '<div class="grid-2col">'+barBlock('Performance by HTF Bias',biasRows)+'<div class="fcard"><div class="fcard-title">Performance Timeline</div><div class="pt-row">'+perfTimelineHTML(data)+'</div></div></div>';
 
   // animations
   el.querySelectorAll('.count').forEach(c=>animateCount(c,+c.dataset.to,1100,c.dataset.suffix||''));
@@ -1540,7 +1500,7 @@ async function renderStats(){
   const pa=el.querySelector('.perf-area'); if(pa) requestAnimationFrame(()=>requestAnimationFrame(()=>{ pa.style.opacity='1'; }));
   el.querySelectorAll('.donut-seg').forEach(sg=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ sg.style.strokeDasharray=sg.dataset.len+' '+sg.dataset.gap; })));
   const rp=el.querySelector('.ring-prog'); if(rp) requestAnimationFrame(()=>requestAnimationFrame(()=>{ rp.style.strokeDashoffset=rp.dataset.target; }));
-  el.querySelectorAll('.sbar-fill,.srk-fill').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
+  el.querySelectorAll('.sbar-fill').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
 }
 
 function wrColor(wr){ return wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)'; }
