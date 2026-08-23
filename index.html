@@ -145,7 +145,6 @@
   .app{position:relative;z-index:1}
   #faith-bg{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;overflow:hidden}
   body.faith-active #faith-bg{display:block}
-  #fchart{position:absolute;inset:0;width:100%;height:100%;filter:blur(3px);opacity:.06;will-change:transform}
   #fparts{position:absolute;inset:0;width:100%;height:100%;opacity:.4;will-change:transform}
   .glow-orb{display:none}
   #faith-float{position:fixed;right:26px;bottom:26px;z-index:60;max-width:280px;pointer-events:none}
@@ -450,8 +449,37 @@
     <label style="font-size:12px;color:var(--muted);">Passwort</label>
     <input id="auth-password" type="password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
     <button id="auth-signin-btn" onclick="handleSignIn()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Anmelden</button>
-    <button id="auth-signup-btn" onclick="handleSignUp()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Konto erstellen</button>
+    <button id="auth-signup-btn" onclick="openSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Konto erstellen</button>
     <div id="auth-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
+  </div>
+</div>
+
+<div id="signup-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:32px 28px;margin:24px 0;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:22px;font-weight:600;color:var(--text);">✝ Konto erstellen</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Moser's Trade Journal</div>
+    </div>
+    <div id="signup-error" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div>
+        <label style="font-size:12px;color:var(--muted);">Vorname</label>
+        <input id="signup-firstname" type="text" autocomplete="given-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--muted);">Nachname</label>
+        <input id="signup-lastname" type="text" autocomplete="family-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
+      </div>
+    </div>
+    <label style="font-size:12px;color:var(--muted);">Username / Nickname</label>
+    <input id="signup-username" type="text" autocomplete="nickname" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
+    <label style="font-size:12px;color:var(--muted);">E-Mail</label>
+    <input id="signup-email" type="email" autocomplete="username" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
+    <label style="font-size:12px;color:var(--muted);">Passwort</label>
+    <input id="signup-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
+    <button id="signup-submit-btn" onclick="handleSignUp()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Konto erstellen</button>
+    <button onclick="closeSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">← Zurück zum Login</button>
+    <div id="signup-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
   </div>
 </div>
 
@@ -859,7 +887,7 @@
 
 <div class="toast" id="toast"></div>
 <div class="save-indicator" id="save-ind">💾 Saved</div>
-<div id="faith-bg"><canvas id="fchart"></canvas><canvas id="fparts"></canvas><div class="glow-orb glow-a" id="glow-a"></div><div class="glow-orb glow-b" id="glow-b"></div></div>
+<div id="faith-bg"><canvas id="fparts"></canvas><div class="glow-orb glow-a" id="glow-a"></div><div class="glow-orb glow-b" id="glow-b"></div></div>
 <div id="faith-float"><div class="float-quote" id="fq"></div></div>
 
 <script>
@@ -889,6 +917,8 @@ async function setTheme(theme){
 
 function showAuthError(msg){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.display='block'; }
 function hideAuthError(){ document.getElementById('auth-error').style.display='none'; }
+function showSignupError(msg){ const el=document.getElementById('signup-error'); el.textContent=msg; el.style.display='block'; }
+function hideSignupError(){ document.getElementById('signup-error').style.display='none'; }
 
 async function handleSignIn(){
   hideAuthError();
@@ -898,15 +928,34 @@ async function handleSignIn(){
   const {error}=await sb.auth.signInWithPassword({email,password});
   if(error){ showAuthError(error.message); return; }
 }
+
+function openSignupScreen(){
+  hideSignupError();
+  document.getElementById('signup-hint').textContent='';
+  const loginEmail=document.getElementById('auth-email').value.trim();
+  if(loginEmail) document.getElementById('signup-email').value=loginEmail;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('signup-screen').style.display='flex';
+}
+function closeSignupScreen(){
+  document.getElementById('signup-screen').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+}
+
 async function handleSignUp(){
-  hideAuthError();
-  const email=document.getElementById('auth-email').value.trim();
-  const password=document.getElementById('auth-password').value;
-  if(!email||!password){ showAuthError('E-Mail und Passwort eingeben.'); return; }
-  if(password.length<6){ showAuthError('Passwort muss mind. 6 Zeichen haben.'); return; }
-  const {error}=await sb.auth.signUp({email,password});
-  if(error){ showAuthError(error.message); return; }
-  document.getElementById('auth-hint').textContent='Konto erstellt. Falls Bestätigung nötig ist, prüfe dein E-Mail-Postfach — sonst bist du jetzt angemeldet.';
+  hideSignupError();
+  const firstName=document.getElementById('signup-firstname').value.trim();
+  const lastName=document.getElementById('signup-lastname').value.trim();
+  const username=document.getElementById('signup-username').value.trim();
+  const email=document.getElementById('signup-email').value.trim();
+  const password=document.getElementById('signup-password').value;
+  if(!firstName||!lastName||!username||!email||!password){ showSignupError('Bitte alle Felder ausfüllen.'); return; }
+  if(password.length<6){ showSignupError('Passwort muss mind. 6 Zeichen haben.'); return; }
+  const {error}=await sb.auth.signUp({email,password,options:{data:{
+    first_name:firstName, last_name:lastName, username, display_name:(firstName+' '+lastName).trim()
+  }}});
+  if(error){ showSignupError(error.message); return; }
+  document.getElementById('signup-hint').textContent='Konto erstellt. Falls Bestätigung nötig ist, prüfe dein E-Mail-Postfach — sonst bist du jetzt angemeldet.';
 }
 async function handleSignOut(){
   await sb.auth.signOut();
@@ -1015,7 +1064,7 @@ function switchTab(t){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   const sec=document.getElementById('sec-'+t); if(sec)sec.classList.add('active');
   const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0;
-  startChart(); startParts();
+  startParts();
   if(t==='log')renderRecentStrip(); if(t==='list'){closeDetail();renderList();}
   if(t==='stats')setStatsSubView(statsSubView); if(t==='faith')renderFaith(); if(t==='bible')renderBible(); if(t==='learn')renderLearnList();
 }
@@ -1331,8 +1380,8 @@ function pnlCurveSVG(data){
   const ys=v=>padT+(H-padT-padB)*(1-(v-vmin)/span);
   const line=pts.map((p,k)=>(k?'L':'M')+xs(p.i).toFixed(1)+' '+ys(p.v).toFixed(1)).join(' ');
   const area=line+' L'+xs(pts[n-1].i).toFixed(1)+' '+ys(vmin).toFixed(1)+' L'+xs(0).toFixed(1)+' '+ys(vmin).toFixed(1)+' Z';
-  const zeroY=ys(0).toFixed(1), last=pts[n-1].v, col=last>=0?'#34d399':'#f87171';
-  return {last,col,svg:'<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="perf-svg"><defs><linearGradient id="pnlArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity="0.22"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="var(--border2)" stroke-dasharray="4 4"/><path class="perf-area" d="'+area+'" fill="url(#pnlArea)" opacity="0"/><path class="perf-line" d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'};
+  const zeroY=ys(0).toFixed(1), last=pts[n-1].v, col=last>=0?'var(--green)':'var(--red)';
+  return {last,col,svg:'<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="perf-svg"><line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="var(--border2)" stroke-dasharray="4 4"/><path class="perf-area" d="'+area+'" fill="'+col+'" fill-opacity="0.1" opacity="0"/><path class="perf-line" d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'};
 }
 
 function perfCurveSVG(data){
@@ -1344,8 +1393,8 @@ function perfCurveSVG(data){
   const ys=v=>padT+(H-padT-padB)*(1-(v-vmin)/span);
   const line=pts.map((p,k)=>(k?'L':'M')+xs(p.i).toFixed(1)+' '+ys(p.v).toFixed(1)).join(' ');
   const area=line+' L'+xs(pts[n-1].i).toFixed(1)+' '+ys(vmin).toFixed(1)+' L'+xs(0).toFixed(1)+' '+ys(vmin).toFixed(1)+' Z';
-  const zeroY=ys(0).toFixed(1), last=pts[n-1].v, col=last>=0?'#34d399':'#f87171';
-  return {last,col,svg:'<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="perf-svg"><defs><linearGradient id="pcArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity="0.22"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="var(--border2)" stroke-dasharray="4 4"/><path class="perf-area" d="'+area+'" fill="url(#pcArea)" opacity="0"/><path class="perf-line" d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'};
+  const zeroY=ys(0).toFixed(1), last=pts[n-1].v, col=last>=0?'var(--green)':'var(--red)';
+  return {last,col,svg:'<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="perf-svg"><line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="var(--border2)" stroke-dasharray="4 4"/><path class="perf-area" d="'+area+'" fill="'+col+'" fill-opacity="0.1" opacity="0"/><path class="perf-line" d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'};
 }
 
 function donutSVG(w,l,b){
@@ -1353,7 +1402,7 @@ function donutSVG(w,l,b){
   // the % shown in the center. Breakeven trades are shown as a muted track underneath
   // and counted in the legend, but don't skew the win/loss proportions.
   const dec=w+l||1, r=52, c=2*Math.PI*r, cx=70,cy=70;
-  const segs=[{v:w,col:'#34d399'},{v:l,col:'#f87171'}];
+  const segs=[{v:w,col:'var(--green)'},{v:l,col:'var(--red)'}];
   let off=0, parts='';
   segs.forEach(sg=>{ const len=sg.v/dec*c; parts+='<circle class="donut-seg" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+sg.col+'" stroke-width="16" stroke-dasharray="0 '+c.toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" data-len="'+len.toFixed(2)+'" data-gap="'+(c-len).toFixed(2)+'"/>'; off+=len; });
   return '<svg viewBox="0 0 140 140" class="donut-svg"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--surface2)" stroke-width="16"/>'+parts+'</svg>';
@@ -1434,7 +1483,7 @@ function perfTimelineHTML(data){
 async function renderStats(){
   const el=document.getElementById('stats-el');
   const all=await loadTrades();
-  document.body.classList.add('stats-active'); setGlow('daily'); startChart(); startParts();
+  document.body.classList.add('stats-active'); setGlow('daily'); startParts();
   if(!all.length){ el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">\uD83D\uDCCA</div><p>No data yet \u2014 log trades to build your cockpit.</p></div>'; return; }
   const data=all.filter(inRange);
   const trades=data.filter(t=>!t.isNoTrade), ntDays=data.filter(t=>t.isNoTrade);
@@ -1476,7 +1525,7 @@ async function renderStats(){
       '</div>'+
       '<div class="hero-card donut-card">'+
         '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">win rate</div></div></div>'+
-        '<div class="legend"><span><span class="dotc" style="background:#34d399"></span>'+wins+' Wins</span><span><span class="dotc" style="background:#f87171"></span>'+losses+' Losses</span><span><span class="dotc" style="background:#8a8a93"></span>'+bes+' Breakeven</span></div>'+
+        '<div class="legend"><span><span class="dotc" style="background:var(--green)"></span>'+wins+' Wins</span><span><span class="dotc" style="background:var(--red)"></span>'+losses+' Losses</span><span><span class="dotc" style="background:var(--muted)"></span>'+bes+' Breakeven</span></div>'+
       '</div>'+
     '</div>'+
     '<div class="kpi-row">'+
@@ -1826,7 +1875,7 @@ const QUOTES = {
 
 const FLOAT_LINES = ["Protect capital first.","The market rewards patience.","Wait for confirmation.","Discipline beats emotion.","Not every candle deserves a trade.","Trade your plan, not your feelings.","Risk less, last longer.","Patience is a position.","Let liquidity come to you.","No setup, no trade.","Sit on your hands until A+ aligns.","Process over outcome."];
 
-let faith = { reveals:0, max:3, pool:[], cat:'daily', chartRAF:null, partRAF:null, miniT:null, floatT:null, floatI:null, candles:[], particles:[] };
+let faith = { reveals:0, max:3, pool:[], cat:'daily', partRAF:null, miniT:null, floatT:null, floatI:null, particles:[] };
 
 function rcCat(result){ if(!result) return 'daily'; const r=result.toLowerCase(); return r.includes('win')?'win':r.includes('loss')?'loss':'be'; }
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
@@ -1899,33 +1948,6 @@ function setGlow(cat){
 
 function sizeCanvas(c){ const r=window.devicePixelRatio||1; c.width=Math.floor(window.innerWidth*r); c.height=Math.floor(window.innerHeight*r); const ctx=c.getContext('2d'); ctx.setTransform(r,0,0,r,0,0); return ctx; }
 
-function startChart(){
-  const c=document.getElementById('fchart'); if(!c) return;
-  const ctx=sizeCanvas(c); const W=window.innerWidth,H=window.innerHeight, cw=26, bodyW=12;
-  if(!faith.candles.length){
-    let price=H*0.5;
-    for(let x=0;x<W+cw;x+=cw){ const o=price; price=Math.max(H*0.22,Math.min(H*0.78,price+(Math.random()-0.5)*42)); const cl=price; faith.candles.push({x,o,c:cl,h:Math.max(o,cl)+Math.random()*18,l:Math.min(o,cl)-Math.random()*18}); }
-  }
-  cancelAnimationFrame(faith.chartRAF);
-  function frame(){
-    const W=window.innerWidth,H=window.innerHeight; ctx.clearRect(0,0,W,H);
-    for(const k of faith.candles){
-      k.x-=0.22;
-      const up=k.c<=k.o, col=up?'rgba(94,234,212,1)':'rgba(167,139,250,1)';
-      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.4;
-      ctx.beginPath(); ctx.moveTo(k.x,k.h); ctx.lineTo(k.x,k.l); ctx.stroke();
-      const top=Math.min(k.o,k.c),bot=Math.max(k.o,k.c); ctx.fillRect(k.x-bodyW/2,top,bodyW,Math.max(2,bot-top));
-    }
-    while(faith.candles.length && faith.candles[0].x < -cw){
-      faith.candles.shift(); const last=faith.candles[faith.candles.length-1];
-      const o=last.c, cl=Math.max(H*0.22,Math.min(H*0.78,o+(Math.random()-0.5)*42));
-      faith.candles.push({x:last.x+cw,o,c:cl,h:Math.max(o,cl)+Math.random()*18,l:Math.min(o,cl)-Math.random()*18});
-    }
-    faith.chartRAF=requestAnimationFrame(frame);
-  }
-  frame();
-}
-
 function startParts(){
   const c=document.getElementById('fparts'); if(!c) return;
   const ctx=sizeCanvas(c);
@@ -1960,21 +1982,20 @@ function startFloat(){
 
 function stopAmbient(){
   document.body.classList.remove('faith-active'); document.body.classList.remove('stats-active');
-  cancelAnimationFrame(faith.chartRAF); cancelAnimationFrame(faith.partRAF);
+  cancelAnimationFrame(faith.partRAF);
   clearInterval(faith.miniT); clearTimeout(faith.floatT); clearInterval(faith.floatI);
 }
 
 function faithParallax(e){
   if(!document.body.classList.contains('faith-active')) return;
   const cx=window.innerWidth/2, cy=window.innerHeight/2, dx=(e.clientX-cx)/cx, dy=(e.clientY-cy)/cy;
-  const ch=document.getElementById('fchart'), pa=document.getElementById('fparts'), ga=document.getElementById('glow-a'), gb=document.getElementById('glow-b');
-  if(ch) ch.style.transform='translate('+(dx*4)+'px,'+(dy*4)+'px)';
+  const pa=document.getElementById('fparts'), ga=document.getElementById('glow-a'), gb=document.getElementById('glow-b');
   if(pa) pa.style.transform='translate('+(dx*-3)+'px,'+(dy*-3)+'px)';
   if(ga) ga.style.transform='translate('+(dx*9)+'px,'+(dy*9)+'px)';
   if(gb) gb.style.transform='translate('+(dx*-9)+'px,'+(dy*-9)+'px)';
 }
 window.addEventListener('mousemove', faithParallax);
-window.addEventListener('resize', ()=>{ if(document.body.classList.contains('faith-active')){ startChart(); startParts(); } });
+window.addEventListener('resize', ()=>{ if(document.body.classList.contains('faith-active')){ startParts(); } });
 
 
 function pickVerseCat(cat){
@@ -1993,7 +2014,7 @@ async function renderFaith(){
   document.body.classList.add('faith-active');
   if(!data.length){
     el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">✝️</div><p>Nimm zuerst einen Trade auf — danach erwacht diese Seite mit dem passenden Wort für dein Ergebnis.</p></div>';
-    setGlow('daily'); startChart(); startParts(); return;
+    setGlow('daily'); startParts(); return;
   }
   const tradeData=data.filter(t=>!t.isNoTrade), ntData=data.filter(t=>t.isNoTrade);
   const latest=tradeData.length?tradeData[0]:data[0], cat=rcCat(latest&&latest.result), st=computeFaithStats(tradeData);
@@ -2025,7 +2046,7 @@ async function renderFaith(){
     '</div>';
 
   window._faithData=data;
-  setGlow(cat); startChart(); startParts(); startMini(); startFloat();
+  setGlow(cat); startParts(); startMini(); startFloat();
   nextVerse();
   setTimeout(()=>{ document.querySelectorAll('#faith-timeline .tl-icon').forEach((ic,i)=>setTimeout(()=>ic.classList.add('show'), i*140)); },180);
 }
@@ -2143,6 +2164,7 @@ async function loadJournalRow(){
 
 async function startApp(){
   document.getElementById('auth-screen').style.display='none';
+  document.getElementById('signup-screen').style.display='none';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
   await loadJournalRow();
   updateStatus();
