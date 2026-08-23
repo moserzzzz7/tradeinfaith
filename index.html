@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trade Journal</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trade Journal">
+<style>
+  :root {
+    --bg:#0a0a0c; --surface:#151518; --surface2:#1e1e23; --surface3:#26262c;
+    --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+    --text:#ededf0; --muted:#8a8a93;
+    --accent:#5b7cfa; --accent-bg:rgba(91,124,250,0.12); --accent-border:rgba(91,124,250,0.4);
+    --green:#34d399; --green-bg:rgba(52,211,153,0.12);
+    --red:#f87171; --red-bg:rgba(248,113,113,0.12);
+    --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.12);
+    --violet:#a78bfa; --orange:#fb923c;
+    --radius:12px; --radius-sm:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  /* corner crosses */
+  .corner-cross{position:fixed;font-size:18px;color:var(--muted);opacity:.22;z-index:50;pointer-events:none;user-select:none}
+  .corner-cross.tl{top:9px;left:9px} .corner-cross.tr{top:9px;right:13px}
+  .corner-cross.bl{bottom:9px;left:9px} .corner-cross.br{bottom:9px;right:13px}
+  .app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+  .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:22px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .logo{padding:0 22px 20px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+  .logo-text{font-size:16px;font-weight:600;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+  .logo-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:pulse 2.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .logo-sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:10px 22px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;border-left:2px solid transparent;transition:all .15s}
+  .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+  .nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+  .sidebar-bottom{margin-top:auto;padding:14px 16px 0}
+  .status-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:10px}
+  .status-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);margin-bottom:2px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:all .3s}
+  .dot.ok{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .dot.warn{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .status-sub{font-size:11px;color:var(--muted);padding-left:15px}
+  .btn-row2{display:flex;gap:7px}
+  .sb-btn{flex:1;padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+  .sb-btn:hover{background:var(--surface2);color:var(--text)}
+  .trade-count{font-size:11px;color:var(--muted);text-align:center;margin-top:10px}
+  .main-wrap{flex:1;overflow-y:auto}
+  .main{max-width:820px;margin:0 auto;padding:30px 40px 90px}
+  .section{display:none}
+  .section.active{display:block;animation:fadein .22s ease}
+  @keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+  .page-head{margin-bottom:28px}
+  .page-title{font-size:24px;font-weight:600;letter-spacing:-0.5px}
+  .page-desc{font-size:13px;color:var(--muted);margin-top:4px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px}
+  .card-title{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;opacity:.85}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:9px 12px;font-size:13px;font-family:inherit;width:100%;outline:none;transition:all .15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent-border);background:var(--surface3)}
+  input::placeholder,textarea::placeholder{color:#5a5a63}
+  textarea{min-height:82px;resize:vertical;line-height:1.6}
+  select option{background:#1e1e23}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+  .tag-group{margin-bottom:14px}
+  .tag-group-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:7px;opacity:.7}
+  .tag-wrap,.emo-wrap{display:flex;flex-wrap:wrap;gap:7px}
+  .tag{padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
+  .tag:hover{border-color:var(--accent-border);color:var(--text)}
+  .tag.sel{background:var(--accent-bg);border-color:var(--accent-border);color:#aab8fc}
+  /* timeframe blocks for FVG / IFVG */
+  .tf-block{margin-top:8px}
+  .tf-row{display:none;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px;padding:9px 11px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)}
+  .tf-row.open{display:flex}
+  .tf-hint{font-size:11px;color:var(--muted);margin-right:4px}
+  .tf-chip{padding:4px 11px;border-radius:14px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
+  .tf-chip:hover{color:var(--text);border-color:var(--accent-border)}
+  .tf-chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .emo{padding:7px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s}
+  .emo:hover{color:var(--text)}
+  .emo.sel{background:var(--amber-bg);border-color:rgba(251,191,36,.4);color:var(--amber)}
+  .btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+  .btn{padding:11px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);transition:all .15s}
+  .btn:hover{background:var(--surface3);color:var(--text)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(91,124,250,0.3)}
+  .btn-primary:hover{background:#4a6bf5}
+  .upload-zone{border:1.5px dashed var(--border2);border-radius:var(--radius-sm);padding:22px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s}
+  .upload-zone:hover{border-color:var(--accent-border);color:var(--text);background:var(--accent-bg)}
+  .img-preview{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-top:12px;display:none}
+  .trade-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;margin-bottom:9px;cursor:pointer;transition:all .15s}
+  .trade-item:hover{border-color:var(--border2);background:#19191d;transform:translateX(2px)}
+  .trade-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+  .trade-name{font-size:14px;font-weight:500;display:flex;align-items:center;gap:9px}
+  .badge{font-size:11px;font-weight:600;padding:3px 11px;border-radius:20px}
+  .badge.win{background:var(--green-bg);color:var(--green)}
+  .badge.loss{background:var(--red-bg);color:var(--red)}
+  .badge.be{background:rgba(255,255,255,.06);color:var(--muted)}
+  .trade-meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+  .instr{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700}
+  .instr.MNQ{background:rgba(167,139,250,.16);color:var(--violet)}
+  .instr.MES{background:rgba(251,146,60,.16);color:var(--orange)}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:13px}
+  .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+  .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px}
+  .stat-val{font-size:28px;font-weight:700;letter-spacing:-0.6px}
+  .stat-val.green{color:var(--green)} .stat-val.red{color:var(--red)} .stat-val.accent{color:var(--accent)}
+  .detail-view{display:none} .detail-view.open{display:block} .list-view.hidden{display:none}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:22px;padding:0;transition:color .15s}
+  .back-btn:hover{color:var(--text)}
+  .dl{display:grid;grid-template-columns:130px 1fr;gap:8px 16px;font-size:13px}
+  .dk{color:var(--muted)} .dv{color:var(--text);white-space:pre-wrap}
+  .delete-btn{border:1px solid rgba(248,113,113,.3);background:transparent;color:var(--red);padding:8px 15px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+  .delete-btn:hover{background:var(--red-bg)}
+  .empty{text-align:center;padding:70px 20px;color:var(--muted)}
+  .empty-icon{font-size:36px;margin-bottom:12px;opacity:.6}
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:11px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .save-indicator{position:fixed;top:14px;right:18px;font-size:11px;color:var(--muted);opacity:0;transition:opacity .4s}
+  .save-indicator.show{opacity:1}
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .bar-label{width:42px;font-size:13px;font-weight:600;color:var(--text);flex-shrink:0}
+  .bar-track{flex:1;height:26px;background:var(--surface2);border-radius:6px;overflow:hidden;position:relative}
+  .bar-fill{height:100%;border-radius:6px;transition:width .5s ease;min-width:2px}
+  .bar-val{font-size:12px;color:var(--muted);width:96px;text-align:right;flex-shrink:0}
+  .rank-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+  .rank-row:last-child{border-bottom:none}
+  .rank-name{flex:1;font-size:13px;font-weight:500}
+  .rank-bar{width:120px;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;flex-shrink:0}
+  .rank-bar-fill{height:100%;border-radius:4px}
+  .rank-wr{width:74px;text-align:right;font-size:13px;font-weight:600;flex-shrink:0}
+  .rank-n{width:60px;text-align:right;font-size:11px;color:var(--muted);flex-shrink:0}
+  .low-data{opacity:.5}
+  .hint-pill{display:inline-block;font-size:11px;color:var(--muted);background:var(--surface2);padding:3px 9px;border-radius:20px;margin-left:6px}
+  @media (max-width:760px){.main{padding:20px 16px 60px}.grid3,.grid2{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.rank-bar{width:70px}}
+
+  /* ===== FAITH PREMIUM ===== */
+  .app{position:relative;z-index:1}
+  #faith-bg{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;overflow:hidden}
+  body.faith-active #faith-bg{display:block}
+  #fchart{position:absolute;inset:0;width:100%;height:100%;filter:blur(3px);opacity:.06;will-change:transform}
+  #fparts{position:absolute;inset:0;width:100%;height:100%;opacity:.55;will-change:transform}
+  .glow-orb{position:absolute;border-radius:50%;filter:blur(95px);opacity:0;transition:opacity 1.2s,background 1.2s;will-change:transform}
+  .glow-a{width:540px;height:540px;top:-130px;left:-90px}
+  .glow-b{width:480px;height:480px;bottom:-150px;right:-70px}
+  .glow-orb{opacity:.06 !important}
+  #faith-float{position:fixed;right:26px;bottom:26px;z-index:60;max-width:280px;pointer-events:none}
+  .float-quote{background:linear-gradient(180deg,rgba(30,30,40,.82),rgba(15,15,22,.82));backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 16px;font-size:13px;color:var(--text);box-shadow:0 10px 40px rgba(0,0,0,.45);opacity:0;transform:translateY(12px);transition:all .6s cubic-bezier(.2,.8,.2,1)}
+  .float-quote.show{opacity:1;transform:translateY(0)}
+  .float-quote .fq-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:3px;opacity:.85}
+  .faith-wrap{position:relative;z-index:2;animation:breathe 8s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.01)}}
+  .hero{position:relative;margin-bottom:26px;padding:6px 0 2px}
+  .hero-eyebrow{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .mini-candles{display:inline-block;opacity:.85}
+  .hero-title{font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1.05;background:linear-gradient(120deg,#fff 18%,#aab8fc 58%,#7dd3fc 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero-sub{font-size:14px;color:var(--muted);margin-top:8px;max-width:460px;line-height:1.6}
+  .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}
+  .gcard{background:linear-gradient(180deg,rgba(32,32,42,.55),rgba(16,16,22,.55));backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:0 8px 36px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s}
+  .gcard:hover{transform:translateY(-5px);box-shadow:0 22px 55px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.09);border-color:rgba(123,160,250,.4)}
+  .gcard .g-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .gcard .g-val{font-size:26px;font-weight:700;letter-spacing:-.5px}
+  .gcard .g-sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .streak-card{display:flex;align-items:center;gap:14px;margin-top:14px;padding:14px 18px;border-radius:16px;background:linear-gradient(120deg,rgba(251,146,60,.10),rgba(251,191,36,.05));border:1px solid rgba(251,146,60,.22)}
+  .streak-flame{font-size:28px;animation:flame 2.4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(251,146,60,.6))}
+  @keyframes flame{0%,100%{transform:scale(1) rotate(-2deg);opacity:.9}50%{transform:scale(1.13) rotate(2deg);opacity:1}}
+  .streak-num{font-size:20px;font-weight:700;color:#fdba74}
+  .streak-lbl{font-size:12px;color:var(--muted);margin-top:2px}
+  .fcard{background:linear-gradient(180deg,rgba(30,30,40,.6),rgba(15,15,20,.62));backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:32px;margin-bottom:20px;box-shadow:0 12px 48px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+  .fcard-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:18px;opacity:.85}
+  .verse-text{font-size:21px;line-height:1.85;color:#f4f4f7;font-style:italic;letter-spacing:-.2px}
+  .verse-text .vw{display:inline-block;opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
+  .verse-text .vw.show{opacity:1;transform:translateY(0)}
+  .verse-ref{margin-top:18px;font-size:13px;font-weight:600;color:var(--accent);opacity:0;transform:translateY(8px);transition:all .6s ease .2s}
+  .verse-ref.show{opacity:1;transform:translateY(0)}
+  .verse-btn{margin-top:24px;padding:11px 20px;border-radius:12px;border:1px solid rgba(123,160,250,.3);background:rgba(91,124,250,.12);color:#aab8fc;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:10px}
+  .verse-btn:hover:not(:disabled){background:rgba(91,124,250,.22);transform:translateY(-2px);box-shadow:0 8px 24px rgba(91,124,250,.25)}
+  .verse-btn:disabled{opacity:.6;cursor:default;border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted)}
+  .left-pill{font-size:11px;background:rgba(255,255,255,.08);padding:2px 8px;border-radius:10px}
+  .timeline{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:auto}
+  .tl-step{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;padding:0 6px}
+  .tl-step:not(:last-child)::after{content:'';position:absolute;top:20px;left:62%;right:-38%;height:2px;background:linear-gradient(90deg,rgba(123,160,250,.4),rgba(123,160,250,.05))}
+  .tl-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(91,124,250,.12);border:1px solid rgba(123,160,250,.25);margin-bottom:10px;position:relative;z-index:1;opacity:0;transform:scale(.7);transition:all .5s cubic-bezier(.2,.8,.2,1)}
+  .tl-icon.show{opacity:1;transform:scale(1)}
+  .tl-label{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .tl-val{font-size:12px;color:var(--text);line-height:1.4;word-break:break-word}
+  .insight-card{background:linear-gradient(135deg,rgba(91,124,250,.10),rgba(167,139,250,.06));backdrop-filter:blur(14px);border:1px solid rgba(123,160,250,.22);border-radius:20px;padding:26px 28px;margin-bottom:20px;position:relative;z-index:2;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+  .insight-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .insight-badge{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#5b7cfa,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 4px 16px rgba(91,124,250,.4)}
+  .insight-title{font-size:13px;font-weight:600;color:var(--text)}
+  .insight-item{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px;color:#e3e3ea;line-height:1.6}
+  .insight-item:last-child{border-bottom:none}
+  .insight-dot{color:var(--accent);flex-shrink:0;margin-top:3px;font-size:9px}
+  @media (max-width:760px){.stat-cards{grid-template-columns:1fr 1fr}.hero-title{font-size:26px}.timeline{gap:4px}.fcard{padding:22px}}
+
+  /* ===== STATS DASHBOARD ===== */
+  body.stats-active #faith-bg{display:block}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-cal-row{display:grid;grid-template-columns:1.65fr 1fr;gap:16px}
+  .perf-svg{width:100%;height:200px;display:block}
+  .perf-area{transition:opacity 1.2s ease .3s}
+  .ring-wrap,.donut-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:8px 0}
+  .ring-svg{width:170px;height:170px}.donut-svg{width:160px;height:160px}
+  .ring-center,.donut-center{position:absolute;text-align:center;pointer-events:none}
+  .ring-score{font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1}
+  .ring-cap,.donut-cap{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+  .donut-big{font-size:30px;font-weight:800;line-height:1}
+  .donut-seg{transition:stroke-dasharray 1s cubic-bezier(.3,.8,.2,1)}
+  .legend{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .legend span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+  .dotc{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .hm-grid{display:flex;gap:4px;overflow-x:auto;padding-bottom:6px}
+  .hm-col{display:flex;flex-direction:column;gap:4px}
+  .hm-cell{width:13px;height:13px;border-radius:3px;background:rgba(255,255,255,0.05);transition:transform .15s}
+  .hm-cell:hover{transform:scale(1.35)}
+  .hm-cell.empty{background:transparent}
+  .hm-0{background:rgba(255,255,255,0.05)}.hm-zero{background:rgba(255,255,255,0.12)}
+  .hm-pos1{background:rgba(52,211,153,0.45)}.hm-pos2{background:rgba(52,211,153,0.9)}
+  .hm-neg1{background:rgba(248,113,113,0.45)}.hm-neg2{background:rgba(248,113,113,0.9)}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .cal-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-family:inherit}
+  .cal-nav button:hover{background:var(--surface3)}
+  .cal-month-label{font-weight:600;font-size:14px}
+  .cal-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px}
+  .cal-weekdays span{text-align:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;width:100%}
+  .cal-cell{aspect-ratio:1;border-radius:10px;background:rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:48px;min-width:0;box-sizing:border-box;overflow:hidden}
+  .cal-cell.empty{background:transparent}
+  .cal-daynum{font-size:12px;color:var(--muted);position:absolute;top:6px;left:8px}
+  .cal-cell.cal-pos{background:rgba(52,211,153,0.16);border:1px solid rgba(52,211,153,0.4)}
+  .cal-cell.cal-neg{background:rgba(248,113,113,0.16);border:1px solid rgba(248,113,113,0.4)}
+  .cal-cell.cal-zero{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15)}
+  .cal-pnl{font-weight:700;font-size:13px;margin-top:4px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .cal-pos .cal-pnl{color:#34d399}
+  .cal-neg .cal-pnl{color:#f87171}
+  .cal-zero .cal-pnl{color:var(--muted)}
+  .sbar-row{display:flex;align-items:center;gap:12px;padding:9px 0}
+  .sbar-name{width:74px;font-size:13px;font-weight:500}
+  .sbar-track{flex:1;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
+  .sbar-fill{height:100%;border-radius:5px;width:0;transition:width 1s cubic-bezier(.3,.8,.2,1)}
+  .sbar-val{width:46px;text-align:right;font-size:13px;font-weight:600}
+  .sbar-n{width:52px;text-align:right;font-size:11px;color:var(--muted)}
+  .pt-row{display:flex;gap:0;overflow-x:auto}
+  .pt-step{flex:1;min-width:70px;text-align:center;position:relative;padding:0 6px;opacity:.45;transition:opacity .4s}
+  .pt-step.done{opacity:1}
+  .pt-step:not(:last-child)::after{content:'';position:absolute;top:20px;left:62%;right:-38%;height:2px;background:linear-gradient(90deg,rgba(123,160,250,.4),rgba(123,160,250,.05))}
+  .pt-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;margin:0 auto 8px;background:rgba(91,124,250,.12);border:1px solid rgba(123,160,250,.25);position:relative;z-index:1}
+  .pt-step.done .pt-icon{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.4)}
+  .pt-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text)}
+  .pt-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  #sec-stats .page-head{position:relative;z-index:2}
+  @media (max-width:760px){.kpi-row{grid-template-columns:1fr 1fr}.grid-2col{grid-template-columns:1fr}.grid-cal-row{grid-template-columns:1fr}}
+
+  /* ===== TRADE WIZARD ===== */
+  .wz-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:8px}
+  .wz-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
+  .wz-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);transition:all .3s}
+  .wz-step.active .wz-num{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 4px rgba(91,124,250,.18)}
+  .wz-step.done .wz-num{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.5);color:var(--green)}
+  .wz-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .wz-step.active .wz-name{color:var(--text)}
+  .wz-track{position:relative;height:3px;background:var(--surface2);border-radius:3px;margin:0 0 26px;overflow:hidden}
+  .wz-fill{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#7dd3fc);transition:width .4s ease}
+  .wz-panel{display:none}
+  .wz-panel.active{display:block;animation:fadein .25s ease}
+  .wz-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+  .seg{display:inline-flex;gap:7px;flex-wrap:wrap}
+  .seg .opt{padding:11px 20px;border-radius:11px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+  .seg .opt:hover{border-color:var(--accent-border);color:var(--text)}
+  .seg .opt.sel{background:var(--accent-bg);border-color:var(--accent-border);color:#aab8fc}
+  .seg.grade .opt{font-size:16px;font-weight:800;padding:12px 24px}
+  .seg.grade .opt[data-v="A+"].sel{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.5);color:var(--green)}
+  .seg.grade .opt[data-v="B"].sel{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.45);color:var(--amber)}
+  .seg.yn .opt[data-v="Yes"].sel{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.5);color:var(--green)}
+  .seg.yn .opt[data-v="No"].sel{background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.45);color:var(--red)}
+  .rate{display:inline-flex;gap:8px}
+  .rate .dot{width:40px;height:40px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .rate .dot:hover{border-color:var(--accent-border);color:var(--text)}
+  .rate .dot.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .score-meter{height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;margin-top:10px}
+  .score-fill{height:100%;border-radius:5px;width:0;transition:width .5s ease,background .3s}
+  .score-big{font-size:30px;font-weight:800;letter-spacing:-.5px}
+  .field-help{font-size:12px;color:var(--muted);margin-top:7px}
+  .subgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.subgrid{grid-template-columns:1fr}.wz-name{display:none}.seg .opt{padding:8px 13px}}
+
+  /* ===== NO-TRADE MODE ===== */
+  .mode-toggle{display:flex;gap:10px;margin-bottom:24px}
+  .mode-btn{flex:1;padding:15px 24px;border-radius:14px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+  .mode-btn:hover{border-color:var(--accent-border);color:var(--text)}
+  .mode-btn.active{background:var(--accent-bg);border-color:var(--accent-border);color:#aab8fc}
+  .mode-btn#mode-notrade.active{background:rgba(248,113,113,.10);border-color:rgba(248,113,113,.35);color:var(--red)}
+  .nt-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:6px;background:rgba(248,113,113,.12);color:var(--red);font-size:12px;font-weight:600}
+  .badge.nt{background:rgba(248,113,113,.12);color:var(--red)}
+  .nt-item{border-left:2px solid rgba(248,113,113,.35)}
+  .kpi-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  @media(max-width:900px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:600px){.kpi-row{grid-template-columns:1fr 1fr}}
+
+  /* ===== LEARN TAB ===== */
+  .learn-tabs{display:flex;gap:10px;margin-bottom:22px}
+  .ltab{flex:1;padding:13px 20px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+  .ltab:hover{border-color:var(--accent-border);color:var(--text)}
+  .ltab.active{background:var(--accent-bg);border-color:var(--accent-border);color:#aab8fc}
+  .lp{animation:fadein .22s ease}
+  .learn-item{background:linear-gradient(180deg,rgba(28,28,36,0.6),rgba(16,16,22,0.6));backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px 22px;margin-bottom:12px;cursor:pointer;transition:all .15s;box-shadow:0 4px 16px rgba(0,0,0,0.25)}
+  .learn-item:hover{border-color:var(--border2);background:#19191d;transform:translateX(2px)}
+  .learn-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:12px}
+  .learn-title{font-size:16px;font-weight:600;color:var(--text);flex:1}
+  .learn-date{font-size:11px;color:var(--muted);flex-shrink:0}
+  .learn-preview{font-size:14px;color:var(--muted);line-height:1.6}
+  .learn-has-img{font-size:11px;color:var(--accent);margin-top:8px;opacity:.8}
+
+  /* ===== Dock bar ===== */
+  .app{display:flex;flex-direction:column;height:100vh}
+  #dockwrap{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 22px 0;position:relative;z-index:40;flex-shrink:0}
+  #dock-logo{display:flex;flex-direction:column;min-width:190px}
+  #dock{display:flex;align-items:flex-end;gap:14px;background:rgba(21,21,24,.8);backdrop-filter:blur(16px);border:1px solid var(--border2);border-radius:18px;padding:10px 18px 9px;box-shadow:0 8px 26px rgba(0,0,0,.35)}
+  .dock-item{width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--muted);transform-origin:bottom center;transition:color .15s;user-select:none}
+  .dock-item:hover,.dock-item.active{color:var(--text)}
+  .dock-ico{font-size:21px;line-height:1.15;filter:grayscale(.35);transition:filter .15s}
+  .dock-item:hover .dock-ico,.dock-item.active .dock-ico{filter:none}
+  .dock-label{font-size:9px;font-weight:600;letter-spacing:.03em;white-space:nowrap;opacity:.55;transition:opacity .15s}
+  .dock-item:hover .dock-label,.dock-item.active .dock-label{opacity:1}
+  .dock-dot{width:4px;height:4px;border-radius:50%;background:transparent;margin-top:2px;transition:background .2s}
+  .dock-item.active .dock-dot{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .dock-item:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px}
+  #dock-right{display:flex;align-items:center;gap:8px;min-width:190px;justify-content:flex-end}
+  .dock-status{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;white-space:nowrap}
+  .dock-btn{width:32px;height:32px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .dock-btn:hover{background:var(--surface2);color:var(--text)}
+
+  /* ===== Splash ===== */
+  #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;opacity:1;transition:opacity .45s ease}
+  #splash.gone{opacity:0;pointer-events:none}
+  #splash-canvas{position:fixed;inset:0;width:100%;height:100%;opacity:.3}
+  #splash::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(10,10,12,.35) 0%,rgba(10,10,12,.92) 62%,var(--bg) 100%)}
+  #splash-inner{position:relative;z-index:2;text-align:center;padding:40px 22px;max-width:860px;width:100%;margin:auto 0}
+  .sp-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;opacity:0;animation:spIn .6s ease .05s forwards}
+  .sp-title{font-size:clamp(30px,5.4vw,52px);font-weight:700;letter-spacing:-1.4px;line-height:1.08;opacity:0;animation:spIn .6s ease .15s forwards}
+  .sp-sub{font-size:14px;color:var(--muted);margin-top:12px;margin-bottom:34px;opacity:0;animation:spIn .6s ease .28s forwards}
+  #sp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .sp-card{background:rgba(21,21,24,.72);backdrop-filter:blur(10px);border:1px solid var(--border2);border-radius:14px;padding:18px 16px;text-align:left;cursor:pointer;opacity:0;transform:translateY(12px);animation:spCard .5s cubic-bezier(.2,.7,.3,1) forwards;transition:border-color .18s,background .18s,transform .18s}
+  .sp-card:hover{border-color:var(--accent-border);background:var(--accent-bg);transform:translateY(-2px)}
+  .sp-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .sp-card-ico{font-size:20px;line-height:1}
+  .sp-card-name{font-size:14px;font-weight:600;margin-top:9px}
+  .sp-card-desc{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .sp-skip{margin-top:30px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:8px 12px;border-radius:8px;opacity:0;animation:spIn .6s ease .9s forwards;transition:color .15s}
+  .sp-skip:hover{color:var(--text)}
+  .sp-hint{font-size:10.5px;color:var(--muted);opacity:.5;margin-top:4px}
+  @keyframes spIn{to{opacity:1}}
+  @keyframes spCard{to{opacity:1;transform:translateY(0)}}
+  @media (max-width:820px){#sp-cards{grid-template-columns:repeat(2,1fr)}#dock-logo,#dock-right{min-width:0}#dockwrap{flex-wrap:wrap;justify-content:center;gap:10px}}
+  @media (max-width:520px){#sp-cards{grid-template-columns:1fr}.dock-item{width:38px}.dock-ico{font-size:18px}}
+  @media (prefers-reduced-motion:reduce){.sp-card,.sp-title,.sp-sub,.sp-eyebrow,.sp-skip{animation-duration:.01s}#splash-canvas{display:none}}
+
+  /* ===== Stats cockpit v2 ===== */
+  .range-chips{display:flex;gap:6px}
+  .rchip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:11.5px;font-weight:600;padding:6px 14px;border-radius:999px;cursor:pointer;font-family:inherit;transition:all .15s}
+  .rchip:hover{color:var(--text);border-color:var(--border2)}
+  .rchip.active{background:var(--accent);border-color:var(--accent);color:#0a0a0c}
+  .rchip:disabled{cursor:default}
+  .rchip:disabled:hover{color:var(--muted);border-color:var(--border)}
+  /* bible */
+  .bible-crumb{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .bible-crumb span{cursor:pointer;transition:color .15s}
+  .bible-crumb span:hover{color:var(--text)}
+  .bible-group-label{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);opacity:.85;margin:22px 0 10px}
+  .bible-group-label:first-child{margin-top:0}
+  .bible-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:8px}
+  .bb-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 15px;cursor:pointer;transition:all .15s}
+  .bb-card:hover{border-color:var(--accent-border);background:var(--surface2);transform:translateY(-1px)}
+  .bb-name{font-size:13px;font-weight:600}
+  .bb-meta{font-size:11px;color:var(--muted);margin-top:3px}
+  .bb-disabled{opacity:.35;cursor:default}
+  .bb-disabled:hover{transform:none;background:var(--surface);border-color:var(--border)}
+  .bb-progress{height:3px;background:var(--surface3);border-radius:2px;margin-top:9px;overflow:hidden}
+  .bb-progress-fill{height:100%;background:var(--green);border-radius:2px}
+  .bible-chapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px}
+  .bc-chip{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 0;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+  .bc-chip:hover{border-color:var(--accent-border);color:var(--accent);background:var(--surface2)}
+  .bc-chip.bc-done{background:var(--green-bg);border-color:rgba(52,211,153,.4);color:var(--green)}
+  .bible-done-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--muted);font-size:11.5px;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer;font-family:inherit;transition:all .15s}
+  .bible-done-btn:hover{border-color:var(--accent-border);color:var(--text)}
+  .bible-done-btn.done{background:var(--green-bg);border-color:rgba(52,211,153,.4);color:var(--green)}
+  .bible-read{font-size:15.5px;line-height:1.95}
+  .bv{display:flex;gap:11px;margin-bottom:11px}
+  .bv-num{color:var(--accent);font-size:11px;font-weight:700;min-width:20px;text-align:right;flex-shrink:0;padding-top:4px;opacity:.7}
+  .bv-text{flex:1}
+  .stats-hero{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:16px}
+  .hero-card{background:linear-gradient(180deg,rgba(30,30,40,.6),rgba(15,15,20,.62));backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:24px 26px;box-shadow:0 12px 48px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+  .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .hero-lab{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .hero-num{font-size:38px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-top:4px}
+  .hero-pill{font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap}
+  .hero-curve{margin-top:8px}
+  .hero-curve .perf-svg{height:132px}
+  .hero-foot{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px}
+  .donut-card{display:flex;align-items:center;gap:18px;justify-content:center}
+  .donut-card .donut-wrap{padding:0;flex-shrink:0}
+  .donut-card .legend{flex-direction:column;align-items:flex-start;gap:9px;margin-top:0}
+  .donut-card .legend span{white-space:nowrap}
+  .setup-rank{display:flex;flex-direction:column;gap:13px}
+  .srk-head{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text);margin-bottom:5px}
+  .srk-n{font-size:11px;color:var(--muted);margin-left:7px}
+  .srk-track{height:6px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+  .srk-fill{height:100%;border-radius:4px;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+  @media(max-width:900px){.stats-hero{grid-template-columns:1fr}.donut-card{justify-content:flex-start}}
+
+  /* ===== Cross-page upgrades ===== */
+  .recent-strip{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+  .recent-strip-lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+  .recent-dots{display:flex;gap:6px}
+  .recent-dot{width:9px;height:9px;border-radius:50%}
+  .recent-dot.win{background:var(--green)}
+  .recent-dot.loss{background:var(--red)}
+  .recent-dot.be{background:var(--muted)}
+  .recent-strip-wr{margin-left:auto;font-size:12px;color:var(--muted)}
+  .filter-bar{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+  .fchip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:500;padding:6px 13px;border-radius:999px;cursor:pointer;font-family:inherit;transition:all .15s}
+  .fchip:hover{color:var(--text);border-color:var(--border2)}
+  .fchip.active{background:var(--accent);border-color:var(--accent);color:#0a0a0c}
+  .learn-search{width:100%;margin-bottom:16px}
+  .verse-picker{display:flex;gap:7px;margin-bottom:14px}
+  .vchip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:500;padding:6px 14px;border-radius:999px;cursor:pointer;font-family:inherit;transition:all .15s}
+  .vchip:hover{color:var(--text);border-color:var(--border2)}
+  .vchip.active{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
+  .review-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+  .rh-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+  .rh-lab{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .rh-val{font-size:18px;font-weight:700;letter-spacing:-.3px}
+  .rh-sub{font-size:11px;color:var(--muted);margin-top:3px}
+  @media(max-width:760px){.review-highlights{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<span class="corner-cross tl">✝</span><span class="corner-cross tr">✝</span><span class="corner-cross bl">✝</span><span class="corner-cross br">✝</span>
+
+<div id="auth-screen" style="position:fixed;inset:0;z-index:9999;background:#0a0a0c;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="width:100%;max-width:360px;background:#151518;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:32px 28px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:22px;font-weight:600;color:#ededf0;">✝ Moser's Trade Journal</div>
+      <div style="font-size:13px;color:#8a8a93;margin-top:4px;">Discipline over profit</div>
+    </div>
+    <div id="auth-error" style="display:none;background:rgba(248,113,113,.12);color:#f87171;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
+    <label style="font-size:12px;color:#8a8a93;">E-Mail</label>
+    <input id="auth-email" type="email" autocomplete="username" style="width:100%;box-sizing:border-box;background:#1e1e23;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#ededf0;font-size:14px;margin:6px 0 14px;">
+    <label style="font-size:12px;color:#8a8a93;">Passwort</label>
+    <input id="auth-password" type="password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:#1e1e23;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#ededf0;font-size:14px;margin:6px 0 18px;">
+    <button id="auth-signin-btn" onclick="handleSignIn()" style="width:100%;background:#5b7cfa;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Anmelden</button>
+    <button id="auth-signup-btn" onclick="handleSignUp()" style="width:100%;background:transparent;color:#ededf0;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Konto erstellen</button>
+    <div id="auth-hint" style="font-size:12px;color:#8a8a93;text-align:center;margin-top:14px;"></div>
+  </div>
+</div>
+
+<div id="splash">
+  <canvas id="splash-canvas"></canvas>
+  <div id="splash-inner">
+    <div class="sp-eyebrow">&#10013; Discipline over profit</div>
+    <h1 class="sp-title">Moser&#39;s Trade Journal</h1>
+    <p class="sp-sub">ICT / Smart Money &middot; Wo willst du starten?</p>
+    <div id="sp-cards"></div>
+    <button class="sp-skip" onclick="closeSplash()">Einfach reingehen &rarr;</button>
+    <div class="sp-hint">Esc zum &Uuml;berspringen</div>
+  </div>
+</div>
+<div class="app">
+  <header id="dockwrap">
+    <div id="dock-logo">
+      <div class="logo-text"><span class="logo-dot"></span> Trade Journal</div>
+      <div class="logo-sub" id="trade-count">&ndash;</div>
+    </div>
+    <nav id="dock" aria-label="Bereiche"></nav>
+    <div id="dock-right">
+      <div class="dock-status"><span class="dot" id="s-dot"></span><span id="s-where">Checking...</span><span id="s-file" style="display:none"></span></div>
+      <button class="dock-btn" title="Export" onclick="exportJSON()">&#11015;</button>
+      <button class="dock-btn" title="Import" onclick="document.getElementById('imp').click()">&#11014;</button>
+      <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(this)">
+      <button class="dock-btn" title="Abmelden" onclick="handleSignOut()">&#9211;</button>
+    </div>
+  </header>
+
+  <div class="main-wrap">
+  <main class="main">
+
+    <div id="sec-log" class="section active">
+      <div class="page-head"><div class="page-title">New Entry</div><div class="page-desc">A process built to make you think — not just log. No money, only execution & discipline.</div></div>
+      <div class="recent-strip" id="recent-strip"></div>
+
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-trade" onclick="setMode('trade')">📈 Trade taken</button>
+        <button class="mode-btn" id="mode-notrade" onclick="setMode('notrade')">🚫 No trade</button>
+      </div>
+
+      <div id="trade-wizard">
+        <div class="wz-progress">
+          <div class="wz-step active" onclick="goStep(1)"><div class="wz-num">1</div><div class="wz-name">Plan</div></div>
+          <div class="wz-step" onclick="goStep(2)"><div class="wz-num">2</div><div class="wz-name">Setup</div></div>
+          <div class="wz-step" onclick="goStep(3)"><div class="wz-num">3</div><div class="wz-name">Execution</div></div>
+          <div class="wz-step" onclick="goStep(4)"><div class="wz-num">4</div><div class="wz-name">Psychology</div></div>
+          <div class="wz-step" onclick="goStep(5)"><div class="wz-num">5</div><div class="wz-name">Review</div></div>
+        </div>
+        <div class="wz-track"><div class="wz-fill" id="wz-fill"></div></div>
+
+      <!-- STEP 1: PLAN & BIAS -->
+      <div class="wz-panel active" id="wz-1">
+        <div class="card">
+          <div class="card-title">The Trade</div>
+          <div class="subgrid" style="margin-bottom:16px">
+            <div class="field"><label>Date</label><input type="date" id="f-date"></div>
+            <div class="field"><label>Instrument</label><div class="seg" data-field="instrument"><button class="opt sel" data-v="MNQ" onclick="choice('instrument',this)">MNQ</button><button class="opt" data-v="MES" onclick="choice('instrument',this)">MES</button></div></div>
+          </div>
+          <div class="field"><label>Direction</label><div class="seg" data-field="direction"><button class="opt sel" data-v="Long" onclick="choice('direction',this)">📈 Long</button><button class="opt" data-v="Short" onclick="choice('direction',this)">📉 Short</button></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Pre-Trade Bias</div>
+          <div class="subgrid" style="margin-bottom:16px">
+            <div class="field"><label>HTF Bias</label><div class="seg" data-field="htfbias"><button class="opt" data-v="Bullish" onclick="choice('htfbias',this)">Bullish</button><button class="opt" data-v="Bearish" onclick="choice('htfbias',this)">Bearish</button><button class="opt" data-v="Neutral" onclick="choice('htfbias',this)">Neutral</button></div></div>
+            <div class="field"><label>Premium / Discount</label><div class="seg" data-field="pd"><button class="opt" data-v="Discount" onclick="choice('pd',this)">Discount</button><button class="opt" data-v="Premium" onclick="choice('pd',this)">Premium</button><button class="opt" data-v="Equilibrium" onclick="choice('pd',this)">Equilibrium</button></div></div>
+          </div>
+          <div class="field" style="margin-bottom:16px"><label>PDH / PDL</label><div class="seg" data-field="pdh"><button class="opt" data-v="PDH swept" onclick="choice('pdh',this)">PDH swept</button><button class="opt" data-v="PDL swept" onclick="choice('pdh',this)">PDL swept</button><button class="opt" data-v="Not swept" onclick="choice('pdh',this)">Not swept</button><button class="opt" data-v="Both swept" onclick="choice('pdh',this)">Both</button></div></div>
+          <div class="field"><label>Why this bias?</label><textarea id="f-bwhy" placeholder="Daily FVG, unswept liquidity, weekly OB, SMT between MNQ & ES..."></textarea></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Targets & Plan</div>
+          <div class="field" style="margin-bottom:16px"><label>Key levels & liquidity targets</label><textarea id="f-levels" placeholder="Draw on liquidity: PWH 21540, PDL 21380, sell-side below... where is price drawn to?"></textarea></div>
+          <div class="subgrid" style="margin-bottom:16px">
+            <div class="field"><label>Expectations & Primary scenario</label><textarea id="f-exp" placeholder="What do you expect from today's session? If price sweeps PDL and shifts structure, I long the discount FVG..."></textarea></div>
+            <div class="field"><label>Alternative scenario</label><textarea id="f-scen2" placeholder="If price holds premium and rejects, I stay flat / look short..."></textarea></div>
+          </div>
+        </div>
+
+        <div class="wz-nav"><span></span><button class="btn btn-primary" onclick="nextStep()">Next: Setup →</button></div>
+      </div>
+
+      <!-- STEP 2: SETUP & QUALITY -->
+      <div class="wz-panel" id="wz-2">
+        <div class="card">
+          <div class="card-title">PD Arrays / Concepts</div>
+          <div id="setup-tags">
+            <div class="tag-group"><div class="tag-group-label">Liquidity</div><div class="tag-wrap">
+              <button class="tag" onclick="toggleTag(this)">Liquidity Sweep</button><button class="tag" onclick="toggleTag(this)">Turtle Soup</button><button class="tag" onclick="toggleTag(this)">EQH / EQL</button><button class="tag" onclick="toggleTag(this)">Judas Swing</button><button class="tag" onclick="toggleTag(this)">Liquidity Void</button><button class="tag" onclick="toggleTag(this)">Stop Hunt</button>
+            </div></div>
+            <div class="tag-group"><div class="tag-group-label">Imbalance / FVG</div><div class="tag-wrap">
+              <button class="tag" onclick="toggleTag(this)">BPR</button><button class="tag" onclick="toggleTag(this)">Volume Imbalance</button>
+            </div>
+              <div class="tf-block"><button class="tag tf-main" data-concept="FVG" onclick="toggleTf(this,'FVG')">FVG</button><div class="tf-row" id="tf-FVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
+              <div class="tf-block"><button class="tag tf-main" data-concept="IFVG" onclick="toggleTf(this,'IFVG')">IFVG</button><div class="tf-row" id="tf-IFVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
+            </div>
+            <div class="tag-group"><div class="tag-group-label">Structure / Order Blocks</div><div class="tag-wrap">
+              <button class="tag" onclick="toggleTag(this)">OB</button><button class="tag" onclick="toggleTag(this)">Breaker</button><button class="tag" onclick="toggleTag(this)">Rejection Block</button><button class="tag" onclick="toggleTag(this)">MSS</button><button class="tag" onclick="toggleTag(this)">BOS</button><button class="tag" onclick="toggleTag(this)">CISD</button><button class="tag" onclick="toggleTag(this)">Displacement</button>
+            </div></div>
+            <div class="tag-group"><div class="tag-group-label">Targets</div><div class="tag-wrap">
+              <button class="tag" onclick="toggleTag(this)">All Time High</button><button class="tag" onclick="toggleTag(this)">All Time Low</button><button class="tag" onclick="toggleTag(this)">PDH</button><button class="tag" onclick="toggleTag(this)">PDL</button><button class="tag" onclick="toggleTag(this)">PWH</button><button class="tag" onclick="toggleTag(this)">PWL</button><button class="tag" onclick="toggleTag(this)">Daily Open</button><button class="tag" onclick="toggleTag(this)">Weekly Open</button><button class="tag" onclick="toggleTag(this)">NY Session High</button><button class="tag" onclick="toggleTag(this)">NY Session Low</button><button class="tag" onclick="toggleTag(this)">London Session High</button><button class="tag" onclick="toggleTag(this)">London Session Low</button><button class="tag" onclick="toggleTag(this)">Asia Session High</button><button class="tag" onclick="toggleTag(this)">Asia Session Low</button><button class="tag" onclick="toggleTag(this)">Equal Highs</button><button class="tag" onclick="toggleTag(this)">Equal Lows</button>
+            </div></div>
+            <div class="tag-group"><div class="tag-group-label">Context / Time</div><div class="tag-wrap">
+              <button class="tag" onclick="toggleTag(this)">SMT Divergence</button><button class="tag" onclick="toggleTag(this)">OTE</button><button class="tag" onclick="toggleTag(this)">Power of 3</button><button class="tag" onclick="toggleTag(this)">Silver Bullet</button><button class="tag" onclick="toggleTag(this)">Asian Range</button><button class="tag" onclick="toggleTag(this)">NWOG</button><button class="tag" onclick="toggleTag(this)">NDOG</button>
+            </div></div>
+          </div>
+          <div class="field" style="margin-top:6px"><label>Confirmations</label><textarea id="f-conf" placeholder="What confirmed it? Displacement, M1 FVG, reaction at level, CISD..."></textarea></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Setup Quality</div>
+          <div class="field" style="margin-bottom:16px"><label>Grade this setup</label><div class="seg grade" data-field="grade"><button class="opt" data-v="A+" onclick="choice('grade',this)">A+</button><button class="opt" data-v="A" onclick="choice('grade',this)">A</button><button class="opt" data-v="B" onclick="choice('grade',this)">B</button></div><div class="field-help">A+ = textbook, everything aligned. B = acceptable but compromised.</div></div>
+          <div class="field" style="margin-bottom:16px"><label>Contracts</label><input type="number" id="f-contracts" min="0" step="1" placeholder="e.g. 2"></div>
+          <div class="subgrid" style="margin-bottom:16px">
+            <div class="field"><label>Matches your playbook?</label><div class="seg yn" data-field="matchesPlaybook"><button class="opt" data-v="Yes" onclick="choice('matchesPlaybook',this)">Yes</button><button class="opt" data-v="No" onclick="choice('matchesPlaybook',this)">No</button></div></div>
+            <div class="field"><label>Would a pro take this?</label><div class="seg yn" data-field="proWouldTake"><button class="opt" data-v="Yes" onclick="choice('proWouldTake',this)">Yes</button><button class="opt" data-v="Unsure" onclick="choice('proWouldTake',this)">Unsure</button><button class="opt" data-v="No" onclick="choice('proWouldTake',this)">No</button></div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><span class="card-title" style="margin:0">Setup Quality</span><span class="score-big" id="setq-label" style="font-size:18px;color:var(--muted)">—</span></div>
+          <div class="score-meter"><div class="score-fill" id="setq-fill"></div></div>
+        </div>
+
+        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next: Execution →</button></div>
+      </div>
+
+      <!-- STEP 3: EXECUTION & CONTEXT -->
+      <div class="wz-panel" id="wz-3">
+        <div class="card">
+          <div class="card-title">Execution Quality</div>
+          <div class="field" style="margin-bottom:14px"><label>Executed exactly to plan?</label><div class="seg" data-field="toPlan"><button class="opt" data-v="Yes" onclick="choice('toPlan',this)">Yes</button><button class="opt" data-v="Partial" onclick="choice('toPlan',this)">Partial</button><button class="opt" data-v="No" onclick="choice('toPlan',this)">No</button></div></div>
+          <div class="subgrid" style="margin-bottom:14px">
+            <div class="field"><label>Did you chase the entry?</label><div class="seg yn" data-field="chased"><button class="opt" data-v="No" onclick="choice('chased',this)">No</button><button class="opt" data-v="Yes" onclick="choice('chased',this)">Yes</button></div></div>
+            <div class="field"><label>Enough patience?</label><div class="seg yn" data-field="patience"><button class="opt" data-v="Yes" onclick="choice('patience',this)">Yes</button><button class="opt" data-v="No" onclick="choice('patience',this)">No</button></div></div>
+          </div>
+          <div class="subgrid" style="margin-bottom:14px">
+            <div class="field"><label>Confirmation actually present?</label><div class="seg yn" data-field="confirmation"><button class="opt" data-v="Yes" onclick="choice('confirmation',this)">Yes</button><button class="opt" data-v="No" onclick="choice('confirmation',this)">No</button></div></div>
+            <div class="field"><label>Followed your rules?</label><div class="seg" data-field="rulebased"><button class="opt" data-v="yes" onclick="choice('rulebased',this)">Yes</button><button class="opt" data-v="partial" onclick="choice('rulebased',this)">Partial</button><button class="opt" data-v="no" onclick="choice('rulebased',this)">No</button></div></div>
+          </div>
+          <div class="field" style="margin-bottom:16px"><label>Overall execution (1–5)</label><div class="rate" data-field="execQuality"><button class="dot" onclick="rate('execQuality',this)">1</button><button class="dot" onclick="rate('execQuality',this)">2</button><button class="dot" onclick="rate('execQuality',this)">3</button><button class="dot" onclick="rate('execQuality',this)">4</button><button class="dot" onclick="rate('execQuality',this)">5</button></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><span class="card-title" style="margin:0">Execution Score</span><span class="score-big" id="exec-num" style="color:var(--muted)">0</span></div>
+          <div class="score-meter"><div class="score-fill" id="exec-fill"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Market Context</div>
+          <div class="field"><label>External factors / News</label><textarea id="f-ext" placeholder="CPI, FOMC, NFP, unusual volatility, holiday session..."></textarea></div>
+        </div>
+
+        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next: Psychology →</button></div>
+      </div>
+
+      <!-- STEP 4: PSYCHOLOGY -->
+      <div class="wz-panel" id="wz-4">
+        <div class="card">
+          <div class="card-title">Before the Trade</div>
+          <div class="field" style="margin-bottom:14px"><label>Focus</label><div class="rate" data-field="preFocus"><button class="dot" onclick="rate('preFocus',this)">1</button><button class="dot" onclick="rate('preFocus',this)">2</button><button class="dot" onclick="rate('preFocus',this)">3</button><button class="dot" onclick="rate('preFocus',this)">4</button><button class="dot" onclick="rate('preFocus',this)">5</button></div></div>
+          <div class="field" style="margin-bottom:14px"><label>Patience</label><div class="rate" data-field="prePatience"><button class="dot" onclick="rate('prePatience',this)">1</button><button class="dot" onclick="rate('prePatience',this)">2</button><button class="dot" onclick="rate('prePatience',this)">3</button><button class="dot" onclick="rate('prePatience',this)">4</button><button class="dot" onclick="rate('prePatience',this)">5</button></div></div>
+          <div class="field" style="margin-bottom:14px"><label>Energy level</label><div class="rate" data-field="preEnergy"><button class="dot" onclick="rate('preEnergy',this)">1</button><button class="dot" onclick="rate('preEnergy',this)">2</button><button class="dot" onclick="rate('preEnergy',this)">3</button><button class="dot" onclick="rate('preEnergy',this)">4</button><button class="dot" onclick="rate('preEnergy',this)">5</button></div></div>
+          <div class="field"><label>Mental state going in</label><div class="seg" data-field="preState"><button class="opt" data-v="Clear" onclick="choice('preState',this)">Clear</button><button class="opt" data-v="Calm" onclick="choice('preState',this)">Calm</button><button class="opt" data-v="Tense" onclick="choice('preState',this)">Tense</button><button class="opt" data-v="Distracted" onclick="choice('preState',this)">Distracted</button><button class="opt" data-v="Tired" onclick="choice('preState',this)">Tired</button></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">During & After</div>
+          <div class="subgrid" style="margin-bottom:14px">
+            <div class="field"><label>Did doubts appear?</label><div class="seg yn" data-field="doubts"><button class="opt" data-v="No" onclick="choice('doubts',this)">No</button><button class="opt" data-v="Yes" onclick="choice('doubts',this)">Yes</button></div></div>
+            <div class="field"><label>Deviated from plan?</label><div class="seg yn" data-field="deviated"><button class="opt" data-v="No" onclick="choice('deviated',this)">No</button><button class="opt" data-v="Yes" onclick="choice('deviated',this)">Yes</button></div></div>
+          </div>
+          <div class="field" style="margin-bottom:14px"><label>Satisfied with execution (regardless of result)?</label><div class="seg yn" data-field="satisfied"><button class="opt" data-v="Yes" onclick="choice('satisfied',this)">Yes</button><button class="opt" data-v="No" onclick="choice('satisfied',this)">No</button></div></div>
+          <div class="field" style="margin-bottom:14px"><label>How did you feel?</label><div class="emo-wrap">
+            <button class="emo" onclick="toggleEmo(this)">😌 Calm</button><button class="emo" onclick="toggleEmo(this)">😤 Impatient</button><button class="emo" onclick="toggleEmo(this)">😰 Anxious</button><button class="emo" onclick="toggleEmo(this)">🤩 Overconfident</button><button class="emo" onclick="toggleEmo(this)">😓 FOMO</button><button class="emo" onclick="toggleEmo(this)">😶 Neutral</button><button class="emo" onclick="toggleEmo(this)">😩 Revenge</button>
+          </div></div>
+          <div class="field"><label>Mindset notes</label><textarea id="f-mind" placeholder="Anything about your state that influenced decisions?"></textarea></div>
+        </div>
+
+        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next: Review →</button></div>
+      </div>
+
+      <!-- STEP 5: RESULT & REVIEW -->
+      <div class="wz-panel" id="wz-5">
+        <div class="card">
+          <div class="card-title">Result</div>
+          <div class="field" style="margin-bottom:16px"><label>Outcome</label><div class="seg" data-field="result"><button class="opt" data-v="Win" onclick="choice('result',this)">Win</button><button class="opt" data-v="Loss" onclick="choice('result',this)">Loss</button><button class="opt" data-v="Breakeven" onclick="choice('result',this)">Breakeven</button></div></div>
+          <div class="field"><label>P&L ($)</label><input type="number" id="f-pnl" step="0.01" placeholder="e.g. 240 or -150"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Deep Review — one lesson per trade</div>
+          <div class="field" style="margin-bottom:14px"><label>Biggest factor on the outcome</label><textarea id="f-factor" placeholder="What mattered most? The sweep, the patience, the news, the entry timing..."></textarea></div>
+          <div class="subgrid" style="margin-bottom:14px">
+            <div class="field"><label>✅ Rule you followed best</label><textarea id="f-bestrule" placeholder="Waited for confirmation / respected invalidation..."></textarea></div>
+            <div class="field"><label>❌ Most expensive mistake</label><textarea id="f-mistake" placeholder="Entered before the sweep / moved my stop..."></textarea></div>
+          </div>
+          <div class="field"><label>💡 Key lesson & adjustment for next time</label><textarea id="f-lesson" placeholder="The single thing you take away from this trade — and what you'll do differently."></textarea></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Screenshot</div>
+          <div class="upload-zone" id="screenshot-zone" onclick="document.getElementById('f-img').click()" style="position:relative">
+            <div id="screenshot-hint">📸 Click to upload · or <kbd style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit">Ctrl+V</kbd> to paste · or <button onclick="event.stopPropagation();autoGrabClipboard()" style="background:var(--accent-bg);border:1px solid var(--accent-border);color:#aab8fc;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">⚡ Auto-load last screenshot</button></div>
+          </div>
+          <input type="file" id="f-img" accept="image/*" style="display:none" onchange="handleImg(this)">
+          <img id="img-prev" class="img-preview">
+        </div>
+
+        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="saveTrade()">✓ Save Trade</button></div>
+      </div>
+      </div><!-- /trade-wizard -->
+
+      <div id="notrade-form" style="display:none">
+        <div class="card">
+          <div class="card-title">The Day</div>
+          <div class="subgrid" style="margin-bottom:16px">
+            <div class="field"><label>Date</label><input type="date" id="nt-date"></div>
+            <div class="field"><label>Instrument watched</label><div class="seg" data-field="nt-instrument"><button class="opt sel" data-v="MNQ" onclick="ntChoice('nt-instrument',this)">MNQ</button><button class="opt" data-v="MES" onclick="ntChoice('nt-instrument',this)">MES</button><button class="opt" data-v="Both" onclick="ntChoice('nt-instrument',this)">Both</button></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Market Read</div>
+          <div class="field" style="margin-bottom:16px"><label>What was your bias today?</label><textarea id="nt-bias" placeholder="What did you see on the HTF? Bullish/Bearish? Key levels, FVGs, liquidity..."></textarea></div>
+          <div class="field" style="margin-bottom:16px"><label>What did you see but NOT trade?</label><textarea id="nt-seen" placeholder="Describe any setups or moves you observed..."></textarea></div>
+          <div class="field"><label>Why did you stay out?</label><div class="tag-wrap" id="nt-reasons" style="margin-top:4px">
+            <button class="tag" onclick="toggleTag(this)">No A+ setup</button>
+            <button class="tag" onclick="toggleTag(this)">No playbook match</button>
+            <button class="tag" onclick="toggleTag(this)">Waited for sweep</button>
+            <button class="tag" onclick="toggleTag(this)">News / Events</button>
+            <button class="tag" onclick="toggleTag(this)">Mental state not ready</button>
+            <button class="tag" onclick="toggleTag(this)">Low energy</button>
+            <button class="tag" onclick="toggleTag(this)">No confirmation</button>
+            <button class="tag" onclick="toggleTag(this)">Choppy / range-bound</button>
+            <button class="tag" onclick="toggleTag(this)">Respected invalidation</button>
+            <button class="tag" onclick="toggleTag(this)">Already at target</button>
+            <button class="tag" onclick="toggleTag(this)">Bias unclear</button>
+            <button class="tag" onclick="toggleTag(this)">Conscious choice to rest</button>
+          </div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Mindset & Discipline</div>
+          <div class="field" style="margin-bottom:14px"><label>Did you feel FOMO?</label><div class="seg" data-field="nt-fomo"><button class="opt" data-v="No" onclick="ntChoice('nt-fomo',this)">No — calm</button><button class="opt" data-v="Mild" onclick="ntChoice('nt-fomo',this)">Mild</button><button class="opt" data-v="Yes" onclick="ntChoice('nt-fomo',this)">Yes — hard to sit out</button></div></div>
+          <div class="field" style="margin-bottom:14px"><label>How did it feel to stay out?</label><div class="seg" data-field="nt-feel"><button class="opt" data-v="Disciplined" onclick="ntChoice('nt-feel',this)">💪 Disciplined</button><button class="opt" data-v="Frustrated" onclick="ntChoice('nt-feel',this)">😤 Frustrated</button><button class="opt" data-v="Uncertain" onclick="ntChoice('nt-feel',this)">🤔 Uncertain</button><button class="opt" data-v="Relieved" onclick="ntChoice('nt-feel',this)">😌 Relieved</button></div></div>
+          <div class="field"><label>Notes</label><textarea id="nt-notes" placeholder="Anything else about this session worth remembering..."></textarea></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Key Lesson</div>
+          <div class="field" style="margin-bottom:14px"><label>What did you learn from watching today?</label><textarea id="nt-lesson" placeholder="What would you do the same / differently next time?"></textarea></div>
+          <div class="field"><label>Was staying out the right call?</label><div class="seg" data-field="nt-rightcall"><button class="opt" data-v="Yes" onclick="ntChoice('nt-rightcall',this)">Yes — protected capital</button><button class="opt" data-v="Unsure" onclick="ntChoice('nt-rightcall',this)">Unsure</button><button class="opt" data-v="No" onclick="ntChoice('nt-rightcall',this)">No — missed a good one</button></div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="setMode('trade')">← Back to Trade</button>
+          <button class="btn btn-primary" onclick="saveNoTrade()">✓ Save No-Trade Day</button>
+        </div>
+      </div>
+
+    </div>
+        <div id="sec-list" class="section">
+      <div class="list-view" id="list-view">
+        <div class="page-head"><div class="page-title">All trades</div><div class="page-desc" id="list-desc"></div></div>
+        <div class="filter-bar" id="list-filters">
+          <button class="fchip active" data-f="all" onclick="setListFilter('all')">Alle</button>
+          <button class="fchip" data-f="win" onclick="setListFilter('win')">Wins</button>
+          <button class="fchip" data-f="loss" onclick="setListFilter('loss')">Losses</button>
+          <button class="fchip" data-f="be" onclick="setListFilter('be')">Breakeven</button>
+          <button class="fchip" data-f="nt" onclick="setListFilter('nt')">No trade</button>
+        </div>
+        <div id="trades-el"></div>
+      </div>
+      <div class="detail-view" id="detail-view"><button class="back-btn" onclick="closeDetail()">← Back</button><div id="detail-el"></div></div>
+    </div>
+
+    <div id="sec-stats" class="section">
+      <div class="page-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div><div class="page-title" id="stats-title">Performance Cockpit</div><div class="page-desc" id="stats-sub">Your trading, visualized — data-driven and disciplined.</div></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <div class="range-chips" id="stats-subnav">
+            <button class="rchip active" data-view="cockpit" onclick="setStatsSubView('cockpit')">📊 Cockpit</button>
+            <button class="rchip" data-view="review" onclick="setStatsSubView('review')">🔍 Muster</button>
+          </div>
+          <div class="range-chips" id="range-chips">
+            <button class="rchip" data-range="30" onclick="setStatsRange(30)">30T</button>
+            <button class="rchip" data-range="90" onclick="setStatsRange(90)">90T</button>
+            <button class="rchip active" data-range="0" onclick="setStatsRange(0)">Alle</button>
+          </div>
+        </div>
+      </div>
+      <div id="stats-el" class="faith-wrap" style="animation:none"></div>
+      <div id="review-el" style="display:none"></div>
+    </div>
+
+    <div id="sec-faith" class="section">
+      <div class="faith-wrap" id="faith-el"></div>
+    </div>
+    <div id="sec-bible" class="section">
+      <div class="faith-wrap" id="bible-el" style="animation:none"></div>
+    </div>
+    <div id="sec-learn" class="section">
+      <div class="page-head"><div class="page-title">Learn</div><div class="page-desc">Document what you learn — concepts, mistakes, setups, mindset.</div></div>
+
+      <div class="learn-tabs">
+        <button class="ltab active" id="lt-new" onclick="learnTab('new')">✏️ New entry</button>
+        <button class="ltab" id="lt-notes" onclick="learnTab('notes')">📖 My notes</button>
+      </div>
+
+      <!-- NEW ENTRY -->
+      <div id="lp-new" class="lp active">
+        <div class="card">
+          <div class="card-title">New entry</div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Title</label>
+            <input type="text" id="ln-title" placeholder="e.g. How displacement confirms entry, FVG retest rules...">
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>What I learned</label>
+            <textarea id="ln-body" style="min-height:180px" placeholder="Write everything — concepts, mistakes, setups, rules you discovered, patterns you noticed..."></textarea>
+          </div>
+          <div class="field">
+            <label>Image (optional)</label>
+            <div class="upload-zone" onclick="document.getElementById('ln-img').click()">📸 Click to attach a screenshot or chart</div>
+            <input type="file" id="ln-img" accept="image/*" style="display:none" onchange="handleLearnImg(this)">
+            <img id="ln-img-prev" class="img-preview">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="clearLearnForm()">Clear</button>
+          <button class="btn btn-primary" onclick="saveLearnEntry()">Save entry</button>
+        </div>
+      </div>
+
+      <!-- MY NOTES -->
+      <div id="lp-notes" class="lp" style="display:none">
+        <div id="learn-list-view">
+          <input type="text" class="learn-search" id="learn-search" placeholder="Notizen durchsuchen..." oninput="renderLearnList()">
+          <div id="learn-entries"></div>
+        </div>
+        <div id="learn-detail-view" style="display:none">
+          <button class="back-btn" onclick="closeLearnDetail()">← Back to notes</button>
+          <div id="learn-detail-el"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="save-indicator" id="save-ind">💾 Saved</div>
+<div id="faith-bg"><canvas id="fchart"></canvas><canvas id="fparts"></canvas><div class="glow-orb glow-a" id="glow-a"></div><div class="glow-orb glow-b" id="glow-b"></div></div>
+<div id="faith-float"><div class="float-quote" id="fq"></div></div>
+
+<script>
+// ---- Supabase Cloud-Sync ----
+const SUPABASE_URL='https://zllznocshaxabuyrkung.supabase.co';
+const SUPABASE_KEY='sb_publishable_vMcTzvgGwWd3sQ7zIhxIpA_csS_BBCN';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null;
+
+function showAuthError(msg){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.display='block'; }
+function hideAuthError(){ document.getElementById('auth-error').style.display='none'; }
+
+async function handleSignIn(){
+  hideAuthError();
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value;
+  if(!email||!password){ showAuthError('E-Mail und Passwort eingeben.'); return; }
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){ showAuthError(error.message); return; }
+}
+async function handleSignUp(){
+  hideAuthError();
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value;
+  if(!email||!password){ showAuthError('E-Mail und Passwort eingeben.'); return; }
+  if(password.length<6){ showAuthError('Passwort muss mind. 6 Zeichen haben.'); return; }
+  const {error}=await sb.auth.signUp({email,password});
+  if(error){ showAuthError(error.message); return; }
+  document.getElementById('auth-hint').textContent='Konto erstellt. Falls Bestätigung nötig ist, prüfe dein E-Mail-Postfach — sonst bist du jetzt angemeldet.';
+}
+async function handleSignOut(){
+  await sb.auth.signOut();
+  location.reload();
+}
+
+let _cache=null;
+async function loadTrades(){ return _cache||[]; }
+async function saveTrades(data){
+  _cache=data;
+  document.getElementById('trade-count').textContent=data.length+' trade'+(data.length!==1?'s':'')+' logged';
+  if(!currentUser) return;
+  const {error}=await sb.from('journal_data').update({trades:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
+  if(error){ console.error('Sync fehlgeschlagen',error); const dot=document.getElementById('s-dot'),where=document.getElementById('s-where'); dot.className='dot warn'; where.textContent='Sync-Fehler ⚠'; return; }
+  showSaved(); updateStatus();
+}
+function showSaved(){ const el=document.getElementById('save-ind'); el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
+function updateStatus(){
+  const dot=document.getElementById('s-dot'),where=document.getElementById('s-where'),file=document.getElementById('s-file');
+  const n=(_cache||[]).length;
+  document.getElementById('trade-count').textContent=n+' trade'+(n!==1?'s':'')+' logged';
+  dot.className='dot ok'; where.textContent='Cloud-Sync aktiv ✓'; file.style.display='none';
+}
+function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+const TABS=[
+  {id:'log',   icon:'\u270F\uFE0F', name:'New trade', desc:'Trade sauber durchdenken, Schritt f\u00FCr Schritt erfassen'},
+  {id:'list',  icon:'\uD83D\uDCCB', name:'All trades', desc:'Jeder Eintrag mit Screenshot, Tags und Notizen'},
+  {id:'stats', icon:'\uD83D\uDCCA', name:'Stats',      desc:'Cockpit und Muster \u2014 Kurve, Kalender, Setups, Review'},
+  {id:'faith', icon:'\u271D\uFE0F', name:'Faith',      desc:'Verse und Gedanken passend zum Handelstag'},
+  {id:'bible', icon:'\uD83D\uDCD6', name:'Bible',      desc:'Die ganze Bibel \u2014 Buch f\u00FCr Buch, Kapitel f\u00FCr Kapitel'},
+  {id:'learn', icon:'\uD83D\uDCDA', name:'Learn',      desc:'Eigene Notizen und Lektionen aus dem Chart'}
+];
+const SPLASH_PICKS=['log','list','stats','faith','bible','learn'];
+
+function buildDock(){
+  const d=document.getElementById('dock');
+  d.innerHTML=TABS.map(t=>'<div class="dock-item" role="button" tabindex="0" data-tab="'+t.id+'" title="'+t.name+'">'+
+    '<span class="dock-ico">'+t.icon+'</span><span class="dock-label">'+t.name+'</span><span class="dock-dot"></span></div>').join('');
+  d.querySelectorAll('.dock-item').forEach(el=>{
+    el.addEventListener('click',()=>switchTab(el.dataset.tab));
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();switchTab(el.dataset.tab);} });
+  });
+}
+
+function buildSplash(){
+  const wrap=document.getElementById('sp-cards');
+  wrap.innerHTML=SPLASH_PICKS.map((id,i)=>{
+    const t=TABS.find(x=>x.id===id); if(!t)return '';
+    return '<div class="sp-card" role="button" tabindex="0" data-tab="'+t.id+'" style="animation-delay:'+(0.38+i*0.07).toFixed(2)+'s">'+
+      '<div class="sp-card-ico">'+t.icon+'</div><div class="sp-card-name">'+t.name+'</div><div class="sp-card-desc">'+t.desc+'</div></div>';
+  }).join('');
+  wrap.querySelectorAll('.sp-card').forEach(el=>{
+    el.addEventListener('click',()=>closeSplash(el.dataset.tab));
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();closeSplash(el.dataset.tab);} });
+  });
+  startSplashCanvas();
+  document.addEventListener('keydown',_spEsc);
+}
+function _spEsc(e){ if(e.key==='Escape')closeSplash(); }
+
+let _spRaf=null;
+function startSplashCanvas(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv=document.getElementById('splash-canvas'); if(!cv)return;
+  const ctx=cv.getContext('2d');
+  let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
+  function size(){ W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  size(); window.addEventListener('resize',size);
+  const SLOT=22, BODY=11;
+  let price=H/2, candles=[];
+  function mk(){
+    const o=price, mv=(Math.random()-0.48)*26, c=Math.max(H*0.18,Math.min(H*0.82,o+mv));
+    price=c;
+    return {o:o,c:c,h:Math.min(o,c)-Math.random()*14,l:Math.max(o,c)+Math.random()*14};
+  }
+  for(let i=0;i<Math.ceil(window.innerWidth/SLOT)+3;i++) candles.push(mk());
+  let off=0;
+  function frame(){
+    off+=0.45;
+    if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+    ctx.clearRect(0,0,W,H);
+    candles.forEach((k,i)=>{
+      const x=i*SLOT-off, up=k.c<k.o;
+      const col=up?'#34d399':'#f87171';
+      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(x+BODY/2,k.h); ctx.lineTo(x+BODY/2,k.l); ctx.stroke();
+      const top=Math.min(k.o,k.c), hgt=Math.max(2,Math.abs(k.c-k.o));
+      ctx.fillRect(x,top,BODY,hgt);
+    });
+    _spRaf=requestAnimationFrame(frame);
+  }
+  frame();
+}
+function stopSplashCanvas(){ if(_spRaf){cancelAnimationFrame(_spRaf); _spRaf=null;} }
+
+function closeSplash(tab){
+  const sp=document.getElementById('splash'); if(!sp||sp.classList.contains('gone'))return;
+  sp.classList.add('gone');
+  document.removeEventListener('keydown',_spEsc);
+  setTimeout(()=>{ sp.style.display='none'; stopSplashCanvas(); },500);
+  switchTab(tab||'log');
+}
+
+function switchTab(t){
+  document.querySelectorAll('.dock-item').forEach(n=>n.classList.toggle('active',n.dataset.tab===t));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('sec-'+t); if(sec)sec.classList.add('active');
+  const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0;
+  startChart(); startParts();
+  if(t==='log')renderRecentStrip(); if(t==='list'){closeDetail();renderList();}
+  if(t==='stats')setStatsSubView(statsSubView); if(t==='faith')renderFaith(); if(t==='bible')renderBible(); if(t==='learn')renderLearnList();
+}
+
+function toggleTag(b){ b.classList.toggle('sel'); }
+function toggleEmo(b){ document.querySelectorAll('.emo').forEach(e=>e.classList.remove('sel')); b.classList.toggle('sel'); }
+function toggleTf(btn,concept){ btn.classList.toggle('sel'); const row=document.getElementById('tf-'+concept); if(btn.classList.contains('sel')) row.classList.add('open'); else row.classList.remove('open'); }
+function toggleChip(b){ b.classList.toggle('sel'); }
+
+function getSetup(){
+  const out=[];
+  document.querySelectorAll('#setup-tags .tag.sel:not(.tf-main)').forEach(b=>out.push(b.textContent.trim()));
+  ['FVG','IFVG'].forEach(c=>{
+    const main=document.querySelector(`.tf-main[data-concept="${c}"]`);
+    if(main && main.classList.contains('sel')){
+      const chips=[...document.querySelectorAll('#tf-'+c+' .tf-chip.sel')];
+      if(chips.length) chips.forEach(ch=>out.push(c+' '+ch.textContent.trim()));
+      else out.push(c);
+    }
+  });
+  return out;
+}
+function getEmo(){ const s=document.querySelector('.emo.sel'); return s?s.textContent:''; }
+function handleImg(i){ const f=i.files[0]; if(!f)return; loadImgFile(f); }
+
+function loadImgFile(f){
+  const r=new FileReader();
+  r.onload=e=>{
+    const p=document.getElementById('img-prev');
+    p.src=e.target.result; p.style.display='block';
+    document.getElementById('screenshot-hint').innerHTML='✅ Screenshot geladen &nbsp;<button onclick="clearScreenshot()" style="background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);padding:3px 9px;border-radius:6px;font-size:11px;cursor:pointer">✕ Remove</button>';
+  };
+  r.readAsDataURL(f);
+}
+
+function clearScreenshot(){
+  const p=document.getElementById('img-prev'); p.src=''; p.style.display='none';
+  document.getElementById('f-img').value='';
+  document.getElementById('screenshot-hint').innerHTML='📸 Click to upload · or <kbd style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit">Ctrl+V</kbd> to paste · or <button onclick="event.stopPropagation();autoGrabClipboard()" style="background:var(--accent-bg);border:1px solid var(--accent-border);color:#aab8fc;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">⚡ Auto-load last screenshot</button>';
+}
+
+async function autoGrabClipboard(){
+  try{
+    const items=await navigator.clipboard.read();
+    for(const item of items){
+      const imgType=item.types.find(t=>t.startsWith('image/'));
+      if(imgType){
+        const blob=await item.getType(imgType);
+        loadImgFile(new File([blob],'screenshot.png',{type:imgType}));
+        showToast('Screenshot aus Zwischenablage geladen ✓');
+        return;
+      }
+    }
+    showToast('Kein Bild in der Zwischenablage gefunden');
+  }catch(e){
+    showToast('Zwischenablage-Zugriff verweigert — nutze Ctrl+V');
+  }
+}
+
+// Global paste listener: Ctrl+V anywhere loads screenshot into the trade form
+document.addEventListener('paste', function(e){
+  const items=e.clipboardData&&e.clipboardData.items;
+  if(!items)return;
+  for(let i=0;i<items.length;i++){
+    if(items[i].type.startsWith('image/')){
+      const file=items[i].getAsFile();
+      if(file){ loadImgFile(file); showToast('Screenshot eingefügt ✓'); }
+      break;
+    }
+  }
+});
+function getImg(){ const p=document.getElementById('img-prev'); return p.style.display!=='none'?p.src:''; }
+function rc(r){ if(!r)return'be'; r=r.toLowerCase(); return r.includes('win')?'win':r.includes('loss')?'loss':'be'; }
+function weekday(ds){ if(!ds)return -1; const p=ds.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]).getDay(); }
+
+let ntForm={};
+let currentMode='trade';
+
+function setMode(mode){
+  currentMode=mode;
+  const tw=document.getElementById('trade-wizard'), nf=document.getElementById('notrade-form');
+  const bt=document.getElementById('mode-trade'), bn=document.getElementById('mode-notrade');
+  if(mode==='trade'){
+    tw.style.display=''; nf.style.display='none';
+    bt.classList.add('active'); bn.classList.remove('active');
+  } else {
+    tw.style.display='none'; nf.style.display='';
+    bt.classList.remove('active'); bn.classList.add('active');
+    const nd=document.getElementById('nt-date'); if(nd&&!nd.value) nd.value=new Date().toISOString().slice(0,10);
+  }
+}
+
+function ntChoice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); ntForm[field]=btn.dataset.v; }
+
+function getNtReasons(){ return [...document.querySelectorAll('#nt-reasons .tag.sel')].map(b=>b.textContent); }
+function gv(id){ const el=document.getElementById(id); return el?el.value:''; }
+
+async function saveNoTrade(){
+  const data=await loadTrades();
+  const t={
+    id:Date.now(), isNoTrade:true, result:'No Trade',
+    date:gv('nt-date')||new Date().toISOString().slice(0,10),
+    instrument:ntForm['nt-instrument']||'MNQ', direction:'--',
+    bias:gv('nt-bias'), seen:gv('nt-seen'),
+    noTradeReasons:getNtReasons(),
+    fomo:ntForm['nt-fomo']||'', feel:ntForm['nt-feel']||'',
+    notes:gv('nt-notes'), lesson:gv('nt-lesson'),
+    rightCall:ntForm['nt-rightcall']||'',
+    emotion:ntForm['nt-feel']||''
+  };
+  data.unshift(t); await saveTrades(data);
+  ntForm={};
+  document.querySelectorAll('#notrade-form input,#notrade-form textarea').forEach(el=>el.value='');
+  document.querySelectorAll('#notrade-form .opt,#notrade-form .tag').forEach(b=>b.classList.remove('sel'));
+  const di=document.querySelector('#notrade-form [data-field="nt-instrument"] [data-v="MNQ"]'); if(di)di.classList.add('sel');
+  setMode('trade');
+  showToast('No-Trade day saved \u2713');
+}
+
+let form={instrument:'MNQ',direction:'Long'};
+let curStep=1; const STEPS=5;
+function goStep(n){ if(n<1||n>STEPS)return; curStep=n; document.querySelectorAll('.wz-panel').forEach(p=>p.classList.remove('active')); const pan=document.getElementById('wz-'+n); if(pan)pan.classList.add('active'); document.querySelectorAll('.wz-step').forEach((el,i)=>{ el.classList.toggle('active',i+1===n); el.classList.toggle('done',i+1<n); }); const f=document.getElementById('wz-fill'); if(f)f.style.width=((n-1)/(STEPS-1)*100)+'%'; const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0; }
+function nextStep(){ goStep(curStep+1); }
+function prevStep(){ goStep(curStep-1); }
+function choice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); form[field]=btn.dataset.v; if(field==='toPlan'||field==='chased'||field==='patience'||field==='confirmation')updateExec(); if(field==='grade'||field==='matchesPlaybook'||field==='proWouldTake')updateSetupQ(); }
+function rate(field,btn){ const grp=btn.parentElement; const dots=[...grp.querySelectorAll('.dot')]; const idx=dots.indexOf(btn); dots.forEach((d,i)=>d.classList.toggle('on',i<=idx)); form[field]=idx+1; if(field==='execQuality')updateExec(); }
+function execScoreCalc(){ let s=0; s+=form.toPlan==='Yes'?30:form.toPlan==='Partial'?15:0; s+=form.chased==='No'?20:0; s+=form.patience==='Yes'?20:0; s+=form.confirmation==='Yes'?15:0; s+=form.execQuality?Math.round(form.execQuality/5*15):0; return Math.min(100,s); }
+function updateExec(){ const sc=execScoreCalc(); const col=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)'; const f=document.getElementById('exec-fill'),n=document.getElementById('exec-num'); if(f){f.style.width=sc+'%';f.style.background=col;} if(n){n.textContent=sc;n.style.color=col;} }
+function updateSetupQ(){ const map={'A+':100,'A':80,'B':60}; let s=map[form.grade]||0; if(s&&form.matchesPlaybook==='No')s-=15; if(s&&form.proWouldTake==='No')s-=15; s=Math.max(0,s); const col=s>=90?'var(--green)':s>=70?'#aab8fc':'var(--amber)'; const f=document.getElementById('setq-fill'),l=document.getElementById('setq-label'); if(f){f.style.width=s+'%';f.style.background=col;} if(l){l.textContent=form.grade?('Grade '+form.grade):'—';l.style.color=form.grade?col:'var(--muted)';} }
+
+let _savingTrade=false;
+async function saveTrade(){
+  if(_savingTrade) return;
+  _savingTrade=true;
+  const saveBtn=document.querySelector('#sec-log .wz-nav .btn-primary');
+  if(saveBtn) saveBtn.disabled=true;
+  try{
+    const data=await loadTrades();
+    const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
+    let pnlVal=g('f-pnl')!==''?parseFloat(g('f-pnl')):null;
+    if(pnlVal!==null && !isNaN(pnlVal)){
+      if(form.result==='Loss' && pnlVal>0) pnlVal=-pnlVal;
+      if(form.result==='Win' && pnlVal<0) pnlVal=-pnlVal;
+    }
+    const t={
+      id:Date.now(),
+      date:g('f-date')||new Date().toISOString().slice(0,10),
+      instrument:form.instrument||'MNQ', direction:form.direction||'Long',
+      htfbias:form.htfbias||'Neutral', pd:form.pd||'', pdh:form.pdh||'', biasWhy:g('f-bwhy'),
+      keyLevels:g('f-levels'), expectations:g('f-exp'), scenarioAlt:g('f-scen2'),
+      setup:getSetup(), confirmations:g('f-conf'),
+      grade:form.grade||'', matchesPlaybook:form.matchesPlaybook||'', proWouldTake:form.proWouldTake||'', contracts:g('f-contracts'),
+      toPlan:form.toPlan||'', chased:form.chased||'', patience:form.patience||'', confirmationPresent:form.confirmation||'',
+      execQuality:form.execQuality||null, executionScore:execScoreCalc(), rulebased:form.rulebased||'',
+      externalFactors:g('f-ext'), news:g('f-ext'),
+      preFocus:form.preFocus||null, prePatience:form.prePatience||null, preEnergy:form.preEnergy||null, preState:form.preState||'',
+      doubts:form.doubts||'', deviated:form.deviated||'', satisfied:form.satisfied||'',
+      emotion:getEmo(), mindset:g('f-mind'),
+      result:form.result||'', pnl:pnlVal,
+      biggestFactor:g('f-factor'), bestRule:g('f-bestrule'), worstMistake:g('f-mistake'), lesson:g('f-lesson'),
+      why:g('f-factor'), better:g('f-lesson'),
+      screenshot:getImg()
+    };
+    data.unshift(t); await saveTrades(data); clearForm(); showToast('Trade saved ✓'); goStep(1);
+  } finally {
+    _savingTrade=false;
+    if(saveBtn) saveBtn.disabled=false;
+  }
+}
+function clearForm(){
+  form={};
+  document.querySelectorAll('#sec-log input:not([type=file]),#sec-log select,#sec-log textarea').forEach(el=>{ el.tagName==='SELECT'?(el.selectedIndex=0):(el.value=''); });
+  document.querySelectorAll('#sec-log .tag,#sec-log .emo,#sec-log .tf-chip,#sec-log .opt,#sec-log .dot').forEach(b=>b.classList.remove('sel','on'));
+  document.querySelectorAll('#sec-log .tf-row').forEach(r=>r.classList.remove('open'));
+  // restore default segmented selections
+  const di=document.querySelector('.seg[data-field="instrument"] .opt[data-v="MNQ"]'); if(di)di.classList.add('sel');
+  const dd=document.querySelector('.seg[data-field="direction"] .opt[data-v="Long"]'); if(dd)dd.classList.add('sel');
+  form.instrument='MNQ'; form.direction='Long';
+  const p=document.getElementById('img-prev'); p.src=''; p.style.display='none';
+  document.getElementById('f-img').value='';
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  const ef=document.getElementById('exec-fill'); if(ef)ef.style.width='0%';
+  const en=document.getElementById('exec-num'); if(en){en.textContent='0';en.style.color='var(--muted)';}
+  const sf=document.getElementById('setq-fill'); if(sf)sf.style.width='0%';
+  const sl=document.getElementById('setq-label'); if(sl){sl.textContent='—';sl.style.color='var(--muted)';}
+}
+
+
+async function renderRecentStrip(){
+  const el=document.getElementById('recent-strip'); if(!el)return;
+  const data=(await loadTrades()).filter(t=>!t.isNoTrade).slice(0,8);
+  if(!data.length){ el.style.display='none'; return; }
+  el.style.display='flex';
+  const dots=[...data].reverse().map(t=>'<span class="recent-dot '+rc(t.result)+'" title="'+t.date+' · '+(t.result||'')+'"></span>').join('');
+  const dec=data.filter(t=>t.result==='Win'||t.result==='Loss');
+  const w=dec.filter(t=>t.result==='Win').length;
+  const wr=dec.length?Math.round(w/dec.length*100):0;
+  el.innerHTML='<span class="recent-strip-lab">Last trades</span><span class="recent-dots">'+dots+'</span><span class="recent-strip-wr">'+wr+'% win rate</span>';
+}
+let listFilter='all';
+function setListFilter(f){ listFilter=f; document.querySelectorAll('#list-filters .fchip').forEach(c=>c.classList.toggle('active',c.dataset.f===f)); renderList(); }
+function matchesListFilter(t){
+  if(listFilter==='all')return true;
+  if(listFilter==='nt')return !!t.isNoTrade;
+  if(t.isNoTrade)return false;
+  if(listFilter==='win')return t.result==='Win';
+  if(listFilter==='loss')return t.result==='Loss';
+  if(listFilter==='be')return t.result==='Breakeven';
+  return true;
+}
+async function renderList(){
+  const all=await loadTrades(), el=document.getElementById('trades-el');
+  const data=all.filter(matchesListFilter);
+  document.getElementById('list-desc').textContent=(listFilter==='all'?all.length+' logged trade'+(all.length!==1?'s':''):data.length+' of '+all.length+' trades');
+  if(!all.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No trades yet.</p></div>'; return; }
+  if(!data.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No trades match this filter.</p></div>'; return; }
+  el.innerHTML=data.map(t=>{
+    const isNT=t.isNoTrade;
+    const badge=isNT?'<span class="nt-badge">🚫 No Trade</span>':'<span class="instr '+t.instrument+'">'+t.instrument+'</span> '+t.direction;
+    const meta=isNT?(t.noTradeReasons&&t.noTradeReasons.length?'<span>'+t.noTradeReasons.slice(0,2).join(', ')+'</span>':'<span>Discipline day</span>'):((t.setup&&t.setup.length?'<span>'+t.setup.slice(0,3).join(', ')+(t.setup.length>3?'…':'')+'</span>':'')+(t.emotion?' <span>'+t.emotion+'</span>':'')+(t.rulebased==='yes'?' <span style="color:var(--green)">Rule-based ✓</span>':t.rulebased==='no'?' <span style="color:var(--red)">Deviated ✗</span>':''));
+    const pnlSpan=(!isNT && t.pnl!==undefined && t.pnl!==null && t.pnl!=='')?'<span class="badge" style="background:'+(t.pnl>=0?'rgba(52,211,153,.15);color:var(--green)':'rgba(248,113,113,.15);color:var(--red)')+';margin-left:6px">'+(t.pnl>=0?'+':'')+'$'+t.pnl.toFixed(2)+'</span>':'';
+    return '<div class="trade-item'+(isNT?' nt-item':'')+'" onclick="openDetail('+t.id+')"><div class="trade-head"><div class="trade-name">'+badge+'<span style="color:var(--muted);font-weight:400"> · '+t.date+'</span></div><span><span class="badge '+(isNT?'nt':rc(t.result))+'">'+( t.result||'–')+'</span>'+pnlSpan+'</span></div><div class="trade-meta">'+meta+'</div></div>';
+  }).join('');
+}
+function renderNoTradeDetail(t){
+  const rows=(k,v)=>v?'<span class="dk">'+k+'</span><span class="dv">'+v+'</span>':'';
+  document.getElementById('detail-el').innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div>'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span class="nt-badge" style="font-size:15px">🚫 No Trade</span><span class="badge nt">Discipline Day</span></div>'+
+    '<div style="color:var(--muted);font-size:13px">'+t.date+' · '+t.instrument+'</div></div>'+
+    '<button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div>'+
+    (t.bias||t.seen||(t.noTradeReasons&&t.noTradeReasons.length)?
+      '<div class="card"><div class="card-title">Market Read</div><div class="dl">'+
+      rows('Bias',t.bias)+rows('Seen but skipped',t.seen)+
+      (t.noTradeReasons&&t.noTradeReasons.length?rows('Reasons stayed out',t.noTradeReasons.join(', ')):'')+
+      '</div></div>':'')+
+    (t.fomo||t.feel||t.rightCall||t.notes?
+      '<div class="card"><div class="card-title">Mindset & Discipline</div><div class="dl">'+
+      rows('FOMO',t.fomo)+rows('Felt',t.feel)+rows('Right call?',t.rightCall)+rows('Notes',t.notes)+
+      '</div></div>':'')+
+    (t.lesson?'<div class="card"><div class="card-title">Lesson</div><p style="font-size:14px;color:var(--text);line-height:1.7;font-style:italic">'+t.lesson+'</p></div>':'');
+  document.getElementById('list-view').classList.add('hidden');
+  document.getElementById('detail-view').classList.add('open');
+  document.querySelector('.main-wrap').scrollTop=0;
+}
+
+async function openDetail(id){
+  const data=await loadTrades(), t=data.find(x=>x.id===id); if(!t)return;
+  if(t.isNoTrade){ renderNoTradeDetail(t); return; }
+  const c=rc(t.result);
+  const row=(k,v)=> (v!==undefined&&v!==null&&v!=='') ? '<span class="dk">'+k+'</span><span class="dv">'+v+'</span>' : '';
+  const yn=v=> v==='Yes'?'✅ Yes':v==='No'?'❌ No':v==='Partial'?'⚠️ Partial':v||'';
+  const stars=v=> v?('★'.repeat(v)+'☆'.repeat(5-v)):'';
+  const planRows=[row('HTF Bias',t.htfbias),row('Prem/Disc',t.pd),row('PDH/PDL',t.pdh),row('Why bias',t.biasWhy),row('Key levels',t.keyLevels),row('Expectations & Primary scenario',t.expectations),row('Alt scenario',t.scenarioAlt)].filter(Boolean).join('');
+  const setupRows=[row('Concepts',(t.setup&&t.setup.length)?t.setup.join(', '):''),row('Confirmations',t.confirmations),row('Grade',t.grade),row('Contracts',t.contracts),row('Matches playbook',yn(t.matchesPlaybook)),row('Pro would take',t.proWouldTake)].filter(Boolean).join('');
+  const execRows=[row('To plan',yn(t.toPlan)),row('Chased entry',yn(t.chased)),row('Patience',yn(t.patience)),row('Confirmation',yn(t.confirmationPresent)),row('Execution',stars(t.execQuality)),row('Followed rules',t.rulebased==='yes'?'✅ Yes':t.rulebased==='no'?'❌ No':t.rulebased==='partial'?'⚠️ Partial':''),row('External/News',t.externalFactors||t.news)].filter(Boolean).join('');
+  const psyRows=[row('Focus',stars(t.preFocus)),row('Patience',stars(t.prePatience)),row('Energy',stars(t.preEnergy)),row('Mental state',t.preState),row('Doubts',yn(t.doubts)),row('Deviated',yn(t.deviated)),row('Satisfied',yn(t.satisfied)),row('Emotion',t.emotion),row('Notes',t.mindset)].filter(Boolean).join('');
+  const revRows=[row('Biggest factor',t.biggestFactor||t.why),row('Best rule',t.bestRule),row('Worst mistake',t.worstMistake),row('Key lesson & adjustment',t.lesson)].filter(Boolean).join('');
+  const gradeBadge = t.grade?'<span class="badge" style="background:rgba(91,124,250,.15);color:#aab8fc">Grade '+t.grade+'</span>':'';
+  const execBadge = (t.executionScore!==undefined&&t.executionScore!==null&&t.executionScore!=='')?'<span class="badge" style="background:rgba(52,211,153,.12);color:var(--green)">Exec '+t.executionScore+'</span>':'';
+  const pnlBadge = (t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='')?'<span class="badge" style="background:'+(t.pnl>=0?'rgba(52,211,153,.15);color:var(--green)':'rgba(248,113,113,.15);color:var(--red)')+'">'+(t.pnl>=0?'+':'')+'$'+t.pnl.toFixed(2)+'</span>':'';
+  document.getElementById('detail-el').innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+t.instrument+'" style="font-size:13px;padding:4px 12px">'+t.instrument+'</span><span style="font-size:21px;font-weight:600">'+t.direction+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div>'+
+    (t.screenshot?'<img src="'+t.screenshot+'" style="width:100%;max-height:240px;object-fit:cover;border-radius:var(--radius);margin-bottom:16px">':'')+
+    (planRows?'<div class="card"><div class="card-title">Plan & Bias</div><div class="dl">'+planRows+'</div></div>':'')+
+    (setupRows?'<div class="card"><div class="card-title">Setup & Quality</div><div class="dl">'+setupRows+'</div></div>':'')+
+    (execRows?'<div class="card"><div class="card-title">Execution & Context</div><div class="dl">'+execRows+'</div></div>':'')+
+    (psyRows?'<div class="card"><div class="card-title">Psychology</div><div class="dl">'+psyRows+'</div></div>':'')+
+    (revRows?'<div class="card"><div class="card-title">Review & Lesson</div><div class="dl">'+revRows+'</div></div>':'');
+  document.getElementById('list-view').classList.add('hidden'); document.getElementById('detail-view').classList.add('open'); document.querySelector('.main-wrap').scrollTop=0;
+}
+function closeDetail(){ document.getElementById('detail-view').classList.remove('open'); document.getElementById('list-view').classList.remove('hidden'); }
+async function deleteTrade(id){ if(!confirm('Delete?'))return; const d=(await loadTrades()).filter(t=>t.id!==id); await saveTrades(d); closeDetail(); renderList(); showToast('Deleted'); }
+
+function animateCount(el,target,dur,suffix){ if(!el)return; dur=dur||1000; suffix=suffix||''; const t0=performance.now(); function step(now){ const p=Math.min(1,(now-t0)/dur); const ev=1-Math.pow(1-p,3); el.textContent=Math.round(target*ev)+suffix; if(p<1)requestAnimationFrame(step); } requestAnimationFrame(step); }
+
+function disciplineScore(data){
+  if(!data.length) return 0;
+  const total=data.length;
+  const rb=data.filter(t=>t.rulebased==='yes').length, partial=data.filter(t=>t.rulebased==='partial').length;
+  const rbPct=(rb+partial*0.5)/total*100;
+  const w=data.filter(t=>t.result==='Win').length, l=data.filter(t=>t.result==='Loss').length;
+  const wr=(w+l)?w/(w+l)*100:0;
+  const calm=data.filter(t=>t.emotion&&(t.emotion.indexOf('Calm')>=0||t.emotion.indexOf('Neutral')>=0)).length;
+  const emo=calm/total*100;
+  return Math.max(0,Math.min(100,Math.round(rbPct*0.6+wr*0.2+emo*0.2)));
+}
+
+let statsRange=0;
+function setStatsRange(r){ statsRange=r; document.querySelectorAll('#range-chips .rchip').forEach(c=>c.classList.toggle('active',+c.dataset.range===r)); renderStats(); }
+
+let statsSubView='cockpit';
+function setStatsSubView(v){
+  statsSubView=v;
+  document.querySelectorAll('#stats-subnav .rchip').forEach(c=>c.classList.toggle('active',c.dataset.view===v));
+  document.getElementById('range-chips').style.display = v==='cockpit' ? 'flex' : 'none';
+  document.getElementById('stats-title').textContent = v==='cockpit' ? 'Performance Cockpit' : 'Review';
+  document.getElementById('stats-sub').textContent = v==='cockpit' ? '' : 'Wo du Geld verdienst — und wo nicht.';
+  document.getElementById('stats-el').style.display = v==='cockpit' ? '' : 'none';
+  document.getElementById('review-el').style.display = v==='review' ? '' : 'none';
+  if(v==='cockpit') renderStats(); else renderReview();
+}
+function inRange(t){ if(!statsRange)return true; const d=new Date(t.date); if(isNaN(d))return true; return (Date.now()-d.getTime())/864e5<=statsRange; }
+function pnlOf(t){ return (t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='')?Number(t.pnl):0; }
+function money(v){ return (v<0?'-':'+')+'$'+Math.abs(Math.round(v)).toLocaleString('de-CH'); }
+
+function pnlCurveSVG(data){
+  const arr=[...data].reverse(); let cum=0; const pts=[{i:0,v:0}];
+  arr.forEach((t,idx)=>{ cum+=pnlOf(t); pts.push({i:idx+1,v:cum}); });
+  const n=pts.length, W=620,H=180,padL=6,padR=6,padT=14,padB=14;
+  const xs=i=>padL+(W-padL-padR)*(n<=1?0:i/(n-1));
+  const vmin=Math.min(0,...pts.map(p=>p.v)), vmax=Math.max(0,...pts.map(p=>p.v)), span=(vmax-vmin)||1;
+  const ys=v=>padT+(H-padT-padB)*(1-(v-vmin)/span);
+  const line=pts.map((p,k)=>(k?'L':'M')+xs(p.i).toFixed(1)+' '+ys(p.v).toFixed(1)).join(' ');
+  const area=line+' L'+xs(pts[n-1].i).toFixed(1)+' '+ys(vmin).toFixed(1)+' L'+xs(0).toFixed(1)+' '+ys(vmin).toFixed(1)+' Z';
+  const zeroY=ys(0).toFixed(1), last=pts[n-1].v, col=last>=0?'#34d399':'#f87171';
+  return {last,col,svg:'<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="perf-svg"><defs><linearGradient id="pnlArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity="0.22"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4"/><path class="perf-area" d="'+area+'" fill="url(#pnlArea)" opacity="0"/><path class="perf-line" d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 6px '+col+'88)"/></svg>'};
+}
+
+function setupRankHTML(trades){
+  const map={};
+  trades.forEach(t=>{ (t.setup||[]).forEach(tag=>{ map[tag]=map[tag]||{w:0,l:0,pnl:0}; if(t.result==='Win')map[tag].w++; else if(t.result==='Loss')map[tag].l++; map[tag].pnl+=pnlOf(t); }); });
+  const rows=Object.keys(map).map(k=>{ const m=map[k], dec=m.w+m.l; return {name:k,dec:dec,wr:dec?Math.round(m.w/dec*100):0,w:m.w,pnl:m.pnl}; })
+    .filter(r=>r.dec>=2).sort((a,b)=>b.wr-a.wr||b.dec-a.dec).slice(0,5);
+  if(!rows.length) return '<p style="color:var(--muted);font-size:13px">Noch zu wenig Daten \u2014 ab 2 entschiedenen Trades pro Setup.</p>';
+  return '<div class="setup-rank">'+rows.map(r=>'<div><div class="srk-head"><span>'+r.name+'<span class="srk-n">'+r.w+'/'+r.dec+'</span></span><span style="color:'+wrColor(r.wr)+';font-weight:600">'+r.wr+'%</span></div><div class="srk-track"><div class="srk-fill" data-w="'+r.wr+'%" style="background:'+wrColor(r.wr)+'"></div></div></div>').join('')+'</div>';
+}
+
+function perfCurveSVG(data){
+  const arr=[...data].reverse(); let cum=0; const pts=[{i:0,v:0}];
+  arr.forEach((t,idx)=>{ cum+=t.result==='Win'?1:t.result==='Loss'?-1:0; pts.push({i:idx+1,v:cum}); });
+  const n=pts.length, W=620,H=200,padL=8,padR=8,padT=18,padB=18;
+  const xs=i=>padL+(W-padL-padR)*(n<=1?0:i/(n-1));
+  const vmin=Math.min(0,...pts.map(p=>p.v)), vmax=Math.max(0,...pts.map(p=>p.v)), span=(vmax-vmin)||1;
+  const ys=v=>padT+(H-padT-padB)*(1-(v-vmin)/span);
+  const line=pts.map((p,k)=>(k?'L':'M')+xs(p.i).toFixed(1)+' '+ys(p.v).toFixed(1)).join(' ');
+  const area=line+' L'+xs(pts[n-1].i).toFixed(1)+' '+ys(vmin).toFixed(1)+' L'+xs(0).toFixed(1)+' '+ys(vmin).toFixed(1)+' Z';
+  const zeroY=ys(0).toFixed(1), last=pts[n-1].v, col=last>=0?'#34d399':'#f87171';
+  return {last,col,svg:'<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="perf-svg"><defs><linearGradient id="pcArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity="0.22"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4"/><path class="perf-area" d="'+area+'" fill="url(#pcArea)" opacity="0"/><path class="perf-line" d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 6px '+col+'88)"/></svg>'};
+}
+
+function donutSVG(w,l,b){
+  // Wedges reflect the win rate (wins vs losses only), so the arc always matches
+  // the % shown in the center. Breakeven trades are shown as a muted track underneath
+  // and counted in the legend, but don't skew the win/loss proportions.
+  const dec=w+l||1, r=52, c=2*Math.PI*r, cx=70,cy=70;
+  const segs=[{v:w,col:'#34d399'},{v:l,col:'#f87171'}];
+  let off=0, parts='';
+  segs.forEach(sg=>{ const len=sg.v/dec*c; parts+='<circle class="donut-seg" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+sg.col+'" stroke-width="16" stroke-dasharray="0 '+c.toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" data-len="'+len.toFixed(2)+'" data-gap="'+(c-len).toFixed(2)+'"/>'; off+=len; });
+  return '<svg viewBox="0 0 140 140" class="donut-svg"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="16"/>'+parts+'</svg>';
+}
+
+function ringSVG(score){
+  const r=58,c=2*Math.PI*r,cx=72,cy=72, col=score>=75?'#34d399':score>=50?'#fbbf24':'#f87171';
+  return '<svg viewBox="0 0 144 144" class="ring-svg"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/><circle class="ring-prog" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="12" stroke-linecap="round" transform="rotate(-90 '+cx+' '+cy+')" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+c.toFixed(1)+'" data-target="'+((1-score/100)*c).toFixed(1)+'" style="filter:drop-shadow(0 0 8px '+col+'aa);transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)"/></svg>';
+}
+
+let calY=null, calM=null;
+function fmtCompact(n){
+  const abs=Math.abs(n);
+  const s=abs>=10000?(abs/1000).toFixed(0)+'k':abs>=1000?(abs/1000).toFixed(1)+'k':String(Math.round(abs));
+  return (n>=0?'+':'-')+'$'+s;
+}
+function calendarHTML(trades,y,m){
+  const map={}; trades.forEach(t=>{ if(!t.date||t.pnl===undefined||t.pnl===null||t.pnl==='')return; map[t.date]=(map[t.date]||0)+Number(t.pnl); });
+  const first=new Date(y,m,1), startOffset=(first.getDay()+6)%7, daysInMonth=new Date(y,m+1,0).getDate();
+  const monthLabel=first.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const wdLabels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let cells='';
+  for(let i=0;i<startOffset;i++) cells+='<div class="cal-cell empty"></div>';
+  let monthTotal=0, tradedDays=0;
+  for(let d=1; d<=daysInMonth; d++){
+    const key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const val=map[key];
+    if(val!==undefined){
+      monthTotal+=val; tradedDays++;
+      const cls=val>0?'cal-pos':val<0?'cal-neg':'cal-zero';
+      cells+='<div class="cal-cell '+cls+'" title="'+(val>=0?'+':'-')+'$'+Math.abs(Math.round(val))+'"><span class="cal-daynum">'+d+'</span><span class="cal-pnl">'+fmtCompact(val)+'</span></div>';
+    } else {
+      cells+='<div class="cal-cell"><span class="cal-daynum">'+d+'</span></div>';
+    }
+  }
+  const totalCol=monthTotal>=0?'var(--green)':'var(--red)';
+  return '<div class="cal-nav"><button onclick="changeCalMonth(-1)">← Prev</button><span class="cal-month-label">'+monthLabel+'</span><button onclick="changeCalMonth(1)">Next →</button></div>'+
+    '<div class="cal-weekdays">'+wdLabels.map(w=>'<span>'+w+'</span>').join('')+'</div>'+
+    '<div class="cal-grid">'+cells+'</div>'+
+    '<div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--muted)"><span>'+tradedDays+' trading day'+(tradedDays!==1?'s':'')+'</span><span>Month P&L: <span style="color:'+totalCol+';font-weight:700">'+(monthTotal>=0?'+':'-')+'$'+Math.abs(Math.round(monthTotal))+'</span></span></div>';
+}
+function renderCalendar(){
+  const el=document.getElementById('cal-container'); if(!el||!window._statsTrades)return;
+  el.innerHTML=calendarHTML(window._statsTrades,calY,calM);
+}
+function changeCalMonth(delta){
+  calM+=delta;
+  if(calM<0){calM=11;calY--;} else if(calM>11){calM=0;calY++;}
+  renderCalendar();
+}
+
+function barBlock(title,rows){
+  if(!rows.length) return '<div class="fcard"><div class="fcard-title">'+title+'</div><p style="color:var(--muted);font-size:13px">Not enough data yet.</p></div>';
+  const body=rows.map(r=>'<div class="sbar-row"><span class="sbar-name">'+r.name+'</span><div class="sbar-track"><div class="sbar-fill" data-w="'+r.wr+'%" style="background:'+wrColor(r.wr)+'"></div></div><span class="sbar-val" style="color:'+wrColor(r.wr)+'">'+r.wr+'%</span><span class="sbar-n">'+r.w+'/'+(r.w+r.l)+'</span></div>').join('');
+  return '<div class="fcard"><div class="fcard-title">'+title+'</div>'+body+'</div>';
+}
+
+function statsInsights(data){
+  const out=[]; const days=['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'];
+  const byDay={}; data.forEach(t=>{ const wd=weekday(t.date); if(wd<0)return; byDay[wd]=byDay[wd]||{w:0,l:0}; if(t.result==='Win')byDay[wd].w++; else if(t.result==='Loss')byDay[wd].l++; });
+  let bestD=null,bestWR=-1; Object.entries(byDay).forEach(([wd,v])=>{ const d=v.w+v.l; if(d>=2){ const x=v.w/d*100; if(x>bestWR){bestWR=x;bestD=days[wd];} } });
+  if(bestD) out.push('You trade best on '+bestD+' — '+Math.round(bestWR)+'% win rate.');
+  const rbW=data.filter(t=>t.rulebased==='yes'&&t.result==='Win').length, rbL=data.filter(t=>t.rulebased==='yes'&&t.result==='Loss').length;
+  const dvW=data.filter(t=>t.rulebased==='no'&&t.result==='Win').length, dvL=data.filter(t=>t.rulebased==='no'&&t.result==='Loss').length;
+  const rbWR=(rbW+rbL)?Math.round(rbW/(rbW+rbL)*100):null, dvWR=(dvW+dvL)?Math.round(dvW/(dvW+dvL)*100):null;
+  if(rbWR!==null&&dvWR!==null) out.push('Rule-based trades win '+rbWR+'% vs '+dvWR+'% when you deviate.');
+  const arr=[...data].reverse(); let awTot=0,awLoss=0;
+  for(let i=1;i<arr.length;i++){ if(arr[i-1].result==='Win'){ awTot++; if(arr[i].result==='Loss')awLoss++; } }
+  if(awTot>=3){ const p=Math.round(awLoss/awTot*100); if(p>=50) out.push(p+'% of trades right after a win became losses — watch for overconfidence.'); }
+  if(data.length>=6){ const half=Math.floor(arr.length/2); const fh=arr.slice(0,half), sh=arr.slice(half);
+    const wrf=a=>{const w=a.filter(t=>t.result==='Win').length,l=a.filter(t=>t.result==='Loss').length;return (w+l)?Math.round(w/(w+l)*100):null;};
+    const a=wrf(fh),b=wrf(sh); if(a!==null&&b!==null){ if(b>a) out.push('Your win rate is improving: '+a+'% then '+b+'%. Keep going.'); else if(b<a) out.push('Win rate dipped lately: '+a+'% then '+b+'%. Review recent setups.'); } }
+  const calm=data.filter(t=>t.emotion&&(t.emotion.indexOf('Calm')>=0||t.emotion.indexOf('Neutral')>=0)).length;
+  if(data.length>=4) out.push('You logged a calm/neutral mindset in '+Math.round(calm/data.length*100)+'% of trades.');
+  if(!out.length) out.push('Log a handful of trades and this coach will surface real patterns.');
+  return out.slice(0,5);
+}
+
+function perfTimelineHTML(data){
+  const total=data.length, rb=data.filter(t=>t.rulebased==='yes').length, rbP=total?Math.round(rb/total*100):0;
+  const first=total?[...data].reverse()[0].date:'—';
+  const lvl=total<5?'Starter':total<20?'Developing':rbP>=70?'Disciplined':'Consistent';
+  const steps=[
+    {icon:'🟢',label:'First Trade',done:total>=1,sub:first},
+    {icon:'📊',label:'Consistency',done:total>=10,sub:total>=10?'10+ trades':total+'/10'},
+    {icon:'⚖️',label:'Rule Following',done:rbP>=70,sub:rbP+'% rule-based'},
+    {icon:'🏆',label:'Current Level',done:true,sub:lvl}
+  ];
+  return steps.map(s=>'<div class="pt-step '+(s.done?'done':'')+'"><div class="pt-icon">'+s.icon+'</div><div class="pt-label">'+s.label+'</div><div class="pt-sub">'+s.sub+'</div></div>').join('');
+}
+
+async function renderStats(){
+  const el=document.getElementById('stats-el');
+  const all=await loadTrades();
+  document.body.classList.add('stats-active'); setGlow('daily'); startChart(); startParts();
+  if(!all.length){ el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">\uD83D\uDCCA</div><p>No data yet \u2014 log trades to build your cockpit.</p></div>'; return; }
+  const data=all.filter(inRange);
+  const trades=data.filter(t=>!t.isNoTrade), ntDays=data.filter(t=>t.isNoTrade);
+  const sub=document.getElementById('stats-sub');
+  if(sub) sub.textContent=(statsRange?('Letzte '+statsRange+' Tage'):'Alle Trades')+' \u00B7 '+trades.length+' Trade'+(trades.length!==1?'s':'');
+  if(!trades.length){ el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">\uD83D\uDCC5</div><p>Keine Trades in diesem Zeitraum.</p></div>'; return; }
+
+  const wins=trades.filter(t=>t.result==='Win').length, losses=trades.filter(t=>t.result==='Loss').length, bes=trades.filter(t=>t.result==='Breakeven').length, total=trades.length;
+  const dec=wins+losses, wr=dec?Math.round(wins/dec*100):0;
+  const rb=trades.filter(t=>t.rulebased==='yes').length, rbP=total?Math.round(rb/total*100):0;
+  const ds=disciplineScore(trades), stt=computeFaithStats(trades);
+  const ntCount=ntDays.length;
+  const instRows=['MNQ','MES'].map(ins=>{const a=trades.filter(t=>t.instrument===ins);const w=a.filter(t=>t.result==='Win').length,l=a.filter(t=>t.result==='Loss').length;return{name:ins,w,l,wr:(w+l)?Math.round(w/(w+l)*100):0,dec:w+l};}).filter(r=>r.dec>0);
+  const biasRows=['Bullish','Bearish','Neutral'].map(b=>{const a=trades.filter(t=>t.htfbias===b);const w=a.filter(t=>t.result==='Win').length,l=a.filter(t=>t.result==='Loss').length;return{name:b,w,l,wr:(w+l)?Math.round(w/(w+l)*100):0,dec:w+l};}).filter(r=>r.dec>0);
+
+  const hasPnl=trades.some(t=>t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='');
+  const pnlTrades=trades.filter(t=>t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='');
+  const totalPnl=pnlTrades.reduce((s,t)=>s+pnlOf(t),0);
+  const winPnls=trades.filter(t=>t.result==='Win'&&pnlOf(t)!==0).map(pnlOf);
+  const lossPnls=trades.filter(t=>t.result==='Loss'&&pnlOf(t)!==0).map(t=>Math.abs(pnlOf(t)));
+  const avgWin=winPnls.length?winPnls.reduce((a,b)=>a+b,0)/winPnls.length:0;
+  const avgLoss=lossPnls.length?lossPnls.reduce((a,b)=>a+b,0)/lossPnls.length:0;
+  const avgTrade=pnlTrades.length?totalPnl/pnlTrades.length:0;
+  const pc=hasPnl?pnlCurveSVG(trades):perfCurveSVG(trades);
+  const heroCol=hasPnl?(totalPnl>=0?'var(--green)':'var(--red)'):pc.col;
+  window._statsTrades=trades;
+  const now=new Date(); if(calY===null){calY=now.getFullYear();calM=now.getMonth();}
+
+  el.innerHTML=
+    '<div class="stats-hero">'+
+      '<div class="hero-card">'+
+        '<div class="hero-top">'+
+          '<div><div class="hero-lab">'+(hasPnl?'Net P&L':'Net score')+'</div>'+
+            '<div class="hero-num" style="color:'+heroCol+'">'+(hasPnl?money(totalPnl):(pc.last>=0?'+':'')+pc.last)+'</div></div>'+
+          (hasPnl?'<div class="hero-pill" style="color:'+heroCol+';background:'+(totalPnl>=0?'var(--green-bg)':'var(--red-bg)')+'">\u00D8 '+money(avgTrade)+' / Trade</div>':'')+
+        '</div>'+
+        '<div class="hero-curve">'+pc.svg+'</div>'+
+        '<div class="hero-foot"><span>'+(hasPnl?'Kumuliert \u00FCber '+pnlTrades.length+' Trade'+(pnlTrades.length!==1?'s':'')+' mit P&L':'Wins \u2212 Losses kumuliert')+'</span><span>'+wins+'W \u00B7 '+losses+'L \u00B7 '+bes+'BE</span></div>'+
+      '</div>'+
+      '<div class="hero-card donut-card">'+
+        '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">win rate</div></div></div>'+
+        '<div class="legend"><span><span class="dotc" style="background:#34d399"></span>'+wins+' Wins</span><span><span class="dotc" style="background:#f87171"></span>'+losses+' Losses</span><span><span class="dotc" style="background:#8a8a93"></span>'+bes+' Breakeven</span></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="kpi-row">'+
+      '<div class="gcard"><div class="g-label">Total trades</div><div class="g-val count accent" data-to="'+total+'">0</div><div class="g-sub">logged</div></div>'+
+      (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Win</div><div class="g-val" style="color:'+(winPnls.length?'var(--green)':'var(--muted)')+'">'+(winPnls.length?'$'+Math.round(avgWin).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(winPnls.length?winPnls.length+' Wins mit P&L':'keine P&L-Daten')+'</div></div>':'')+
+      (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Loss</div><div class="g-val" style="color:'+(lossPnls.length?'var(--red)':'var(--muted)')+'">'+(lossPnls.length?'$'+Math.round(avgLoss).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(lossPnls.length?lossPnls.length+' Losses mit P&L':'keine P&L-Daten')+'</div></div>':'')+
+      '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val count" data-to="'+rbP+'" data-suffix="%" style="color:'+(rbP>=70?'var(--green)':'var(--amber)')+'">0</div><div class="g-sub">discipline</div></div>'+
+      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+stt.streak+'" style="color:#fdba74">0</div><div class="g-sub">rule-based in a row</div></div>'+
+      '<div class="gcard"><div class="g-label">\uD83D\uDEAB No-Trade Days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
+    '</div>'+
+    '<div class="grid-cal-row">'+
+      '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
+      '<div class="fcard"><div class="fcard-title">Top Setups</div>'+setupRankHTML(trades)+'</div>'+
+    '</div>'+
+    '<div class="grid-2col">'+
+      '<div class="fcard"><div class="fcard-title">Discipline Score</div><div class="ring-wrap">'+ringSVG(ds)+'<div class="ring-center"><div class="ring-score count" data-to="'+ds+'" style="color:'+(ds>=75?'var(--green)':ds>=50?'var(--amber)':'var(--red)')+'">0</div><div class="ring-cap">/ 100</div></div></div><p style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">60% rules \u00B7 20% win rate \u00B7 20% emotional control</p></div>'+
+      barBlock('Performance by Instrument',instRows)+
+    '</div>'+
+    '<div class="grid-2col">'+barBlock('Performance by HTF Bias',biasRows)+'<div class="fcard"><div class="fcard-title">Performance Timeline</div><div class="pt-row">'+perfTimelineHTML(data)+'</div></div></div>'+
+    '<div class="insight-card"><div class="insight-head"><span class="insight-badge">\u2726</span><span class="insight-title">AI Insights \u2014 your trading coach</span></div>'+
+      statsInsights(data).map(t=>'<div class="insight-item"><span class="insight-dot">\u25C6</span><span>'+t+'</span></div>').join('')+'</div>';
+
+  // animations
+  el.querySelectorAll('.count').forEach(c=>animateCount(c,+c.dataset.to,1100,c.dataset.suffix||''));
+  const pl=el.querySelector('.perf-line'); if(pl){ const len=pl.getTotalLength(); pl.style.strokeDasharray=len; pl.style.strokeDashoffset=len; pl.style.transition='stroke-dashoffset 1.4s cubic-bezier(.3,.8,.2,1)'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ pl.style.strokeDashoffset='0'; })); }
+  const pa=el.querySelector('.perf-area'); if(pa) requestAnimationFrame(()=>requestAnimationFrame(()=>{ pa.style.opacity='1'; }));
+  el.querySelectorAll('.donut-seg').forEach(sg=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ sg.style.strokeDasharray=sg.dataset.len+' '+sg.dataset.gap; })));
+  const rp=el.querySelector('.ring-prog'); if(rp) requestAnimationFrame(()=>requestAnimationFrame(()=>{ rp.style.strokeDashoffset=rp.dataset.target; }));
+  el.querySelectorAll('.sbar-fill,.srk-fill').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
+}
+
+function wrColor(wr){ return wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)'; }
+async function renderReview(){
+  const allData=await loadTrades(), el=document.getElementById('review-el');
+  const data=allData.filter(t=>!t.isNoTrade);
+  if(data.length<2){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>Log a few trades first — the review needs data to find your patterns.</p></div>'; return; }
+  const days=['Mon','Tue','Wed','Thu','Fri'], dayIdx=[1,2,3,4,5];
+  let dayHtml='';
+  dayIdx.forEach((di,i)=>{
+    const dt=data.filter(t=>weekday(t.date)===di);
+    const w=dt.filter(t=>t.result==='Win').length,l=dt.filter(t=>t.result==='Loss').length,dec=w+l;
+    const wr=dec>0?Math.round((w/dec)*100):0; const col=dec>0?wrColor(wr):'var(--surface3)';
+    dayHtml+=`<div class="bar-row"><span class="bar-label">${days[i]}</span><div class="bar-track"><div class="bar-fill" style="width:${dec>0?wr:0}%;background:${col}"></div></div><span class="bar-val">${dec>0?wr+'% · '+dt.length+'t':'no data'}</span></div>`;
+  });
+  let bestDay=null,bestScore=-999;
+  dayIdx.forEach((di,i)=>{ const dt=data.filter(t=>weekday(t.date)===di); const score=dt.filter(t=>t.result==='Win').length-dt.filter(t=>t.result==='Loss').length; if(dt.length>0&&score>bestScore){bestScore=score;bestDay=days[i];} });
+  const setupStats={};
+  data.forEach(t=>{ (t.setup||[]).forEach(s=>{ if(!setupStats[s])setupStats[s]={w:0,l:0,total:0}; setupStats[s].total++; if(t.result==='Win')setupStats[s].w++; else if(t.result==='Loss')setupStats[s].l++; }); });
+  const setupArr=Object.entries(setupStats).map(([name,s])=>{const dec=s.w+s.l;return{name,...s,dec,wr:dec>0?Math.round((s.w/dec)*100):0};}).filter(s=>s.dec>0).sort((a,b)=>b.wr-a.wr||b.dec-a.dec);
+  let setupHtml='';
+  if(setupArr.length){ setupArr.forEach(s=>{ const low=s.dec<3?' low-data':''; setupHtml+=`<div class="rank-row${low}"><span class="rank-name">${s.name}${s.dec<3?'<span class="hint-pill">few</span>':''}</span><div class="rank-bar"><div class="rank-bar-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="rank-wr" style="color:${wrColor(s.wr)}">${s.wr}%</span><span class="rank-n">${s.w}/${s.dec}</span></div>`; }); }
+  else setupHtml='<p style="color:var(--muted);font-size:13px">No setups tagged yet.</p>';
+  const comboStats={};
+  data.forEach(t=>{ if(!t.setup||!t.setup.length)return; const key=[...t.setup].sort().join(' + '); if(!comboStats[key])comboStats[key]={w:0,l:0,total:0}; comboStats[key].total++; if(t.result==='Win')comboStats[key].w++; else if(t.result==='Loss')comboStats[key].l++; });
+  const comboArr=Object.entries(comboStats).map(([name,s])=>{const dec=s.w+s.l;return{name,...s,dec,wr:dec>0?Math.round((s.w/dec)*100):0};}).filter(s=>s.dec>=2).sort((a,b)=>b.wr-a.wr||b.dec-a.dec).slice(0,6);
+  let comboHtml='';
+  if(comboArr.length){ comboArr.forEach(s=>{ comboHtml+=`<div class="rank-row"><span class="rank-name" style="font-size:12px">${s.name}</span><span class="rank-wr" style="color:${wrColor(s.wr)}">${s.wr}%</span><span class="rank-n">${s.w}/${s.dec}</span></div>`; }); }
+  else comboHtml='<p style="color:var(--muted);font-size:13px">Need at least 2 trades with the same exact setup combo. Keep logging!</p>';
+  const bestTrades=data.filter(t=>t.result==='Win'&&t.rulebased==='yes').slice(0,5);
+  let bestHtml='';
+  if(bestTrades.length){ bestHtml=bestTrades.map(t=>`<div class="trade-item" onclick="switchTab('list');setTimeout(()=>openDetail(${t.id}),100)"><div class="trade-head"><div class="trade-name"><span class="instr ${t.instrument}">${t.instrument}</span>${t.direction}<span style="color:var(--muted);font-weight:400"> · ${t.date}</span></div><span class="badge win">Win</span></div><div class="trade-meta">${t.setup&&t.setup.length?`<span>${t.setup.slice(0,3).join(', ')}</span>`:''}</div></div>`).join(''); }
+  else bestHtml='<p style="color:var(--muted);font-size:13px">No rule-based wins yet. Those are the trades to repeat!</p>';
+  const topSetup=setupArr[0], topCombo=comboArr[0];
+  const rhHtml='<div class="review-highlights">'+
+    '<div class="rh-card"><div class="rh-lab">Best weekday</div><div class="rh-val" style="color:var(--green)">'+(bestDay||'\u2013')+'</div><div class="rh-sub">'+(bestDay?'net '+(bestScore>0?'+':'')+bestScore:'not enough data')+'</div></div>'+
+    '<div class="rh-card"><div class="rh-lab">Best setup</div><div class="rh-val" style="color:'+(topSetup?wrColor(topSetup.wr):'var(--muted)')+'">'+(topSetup?topSetup.name:'\u2013')+'</div><div class="rh-sub">'+(topSetup?topSetup.wr+'% \u00b7 '+topSetup.w+'/'+topSetup.dec:'log more setups')+'</div></div>'+
+    '<div class="rh-card"><div class="rh-lab">Best combo</div><div class="rh-val" style="color:'+(topCombo?wrColor(topCombo.wr):'var(--muted)')+';font-size:14px">'+(topCombo?topCombo.name:'\u2013')+'</div><div class="rh-sub">'+(topCombo?topCombo.wr+'% \u00b7 '+topCombo.w+'/'+topCombo.dec:'need 2+ matching setups')+'</div></div>'+
+  '</div>';
+  el.innerHTML=rhHtml+`<div class="card"><div class="card-title">Win rate by weekday</div>${dayHtml}${bestDay?`<p style="font-size:12px;color:var(--muted);margin-top:14px">📈 Strongest day so far: <span style="color:var(--green);font-weight:600">${bestDay}</span> (net ${bestScore>0?'+':''}${bestScore})</p>`:''}</div><div class="card"><div class="card-title">Setup performance — best concepts</div>${setupHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Sorted by win rate. Faded = fewer than 3 decided trades (not reliable yet).</p></div><div class="card"><div class="card-title">Best setup combinations</div>${comboHtml}</div><div class="card"><div class="card-title">Your best trades — repeat these</div>${bestHtml}</div>`;
+}
+
+async function exportJSON(){ const data=await loadTrades(); const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='trades-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showToast('Exported ✓'); }
+function importJSON(input){ const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=async e=>{ try{ const d=JSON.parse(e.target.result); if(Array.isArray(d)){ await saveTrades(d); showToast('Imported '+d.length+' trades ✓'); renderList(); } else alert('Wrong format'); }catch(err){ alert('Could not read file.'); } }; r.readAsText(f); input.value=''; }
+
+
+// ── BIBLE ──────────────────────────────────────────────────────────────────
+let bibleData=null, bibleProgress={}, bibleView='books', bibleBookId=null, bibleChapterNum=1;
+
+async function renderBible(){
+  const el=document.getElementById('bible-el');
+  if(!bibleData){
+    el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">📖</div><p>Lade Bibeltext …</p></div>';
+    try{
+      const res=await fetch('bible_de.json');
+      if(!res.ok) throw new Error('http '+res.status);
+      bibleData=await res.json();
+      // bibleProgress wird bereits beim Login in loadJournalRow() befüllt
+    }catch(e){
+      el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">⚠️</div><p>Konnte <code>bible_de.json</code> nicht laden.<br>Liegt die Datei im selben Ordner wie <code>index.html</code>?</p></div>';
+      return;
+    }
+  }
+  drawBible();
+}
+
+function isChapterDone(bookId,num){ return (bibleProgress[bookId]||[]).includes(num); }
+function toggleChapterDone(bookId,num){
+  const arr=bibleProgress[bookId]=bibleProgress[bookId]||[];
+  const i=arr.indexOf(num);
+  if(i>=0) arr.splice(i,1); else arr.push(num);
+  saveBibleProgress();
+  drawBible();
+}
+async function saveBibleProgress(){
+  if(!currentUser) return;
+  try{ await sb.from('journal_data').update({bible_progress:bibleProgress,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }catch(e){ console.error('Bible-Sync fehlgeschlagen',e); }
+}
+
+function drawBible(){
+  const el=document.getElementById('bible-el');
+  if(bibleView==='chapters') el.innerHTML=bibleChaptersHTML(bibleBookId);
+  else if(bibleView==='read') el.innerHTML=bibleReadHTML(bibleBookId,bibleChapterNum);
+  else el.innerHTML=bibleBooksHTML();
+}
+
+function bibleBooksHTML(){
+  const card=b=>{
+    if(!b.available) return '<div class="bb-card bb-disabled"><div class="bb-name">'+b.name+'</div><div class="bb-meta">folgt bald</div></div>';
+    const done=(bibleProgress[b.id]||[]).length, total=b.chapters.length, pct=total?Math.round(done/total*100):0;
+    return '<div class="bb-card" onclick="openBibleBook(\''+b.id+'\')" role="button" tabindex="0">'+
+      '<div class="bb-name">'+b.name+(done>=total?' ✓':'')+'</div>'+
+      '<div class="bb-meta">'+total+' Kapitel'+(done?' · '+done+' gelesen':'')+'</div>'+
+      (done?'<div class="bb-progress"><div class="bb-progress-fill" style="width:'+pct+'%"></div></div>':'')+
+    '</div>';
+  };
+  const group=(list,label)=>'<div class="bible-group-label">'+label+'</div><div class="bible-grid">'+list.map(card).join('')+'</div>';
+  const at=bibleData.books.filter(b=>b.testament==='AT'), nt=bibleData.books.filter(b=>b.testament==='NT');
+  const totalChaps=bibleData.books.filter(b=>b.available).reduce((s,b)=>s+b.chapters.length,0);
+  const totalDone=Object.values(bibleProgress).reduce((s,a)=>s+a.length,0);
+  return '<div class="page-head"><div class="page-title">Bible</div><div class="page-desc">'+bibleData.translation+' — in Originalreihenfolge.'+
+      (totalDone?' &nbsp;·&nbsp; '+totalDone+' / '+totalChaps+' Kapitel gelesen':'')+'</div></div>'+
+    group(at,'Altes Testament')+group(nt,'Neues Testament');
+}
+
+function bibleChaptersHTML(bookId){
+  const b=bibleData.books.find(x=>x.id===bookId), n=b.chapters.length;
+  const doneArr=bibleProgress[bookId]||[];
+  let chips=''; for(let i=1;i<=n;i++) chips+='<div class="bc-chip'+(doneArr.includes(i)?' bc-done':'')+'" onclick="openBibleChapter(\''+bookId+'\','+i+')">'+i+'</div>';
+  return '<div class="bible-crumb"><span onclick="bibleBackToBooks()">← Bücher</span></div>'+
+    '<div class="page-head"><div class="page-title">'+b.name+'</div><div class="page-desc">'+n+' Kapitel'+(doneArr.length?' — '+doneArr.length+' gelesen ('+Math.round(doneArr.length/n*100)+'%)':' — wähle ein Kapitel')+'</div></div>'+
+    '<div class="bible-chapgrid">'+chips+'</div>';
+}
+
+function bibleReadHTML(bookId,chapNum){
+  const b=bibleData.books.find(x=>x.id===bookId), chap=b.chapters[chapNum-1];
+  const verses=chap.map(v=>'<div class="bv"><span class="bv-num">'+v[0]+'</span><span class="bv-text">'+v[1]+'</span></div>').join('');
+  const hasPrev=chapNum>1, hasNext=chapNum<b.chapters.length, done=isChapterDone(bookId,chapNum);
+  return '<div class="bible-crumb"><span onclick="bibleBackToBooks()">← Bücher</span> &nbsp;·&nbsp; <span onclick="openBibleBook(\''+bookId+'\')">'+b.name+'</span></div>'+
+    '<div class="page-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">'+
+      '<div><div class="page-title">'+b.name+' '+chapNum+'</div></div>'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
+        '<button class="bible-done-btn'+(done?' done':'')+'" onclick="toggleChapterDone(\''+bookId+'\','+chapNum+')">'+(done?'✓ Gelesen':'Als gelesen markieren')+'</button>'+
+        '<div class="range-chips">'+
+          '<button class="rchip"'+(hasPrev?' onclick="openBibleChapter(\''+bookId+'\','+(chapNum-1)+')"':' disabled style="opacity:.3"')+'>← Kapitel</button>'+
+          '<button class="rchip" onclick="openBibleBook(\''+bookId+'\')">Übersicht</button>'+
+          '<button class="rchip"'+(hasNext?' onclick="openBibleChapter(\''+bookId+'\','+(chapNum+1)+')"':' disabled style="opacity:.3"')+'>Kapitel →</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="bible-read card">'+verses+'</div>';
+}
+
+function openBibleBook(id){ bibleBookId=id; bibleView='chapters'; drawBible(); document.querySelector('.main-wrap').scrollTop=0; }
+function openBibleChapter(id,num){ bibleBookId=id; bibleChapterNum=num; bibleView='read'; drawBible(); document.querySelector('.main-wrap').scrollTop=0; }
+function bibleBackToBooks(){ bibleView='books'; drawBible(); document.querySelector('.main-wrap').scrollTop=0; }
+
+// ── FAITH ──────────────────────────────────────────────────────────────────
+const VERSES = {
+  win: [
+    {ref:"1 Chronicles 29:14",text:"But who am I, and who are my people, that we should be able to give as generously as this? Everything comes from you, and we have given you only what comes from your hand."},
+    {ref:"Deuteronomy 8:17-18",text:"You may say to yourself, My power and the strength of my hands have produced this wealth. But remember the LORD your God, for it is he who gives you the ability to produce wealth."},
+    {ref:"Proverbs 3:9",text:"Honor the LORD with your wealth, with the firstfruits of all your crops."},
+    {ref:"Psalm 115:1",text:"Not to us, LORD, not to us but to your name be the glory, because of your love and faithfulness."},
+    {ref:"James 1:17",text:"Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows."},
+    {ref:"Colossians 3:17",text:"And whatever you do, whether in word or deed, do it all in the name of the Lord Jesus, giving thanks to God the Father through him."},
+    {ref:"Psalm 75:6-7",text:"No one from the east or the west can exalt themselves. It is God who judges: He brings one down, he exalts another."},
+    {ref:"1 Corinthians 4:7",text:"What do you have that you did not receive? And if you did receive it, why do you boast as though you did not?"},
+    {ref:"Proverbs 16:3",text:"Commit to the LORD whatever you do, and he will establish your plans."},
+    {ref:"Psalm 24:1",text:"The earth is the LORD's, and everything in it, the world, and all who live in it."},
+    {ref:"Romans 11:36",text:"For from him and through him and for him are all things. To him be the glory forever! Amen."},
+    {ref:"Psalm 37:23",text:"The LORD makes firm the steps of the one who delights in him."},
+    {ref:"Proverbs 10:22",text:"The blessing of the LORD brings wealth, without painful toil for it."},
+    {ref:"Philippians 4:11-12",text:"I have learned to be content whatever the circumstances. I know what it is to be in need, and I know what it is to have plenty."},
+    {ref:"Luke 16:10",text:"Whoever can be trusted with very little can also be trusted with much."},
+    {ref:"Psalm 118:24",text:"The LORD has done it this very day; let us rejoice today and be glad."},
+    {ref:"2 Corinthians 9:8",text:"And God is able to bless you abundantly, so that in all things at all times you will abound in every good work."},
+    {ref:"Matthew 6:33",text:"But seek first his kingdom and his righteousness, and all these things will be given to you as well."},
+    {ref:"Ecclesiastes 5:19",text:"When God gives someone wealth and the ability to enjoy it, to accept their lot and be happy in their toil — this is a gift of God."},
+    {ref:"Psalm 16:8",text:"I keep my eyes always on the LORD. With him at my right hand, I will not be shaken."},
+    {ref:"1 Timothy 6:17",text:"Command those who are rich not to put their hope in wealth, which is so uncertain, but to put their hope in God."},
+    {ref:"Galatians 6:14",text:"May I never boast except in the cross of our Lord Jesus Christ."},
+    {ref:"Psalm 23:1",text:"The LORD is my shepherd, I lack nothing."},
+    {ref:"Habakkuk 3:18",text:"Yet I will rejoice in the LORD, I will be joyful in God my Savior."},
+    {ref:"Psalm 19:1",text:"The heavens declare the glory of God; the skies proclaim the work of his hands."},
+    {ref:"Psalm 100:4",text:"Enter his gates with thanksgiving and his courts with praise; give thanks to him and praise his name."},
+    {ref:"Psalm 103:2",text:"Praise the LORD, my soul, and forget not all his benefits."},
+    {ref:"James 4:10",text:"Humble yourselves before the Lord, and he will lift you up."},
+    {ref:"1 Peter 5:6",text:"Humble yourselves, therefore, under God's mighty hand, that he may lift you up in due time."},
+    {ref:"Proverbs 22:4",text:"Humility is the fear of the LORD; its wages are riches and honor and life."},
+    {ref:"Psalm 127:1",text:"Unless the LORD builds the house, the builders labor in vain."},
+    {ref:"Psalm 50:14-15",text:"Sacrifice thank offerings to God, and call on me in the day of trouble; I will deliver you, and you will honor me."},
+    {ref:"Proverbs 28:25",text:"The greedy stir up conflict, but those who trust in the LORD will prosper."},
+    {ref:"Psalm 65:11",text:"You crown the year with your bounty, and your carts overflow with abundance."}
+  ],
+  loss: [
+    {ref:"Romans 8:28",text:"And we know that in all things God works for the good of those who love him, who have been called according to his purpose."},
+    {ref:"James 1:2-4",text:"Consider it pure joy whenever you face trials of many kinds, because the testing of your faith produces perseverance. Let perseverance finish its work so that you may be mature and complete."},
+    {ref:"Psalm 34:18",text:"The LORD is close to the brokenhearted and saves those who are crushed in spirit."},
+    {ref:"Proverbs 24:16",text:"For though the righteous fall seven times, they rise again, but the wicked stumble when calamity strikes."},
+    {ref:"Isaiah 40:31",text:"But those who hope in the LORD will renew their strength. They will soar on wings like eagles; they will run and not grow weary."},
+    {ref:"Jeremiah 29:11",text:"For I know the plans I have for you, declares the LORD, plans to prosper you and not to harm you, plans to give you hope and a future."},
+    {ref:"Romans 5:3-4",text:"We glory in our sufferings, because suffering produces perseverance; perseverance, character; and character, hope."},
+    {ref:"2 Corinthians 4:8-9",text:"We are hard pressed on every side, but not crushed; perplexed, but not in despair; struck down, but not destroyed."},
+    {ref:"Philippians 4:13",text:"I can do all this through him who gives me strength."},
+    {ref:"Joshua 1:9",text:"Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go."},
+    {ref:"Lamentations 3:22-23",text:"Because of the LORD's great love we are not consumed, for his compassions never fail. They are new every morning."},
+    {ref:"Psalm 46:1",text:"God is our refuge and strength, an ever-present help in trouble."},
+    {ref:"Isaiah 41:10",text:"So do not fear, for I am with you; I will strengthen you and help you; I will uphold you with my righteous right hand."},
+    {ref:"Matthew 11:28",text:"Come to me, all you who are weary and burdened, and I will give you rest."},
+    {ref:"Psalm 55:22",text:"Cast your cares on the LORD and he will sustain you; he will never let the righteous be shaken."},
+    {ref:"2 Timothy 1:7",text:"For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline."},
+    {ref:"1 Peter 5:7",text:"Cast all your anxiety on him because he cares for you."},
+    {ref:"Psalm 30:5",text:"Weeping may stay for the night, but rejoicing comes in the morning."},
+    {ref:"Nahum 1:7",text:"The LORD is good, a refuge in times of trouble. He cares for those who trust in him."},
+    {ref:"Micah 7:8",text:"Though I have fallen, I will rise. Though I sit in darkness, the LORD will be my light."},
+    {ref:"Romans 8:37",text:"No, in all these things we are more than conquerors through him who loved us."},
+    {ref:"Hebrews 12:11",text:"No discipline seems pleasant at the time, but painful. Later on it produces a harvest of righteousness and peace for those who have been trained by it."},
+    {ref:"Psalm 73:26",text:"My flesh and my heart may fail, but God is the strength of my heart and my portion forever."},
+    {ref:"John 16:33",text:"In this world you will have trouble. But take heart! I have overcome the world."},
+    {ref:"Deuteronomy 31:8",text:"The LORD himself goes before you and will be with you; he will never leave you nor forsake you."},
+    {ref:"2 Corinthians 12:9",text:"My grace is sufficient for you, for my power is made perfect in weakness."},
+    {ref:"Psalm 27:1",text:"The LORD is my light and my salvation — whom shall I fear?"},
+    {ref:"Zephaniah 3:17",text:"The LORD your God is with you, the Mighty Warrior who saves. He will rejoice over you with singing."},
+    {ref:"Romans 15:13",text:"May the God of hope fill you with all joy and peace as you trust in him."},
+    {ref:"Psalm 121:1-2",text:"I lift up my eyes to the mountains — where does my help come from? My help comes from the LORD."},
+    {ref:"Isaiah 43:2",text:"When you pass through the waters, I will be with you; when you walk through the fire, you will not be burned."},
+    {ref:"Psalm 31:24",text:"Be strong and take heart, all you who hope in the LORD."},
+    {ref:"Psalm 18:32",text:"It is God who arms me with strength and keeps my way secure."},
+    {ref:"2 Chronicles 15:7",text:"But as for you, be strong and do not give up, for your work will be rewarded."},
+    {ref:"1 Corinthians 15:58",text:"Always give yourselves fully to the work of the Lord, because you know that your labor in the Lord is not in vain."},
+    {ref:"Hebrews 10:36",text:"You need to persevere so that when you have done the will of God, you will receive what he has promised."},
+    {ref:"Psalm 42:11",text:"Why, my soul, are you downcast? Put your hope in God, for I will yet praise him, my Savior and my God."},
+    {ref:"Isaiah 54:17",text:"No weapon forged against you will prevail, and you will refute every tongue that accuses you."},
+    {ref:"Psalm 28:7",text:"The LORD is my strength and my shield; my heart trusts in him, and he helps me."},
+    {ref:"Mark 9:23",text:"Everything is possible for one who believes."}
+  ],
+  be: [
+    {ref:"Ecclesiastes 3:1",text:"There is a time for everything, and a season for every activity under the heavens."},
+    {ref:"Psalm 27:14",text:"Wait for the LORD; be strong and take heart and wait for the LORD."},
+    {ref:"Isaiah 30:18",text:"Yet the LORD longs to be gracious to you. Blessed are all who wait for him."},
+    {ref:"Proverbs 21:5",text:"The plans of the diligent lead to profit as surely as haste leads to poverty."},
+    {ref:"Habakkuk 2:3",text:"Though it linger, wait for it; it will certainly come and will not delay."},
+    {ref:"James 5:7-8",text:"Be patient. See how the farmer waits for the land to yield its valuable crop, patiently waiting. You too, be patient and stand firm."},
+    {ref:"Romans 12:12",text:"Be joyful in hope, patient in affliction, faithful in prayer."},
+    {ref:"Psalm 37:7",text:"Be still before the LORD and wait patiently for him; do not fret when people succeed in their ways."},
+    {ref:"Lamentations 3:25",text:"The LORD is good to those whose hope is in him, to the one who seeks him."},
+    {ref:"Proverbs 19:2",text:"Desire without knowledge is not good — how much more will hasty feet miss the way!"},
+    {ref:"Isaiah 40:29",text:"He gives strength to the weary and increases the power of the weak."},
+    {ref:"Galatians 6:9",text:"Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up."},
+    {ref:"Psalm 40:1",text:"I waited patiently for the LORD; he turned to me and heard my cry."},
+    {ref:"Romans 8:25",text:"But if we hope for what we do not yet have, we wait for it patiently."},
+    {ref:"Hebrews 6:15",text:"And so after waiting patiently, Abraham received what was promised."},
+    {ref:"Psalm 130:5",text:"I wait for the LORD, my whole being waits, and in his word I put my hope."},
+    {ref:"Isaiah 26:3",text:"You will keep in perfect peace those whose minds are steadfast, because they trust in you."},
+    {ref:"Colossians 1:11",text:"Being strengthened with all power so that you may have great endurance and patience."},
+    {ref:"Psalm 62:5",text:"Yes, my soul, find rest in God; my hope comes from him."}
+  ],
+  daily: [
+    {ref:"Proverbs 16:9",text:"In their hearts humans plan their course, but the LORD establishes their steps."},
+    {ref:"Proverbs 3:5-6",text:"Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight."},
+    {ref:"Colossians 3:23",text:"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters."},
+    {ref:"1 Corinthians 10:31",text:"So whether you eat or drink or whatever you do, do it all for the glory of God."},
+    {ref:"Psalm 90:12",text:"Teach us to number our days, that we may gain a heart of wisdom."},
+    {ref:"Matthew 25:21",text:"Well done, good and faithful servant! You have been faithful with a few things; I will put you in charge of many things."},
+    {ref:"Philippians 4:6-7",text:"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God."},
+    {ref:"Psalm 5:3",text:"In the morning, LORD, you hear my voice; in the morning I lay my requests before you and wait expectantly."},
+    {ref:"Proverbs 12:24",text:"Diligent hands will rule, but laziness ends in forced labor."},
+    {ref:"1 Thessalonians 5:16-18",text:"Rejoice always, pray continually, give thanks in all circumstances; for this is God's will for you in Christ Jesus."},
+    {ref:"2 Chronicles 20:15",text:"Do not be afraid or discouraged. For the battle is not yours, but God's."},
+    {ref:"Psalm 118:8",text:"It is better to take refuge in the LORD than to trust in humans."},
+    {ref:"Proverbs 13:11",text:"Dishonest money dwindles away, but whoever gathers money little by little makes it grow."},
+    {ref:"1 Timothy 6:6",text:"But godliness with contentment is great gain."},
+    {ref:"Hebrews 11:1",text:"Now faith is confidence in what we hope for and assurance about what we do not see."},
+    {ref:"Proverbs 11:2",text:"When pride comes, then comes disgrace, but with humility comes wisdom."},
+    {ref:"Matthew 6:24",text:"No one can serve two masters. You cannot serve both God and money."},
+    {ref:"Luke 12:15",text:"Watch out! Be on your guard against all kinds of greed; life does not consist in an abundance of possessions."},
+    {ref:"Psalm 1:1-3",text:"Blessed is the one whose delight is in the law of the LORD. That person is like a tree planted by streams of water."},
+    {ref:"Proverbs 22:7",text:"The rich rule over the poor, and the borrower is slave to the lender."},
+    {ref:"Proverbs 21:20",text:"The wise store up choice food and olive oil, but fools gulp theirs down."},
+    {ref:"Proverbs 14:23",text:"All hard work brings a profit, but mere talk leads only to poverty."},
+    {ref:"Proverbs 27:23-24",text:"Be sure you know the condition of your flocks, give careful attention to your herds; for riches do not endure forever."},
+    {ref:"Proverbs 6:6-8",text:"Go to the ant, you sluggard; consider its ways and be wise! It stores its provisions in summer."},
+    {ref:"Ecclesiastes 11:6",text:"Sow your seed in the morning, and at evening let your hands not be idle, for you do not know which will succeed."},
+    {ref:"Proverbs 23:4-5",text:"Do not wear yourself out to get rich; do not trust your own cleverness. Riches sprout wings and fly off like an eagle."},
+    {ref:"Psalm 37:5",text:"Commit your way to the LORD; trust in him and he will do this."},
+    {ref:"Proverbs 16:8",text:"Better a little with righteousness than much gain with injustice."},
+    {ref:"Proverbs 28:20",text:"A faithful person will be richly blessed, but one eager to get rich will not go unpunished."},
+    {ref:"Proverbs 13:16",text:"All who are prudent act with knowledge, but fools expose their folly."},
+    {ref:"Luke 14:28",text:"Suppose one of you wants to build a tower. Won't you first sit down and estimate the cost?"},
+    {ref:"Proverbs 24:27",text:"Put your outdoor work in order and get your fields ready; after that, build your house."},
+    {ref:"Proverbs 15:22",text:"Plans fail for lack of counsel, but with many advisers they succeed."},
+    {ref:"James 4:13-15",text:"Why, you do not even know what will happen tomorrow. Instead, you ought to say, If it is the Lord's will, we will live and do this or that."},
+    {ref:"Proverbs 11:14",text:"For lack of guidance a nation falls, but victory is won through many advisers."}
+  ]
+};
+
+const QUOTES = {
+  win: [
+    {ref:"Augustine of Hippo",text:"God loves each of us as if there were only one of us."},
+    {ref:"D.L. Moody",text:"Character is what you are in the dark."},
+    {ref:"D.L. Moody",text:"Our greatest fear should not be of failure, but of succeeding at things that do not matter."},
+    {ref:"John Newton",text:"I am not what I ought to be, but by the grace of God I am what I am."},
+    {ref:"Andrew Murray",text:"Humility is the only soil in which the graces take root."},
+    {ref:"John Calvin",text:"There is no knowing that does not begin with knowing God."},
+    {ref:"Hudson Taylor",text:"God's work done in God's way will never lack God's supply."},
+    {ref:"Matthew Henry",text:"It is good to renew our vows, but better to keep them."},
+    {ref:"Jonathan Edwards",text:"Resolved: never to do anything which I should be afraid to do if it were the last hour of my life."},
+    {ref:"William Carey",text:"Expect great things from God; attempt great things for God."},
+    {ref:"John Wesley",text:"Do all the good you can, by all the means you can, in all the ways you can."},
+    {ref:"Charles Spurgeon",text:"A Bible that is falling apart usually belongs to someone who is not."}
+  ],
+  loss: [
+    {ref:"Charles Spurgeon",text:"By perseverance the snail reached the ark."},
+    {ref:"Charles Spurgeon",text:"Anxiety does not empty tomorrow of its sorrows, but only empties today of its strength."},
+    {ref:"Charles Spurgeon",text:"Fear not the future; weep not for the past."},
+    {ref:"Charles Spurgeon",text:"Faith goes up the stairs that love has built and looks out the windows which hope has opened."},
+    {ref:"George Muller",text:"The beginning of anxiety is the end of faith, and the beginning of true faith is the end of anxiety."},
+    {ref:"George Muller",text:"Faith does not operate in the realm of the possible."},
+    {ref:"Corrie ten Boom",text:"Worry does not empty tomorrow of its sorrow; it empties today of its strength."},
+    {ref:"Martin Luther",text:"Pray, and let God worry."},
+    {ref:"Martin Luther",text:"Faith is a living, daring confidence in God's grace."},
+    {ref:"Martin Luther",text:"Even if I knew that tomorrow the world would go to pieces, I would still plant my apple tree."},
+    {ref:"John Bunyan",text:"What God says is best, is best, though all the men in the world are against it."},
+    {ref:"Oswald Chambers",text:"Faith is deliberate confidence in the character of God."},
+    {ref:"A.W. Tozer",text:"Faith is the gaze of a soul upon a saving God."},
+    {ref:"Dietrich Bonhoeffer",text:"Not to act is to act."}
+  ],
+  be: [
+    {ref:"Augustine of Hippo",text:"Patience is the companion of wisdom."},
+    {ref:"Augustine of Hippo",text:"Pray as though everything depended on God. Work as though everything depended on you."},
+    {ref:"Augustine of Hippo",text:"Our hearts are restless until they find their rest in You."},
+    {ref:"John Wesley",text:"Though I am always in haste, I am never in a hurry."},
+    {ref:"Hudson Taylor",text:"A little thing is a little thing, but faithfulness in little things is a great thing."},
+    {ref:"Thomas a Kempis",text:"Man proposes, but God disposes."},
+    {ref:"Thomas a Kempis",text:"Be not angry that you cannot make others as you wish them to be."},
+    {ref:"Blaise Pascal",text:"All of humanity's problems stem from man's inability to sit quietly in a room alone."},
+    {ref:"Blaise Pascal",text:"The heart has its reasons which reason knows nothing of."},
+    {ref:"Brother Lawrence",text:"We ought not to be weary of doing little things for the love of God."},
+    {ref:"John Bunyan",text:"You cannot do more than pray until you have prayed."}
+  ]
+};
+
+const FLOAT_LINES = ["Protect capital first.","The market rewards patience.","Wait for confirmation.","Discipline beats emotion.","Not every candle deserves a trade.","Trade your plan, not your feelings.","Risk less, last longer.","Patience is a position.","Let liquidity come to you.","No setup, no trade.","Sit on your hands until A+ aligns.","Process over outcome."];
+
+let faith = { reveals:0, max:3, pool:[], cat:'daily', chartRAF:null, partRAF:null, miniT:null, floatT:null, floatI:null, candles:[], particles:[] };
+
+function rcCat(result){ if(!result) return 'daily'; const r=result.toLowerCase(); return r.includes('win')?'win':r.includes('loss')?'loss':'be'; }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]); }
+function weekStartMonday(d){ const day=(d.getDay()+6)%7; const m=new Date(d); m.setDate(d.getDate()-day); m.setHours(0,0,0,0); return m; }
+
+function computeFaithStats(data){
+  const wins=data.filter(t=>t.result==='Win').length, losses=data.filter(t=>t.result==='Loss').length, dec=wins+losses;
+  const wr=dec>0?Math.round(wins/dec*100):0;
+  let streak=0; for(const t of data){ if(t.rulebased==='yes') streak++; else break; }
+  const ws=weekStartMonday(new Date());
+  const week=data.filter(t=>{ if(!t.date)return false; const p=t.date.split('-').map(Number); return new Date(p[0],p[1]-1,p[2])>=ws; }).length;
+  return {wins,losses,wr,streak,week};
+}
+
+function faithInsights(data){
+  const out=[];
+  const rbW=data.filter(t=>t.rulebased==='yes'&&t.result==='Win').length, rbL=data.filter(t=>t.rulebased==='yes'&&t.result==='Loss').length;
+  const dvW=data.filter(t=>t.rulebased==='no'&&t.result==='Win').length, dvL=data.filter(t=>t.rulebased==='no'&&t.result==='Loss').length;
+  const rbWR=(rbW+rbL)?Math.round(rbW/(rbW+rbL)*100):null, dvWR=(dvW+dvL)?Math.round(dvW/(dvW+dvL)*100):null;
+  if(rbWR!==null && dvWR!==null && rbWR>dvWR) out.push('When you follow your rules you win '+rbWR+'%, vs '+dvWR+'% when you deviate. Discipline pays.');
+  else if(rbWR!==null && (rbW+rbL)>=3) out.push('Your rule-based trades win '+rbWR+'% of the time. Trust your process.');
+  const emoLoss={}; data.filter(t=>t.result==='Loss'&&t.emotion).forEach(t=>emoLoss[t.emotion]=(emoLoss[t.emotion]||0)+1);
+  const topEL=Object.entries(emoLoss).sort((a,b)=>b[1]-a[1])[0];
+  if(topEL && topEL[1]>=2) out.push('Most of your losses came when you felt '+topEL[0].replace(/^[^A-Za-z]+\s*/,'')+'. Watch for that state.');
+  const ss={}; data.forEach(t=>(t.setup||[]).forEach(x=>{ if(!ss[x])ss[x]={w:0,l:0}; if(t.result==='Win')ss[x].w++; else if(t.result==='Loss')ss[x].l++; }));
+  const best=Object.entries(ss).map(([n,v])=>({n,dec:v.w+v.l,wr:(v.w+v.l)?Math.round(v.w/(v.w+v.l)*100):0})).filter(x=>x.dec>=2).sort((a,b)=>b.wr-a.wr)[0];
+  if(best && best.wr>=50) out.push('Your strongest setup so far is '+best.n+' at '+best.wr+'% win rate. Wait for it.');
+  const worst=Object.entries(ss).map(([n,v])=>({n,dec:v.w+v.l,wr:(v.w+v.l)?Math.round(v.w/(v.w+v.l)*100):0})).filter(x=>x.dec>=2).sort((a,b)=>a.wr-b.wr)[0];
+  if(worst && worst.wr<40 && (!best || worst.n!==best.n)) out.push(worst.n+' has only a '+worst.wr+'% win rate for you. Be selective with it.');
+  if(!out.length) out.push('Keep logging with honesty. After a handful of trades, real patterns in your discipline appear here.');
+  out.push('"Commit to the LORD whatever you do, and he will establish your plans." — Proverbs 16:3');
+  return out;
+}
+
+function timelineHtml(t){
+  const steps=[
+    {icon:'📈',label:'Trade',val:((t.instrument||'')+' '+(t.direction||'')).trim()||'—'},
+    {icon:'🧠',label:'Emotion',val:t.emotion||'—'},
+    {icon:'⚖️',label:'Decision',val:t.rulebased==='yes'?'Followed rules':t.rulebased==='no'?'Deviated':'Partial'},
+    {icon:'🎯',label:'Result',val:t.result||'—'},
+    {icon:'💡',label:'Lesson',val:(t.better||t.why||'—')}
+  ];
+  return steps.map(s=>{ const v=s.val.length>42?s.val.slice(0,42)+'…':s.val; return '<div class="tl-step"><div class="tl-icon">'+s.icon+'</div><div class="tl-label">'+s.label+'</div><div class="tl-val">'+v+'</div></div>'; }).join('');
+}
+
+function revealInto(id,item){
+  const el=document.getElementById(id); if(!el) return;
+  const words=item.text.split(' ');
+  el.innerHTML='<p class="verse-text">'+words.map((w,i)=>'<span class="vw" style="transition-delay:'+(i*0.05).toFixed(2)+'s">'+w+'</span>').join(' ')+'</p><p class="verse-ref">'+(item.isQuote?'✦ ':'— ')+item.ref+'</p>';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.querySelectorAll('.vw').forEach(s=>s.classList.add('show')); const r=el.querySelector('.verse-ref'); if(r)r.classList.add('show'); }));
+}
+
+function nextVerse(){
+  if(faith.reveals>=faith.max) return;
+  const item=faith.pool.length?faith.pool[faith.reveals%faith.pool.length]:{text:'Trust in the LORD with all your heart.',ref:'Proverbs 3:5',isQuote:false};
+  faith.reveals++;
+  revealInto('faith-verse',item);
+  const btn=document.getElementById('verse-btn'); if(!btn) return;
+  const left=faith.max-faith.reveals;
+  if(left<=0){ btn.disabled=true; btn.innerHTML='🙏 Genug für heute — vertrau dem Prozess'; }
+  else { btn.innerHTML='🔄 Weiteres Wort <span class="left-pill">'+left+' übrig</span>'; }
+}
+
+function setGlow(cat){
+  const map={win:['#22c55e','#16a34a'],loss:['#ef4444','#b91c1c'],be:['#3b82f6','#2563eb'],daily:['#6366f1','#7c3aed']};
+  const a=document.getElementById('glow-a'), b=document.getElementById('glow-b'); if(!a||!b) return;
+  a.style.background=map[cat][0]; b.style.background=map[cat][1];
+}
+
+function sizeCanvas(c){ const r=window.devicePixelRatio||1; c.width=Math.floor(window.innerWidth*r); c.height=Math.floor(window.innerHeight*r); const ctx=c.getContext('2d'); ctx.setTransform(r,0,0,r,0,0); return ctx; }
+
+function startChart(){
+  const c=document.getElementById('fchart'); if(!c) return;
+  const ctx=sizeCanvas(c); const W=window.innerWidth,H=window.innerHeight, cw=26, bodyW=12;
+  if(!faith.candles.length){
+    let price=H*0.5;
+    for(let x=0;x<W+cw;x+=cw){ const o=price; price=Math.max(H*0.22,Math.min(H*0.78,price+(Math.random()-0.5)*42)); const cl=price; faith.candles.push({x,o,c:cl,h:Math.max(o,cl)+Math.random()*18,l:Math.min(o,cl)-Math.random()*18}); }
+  }
+  cancelAnimationFrame(faith.chartRAF);
+  function frame(){
+    const W=window.innerWidth,H=window.innerHeight; ctx.clearRect(0,0,W,H);
+    for(const k of faith.candles){
+      k.x-=0.22;
+      const up=k.c<=k.o, col=up?'rgba(94,234,212,1)':'rgba(167,139,250,1)';
+      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(k.x,k.h); ctx.lineTo(k.x,k.l); ctx.stroke();
+      const top=Math.min(k.o,k.c),bot=Math.max(k.o,k.c); ctx.fillRect(k.x-bodyW/2,top,bodyW,Math.max(2,bot-top));
+    }
+    while(faith.candles.length && faith.candles[0].x < -cw){
+      faith.candles.shift(); const last=faith.candles[faith.candles.length-1];
+      const o=last.c, cl=Math.max(H*0.22,Math.min(H*0.78,o+(Math.random()-0.5)*42));
+      faith.candles.push({x:last.x+cw,o,c:cl,h:Math.max(o,cl)+Math.random()*18,l:Math.min(o,cl)-Math.random()*18});
+    }
+    faith.chartRAF=requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function startParts(){
+  const c=document.getElementById('fparts'); if(!c) return;
+  const ctx=sizeCanvas(c);
+  if(!faith.particles.length){
+    const cols=['rgba(91,124,250,','rgba(94,234,212,','rgba(167,139,250,'];
+    for(let i=0;i<14;i++) faith.particles.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,vx:(Math.random()-0.5)*0.14,vy:(Math.random()-0.5)*0.14,r:1.5+Math.random()*2.6,a:0.04+Math.random()*0.05,col:cols[i%3]});
+  }
+  cancelAnimationFrame(faith.partRAF);
+  function frame(){
+    const W=window.innerWidth,H=window.innerHeight; ctx.clearRect(0,0,W,H);
+    for(const p of faith.particles){ p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fillStyle=p.col+p.a.toFixed(3)+')'; ctx.fill(); }
+    faith.partRAF=requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function startMini(){
+  const c=document.getElementById('mini-c'); if(!c) return; const ctx=c.getContext('2d');
+  const n=6, cw=14; let candles=[];
+  (function gen(){ candles=[]; let p=17; for(let i=0;i<n;i++){ const o=p; p=Math.max(6,Math.min(28,p+(Math.random()-0.5)*12)); candles.push({o,c:p}); } })();
+  function draw(){ ctx.clearRect(0,0,84,34); candles.forEach((k,i)=>{ const x=8+i*cw, up=k.c<=k.o; ctx.strokeStyle=up?'#5eead4':'#a78bfa'; ctx.fillStyle=up?'#5eead4':'#a78bfa'; ctx.lineWidth=1; const top=Math.min(k.o,k.c),bot=Math.max(k.o,k.c); ctx.beginPath(); ctx.moveTo(x,top-3); ctx.lineTo(x,bot+3); ctx.stroke(); ctx.fillRect(x-3,top,6,Math.max(2,bot-top)); }); }
+  draw(); clearInterval(faith.miniT);
+  faith.miniT=setInterval(()=>{ candles.shift(); const last=candles[candles.length-1]; candles.push({o:last.c,c:Math.max(6,Math.min(28,last.c+(Math.random()-0.5)*12))}); draw(); },2600);
+}
+
+function startFloat(){
+  clearTimeout(faith.floatT); clearInterval(faith.floatI);
+  const fq=document.getElementById('fq'); if(!fq) return;
+  function show(){ fq.innerHTML='<div class="fq-label">Discipline</div>'+pick(FLOAT_LINES); fq.classList.add('show'); setTimeout(()=>fq.classList.remove('show'),4000); }
+  faith.floatT=setTimeout(()=>{ show(); faith.floatI=setInterval(show,24000); },6000);
+}
+
+function stopAmbient(){
+  document.body.classList.remove('faith-active'); document.body.classList.remove('stats-active');
+  cancelAnimationFrame(faith.chartRAF); cancelAnimationFrame(faith.partRAF);
+  clearInterval(faith.miniT); clearTimeout(faith.floatT); clearInterval(faith.floatI);
+}
+
+function faithParallax(e){
+  if(!document.body.classList.contains('faith-active')) return;
+  const cx=window.innerWidth/2, cy=window.innerHeight/2, dx=(e.clientX-cx)/cx, dy=(e.clientY-cy)/cy;
+  const ch=document.getElementById('fchart'), pa=document.getElementById('fparts'), ga=document.getElementById('glow-a'), gb=document.getElementById('glow-b');
+  if(ch) ch.style.transform='translate('+(dx*4)+'px,'+(dy*4)+'px)';
+  if(pa) pa.style.transform='translate('+(dx*-3)+'px,'+(dy*-3)+'px)';
+  if(ga) ga.style.transform='translate('+(dx*9)+'px,'+(dy*9)+'px)';
+  if(gb) gb.style.transform='translate('+(dx*-9)+'px,'+(dy*-9)+'px)';
+}
+window.addEventListener('mousemove', faithParallax);
+window.addEventListener('resize', ()=>{ if(document.body.classList.contains('faith-active')){ startChart(); startParts(); } });
+
+
+function pickVerseCat(cat){
+  const vpool=(VERSES[cat]||VERSES.daily).map(v=>({ref:v.ref,text:v.text,isQuote:false}));
+  const qpool=(QUOTES[cat]||[]).map(q=>({ref:q.ref,text:q.text,isQuote:true}));
+  faith.pool=shuffle(vpool.concat(qpool)); faith.reveals=0; faith.max=3; faith.cat=cat;
+  const titleMap={win:'After a Win',loss:'After a Loss',be:'After a Breakeven',daily:'Word for Today'};
+  const msgMap={win:'Give God the glory \u2014 stay humble.',loss:'A loss is not the end. He is still good.',be:'Trust His timing. Patience is a position.',daily:'A word for today.'};
+  document.querySelectorAll('#verse-picker .vchip').forEach((c,i)=>c.classList.toggle('active',['win','loss','be','daily'][i]===cat));
+  document.querySelector('.fcard-title').innerHTML='\u2713 '+titleMap[cat]+' \u2014 '+msgMap[cat];
+  nextVerse();
+}
+async function renderFaith(){
+  const el=document.getElementById('faith-el');
+  const data=await loadTrades();
+  document.body.classList.add('faith-active');
+  if(!data.length){
+    el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">✝️</div><p>Nimm zuerst einen Trade auf — danach erwacht diese Seite mit dem passenden Wort für dein Ergebnis.</p></div>';
+    setGlow('daily'); startChart(); startParts(); return;
+  }
+  const tradeData=data.filter(t=>!t.isNoTrade), ntData=data.filter(t=>t.isNoTrade);
+  const latest=tradeData.length?tradeData[0]:data[0], cat=rcCat(latest&&latest.result), st=computeFaithStats(tradeData);
+  const vpool=(VERSES[cat]||VERSES.daily).map(v=>({ref:v.ref,text:v.text,isQuote:false}));
+  const qpool=(QUOTES[cat]||[]).map(q=>({ref:q.ref,text:q.text,isQuote:true}));
+  faith.pool=shuffle(vpool.concat(qpool)); faith.reveals=0; faith.max=3; faith.cat=cat;
+  const titleMap={win:'After a Win',loss:'After a Loss',be:'After a Breakeven',daily:'Word for Today'};
+  const msgMap={win:'Give God the glory — stay humble.',loss:'A loss is not the end. He is still good.',be:'Trust His timing. Patience is a position.',daily:'A word for today — log your result for more.'};
+
+  el.innerHTML=
+    '<div class="hero">'+
+      '<div class="hero-eyebrow"><span class="hero-title">Faith &amp; Discipline</span><canvas class="mini-candles" id="mini-c" width="84" height="34"></canvas></div>'+
+      '<div class="hero-sub">Trade with conviction. Wait with patience. Accept God\u2019s timing.</div>'+
+      '<div class="stat-cards">'+
+        '<div class="gcard"><div class="g-label">Win rate</div><div class="g-val" style="color:'+(st.wr>=50?'var(--green)':'var(--red)')+'">'+st.wr+'%</div><div class="g-sub">'+st.wins+'W \u00b7 '+st.losses+'L</div></div>'+
+        '<div class="gcard"><div class="g-label">Last trade</div><div class="g-val" style="font-size:18px">'+(latest.result||'\u2014')+'</div><div class="g-sub">'+latest.instrument+' '+latest.direction+'</div></div>'+
+        '<div class="gcard"><div class="g-label">Discipline</div><div class="g-val" style="color:#fdba74">'+st.streak+'</div><div class="g-sub">rule-based in a row</div></div>'+
+        '<div class="gcard"><div class="g-label">This week</div><div class="g-val">'+st.week+'</div><div class="g-sub">trade'+(st.week!==1?'s':'')+' logged</div></div>'+
+      '</div>'+
+      '<div class="streak-card"><span class="streak-flame">🔥</span><div><div class="streak-num">'+st.streak+' Trade Discipline Streak</div><div class="streak-lbl">'+(st.streak>0?'Consecutive trades you followed your rules. Keep it alive.':'Follow your rules on the next trade to start a streak.')+'</div></div></div>'+
+    '</div>'+
+    '<div class="verse-picker" id="verse-picker">'+
+      ['win','loss','be','daily'].map(k=>'<button class="vchip'+(k===cat?' active':'')+'" onclick="pickVerseCat(\''+k+'\')">'+({win:'✦ Win',loss:'✧ Loss',be:'⚙ Breakeven',daily:'☀ Daily'}[k])+'</button>').join('')+
+    '</div>'+
+    '<div class="fcard"><div class="fcard-title">✓ '+titleMap[cat]+' — '+msgMap[cat]+'</div><div id="faith-verse"></div><button class="verse-btn" id="verse-btn" onclick="nextVerse()"></button></div>'+
+    '<div class="fcard"><div class="fcard-title">⟶ Trade Reflection</div><div class="timeline" id="faith-timeline">'+timelineHtml(latest)+'</div></div>'+
+    '<div class="insight-card"><div class="insight-head"><span class="insight-badge">✦</span><span class="insight-title">Faith Insights — from your journal</span></div>'+
+      faithInsights(data).map(t=>'<div class="insight-item"><span class="insight-dot">◆</span><span>'+t+'</span></div>').join('')+
+    '</div>';
+
+  window._faithData=data;
+  setGlow(cat); startChart(); startParts(); startMini(); startFloat();
+  nextVerse();
+  setTimeout(()=>{ document.querySelectorAll('#faith-timeline .tl-icon').forEach((ic,i)=>setTimeout(()=>ic.classList.add('show'), i*140)); },180);
+}
+
+// ── LEARN ────────────────────────────────────────────────────────────────
+const LEARN_KEY = 'tj_learn_v1';
+function loadLearn(){ try{ return JSON.parse(localStorage.getItem(LEARN_KEY)||'[]'); }catch(e){ return []; } }
+function saveLearn(d){ localStorage.setItem(LEARN_KEY, JSON.stringify(d)); saveLearnToCloud(d); }
+
+async function saveLearnToCloud(data){
+  if(!currentUser) return;
+  try{ await sb.from('journal_data').update({learn:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }catch(e){ console.error('Learn-Sync fehlgeschlagen',e); }
+}
+
+async function initLearn(){
+  // wird bereits beim Login in loadJournalRow() befüllt
+}
+
+function learnTab(t){
+  document.querySelectorAll('.ltab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('lt-'+t).classList.add('active');
+  document.querySelectorAll('.lp').forEach(p=>p.style.display='none');
+  document.getElementById('lp-'+t).style.display='block';
+  if(t==='notes') renderLearnList();
+}
+
+function handleLearnImg(input){
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader(); r.onload=e=>{ const p=document.getElementById('ln-img-prev'); p.src=e.target.result; p.style.display='block'; }; r.readAsDataURL(f);
+}
+
+function clearLearnForm(){
+  document.getElementById('ln-title').value='';
+  document.getElementById('ln-body').value='';
+  const p=document.getElementById('ln-img-prev'); p.src=''; p.style.display='none';
+  document.getElementById('ln-img').value='';
+}
+
+function saveLearnEntry(){
+  const title=document.getElementById('ln-title').value.trim();
+  const body=document.getElementById('ln-body').value.trim();
+  if(!title&&!body){ showToast('Add a title or some text first'); return; }
+  const prev=document.getElementById('ln-img-prev');
+  const img=prev.style.display!=='none'?prev.src:'';
+  const entries=loadLearn();
+  entries.unshift({ id:Date.now(), date:new Date().toISOString().slice(0,10), title:title||'Untitled', body, img });
+  saveLearn(entries);
+  clearLearnForm();
+  showToast('Entry saved \u2713');
+  learnTab('notes');
+}
+
+function renderLearnList(){
+  const all=loadLearn();
+  const el=document.getElementById('learn-entries'); if(!el)return;
+  closeLearnDetail();
+  if(!all.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📚</div><p>No entries yet — start writing down what you learn!</p></div>';
+    return;
+  }
+  const q=(document.getElementById('learn-search')?.value||'').trim().toLowerCase();
+  const entries=q?all.filter(e=>(e.title||'').toLowerCase().includes(q)||(e.body||'').toLowerCase().includes(q)):all;
+  if(!entries.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>No notes match "'+q+'".</p></div>';
+    return;
+  }
+  el.innerHTML=entries.map(e=>`
+    <div class="learn-item" onclick="openLearnDetail(${e.id})">
+      <div class="learn-item-head">
+        <span class="learn-title">${e.title}</span>
+        <span class="learn-date">${e.date}</span>
+      </div>
+      <div class="learn-preview">${e.body.slice(0,120)}${e.body.length>120?'…':''}</div>
+      ${e.img?'<div class="learn-has-img">📸 Screenshot attached</div>':''}
+    </div>`).join('');
+}
+
+function openLearnDetail(id){
+  const entries=loadLearn(), e=entries.find(x=>x.id===id); if(!e)return;
+  document.getElementById('learn-list-view').style.display='none';
+  document.getElementById('learn-detail-view').style.display='block';
+  document.getElementById('learn-detail-el').innerHTML=
+    '<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'+
+        '<div><div style="font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px">'+e.title+'</div>'+
+        '<div style="font-size:12px;color:var(--muted)">'+e.date+'</div></div>'+
+        '<button class="delete-btn" onclick="deleteLearnEntry('+e.id+')">🗑 Delete</button>'+
+      '</div>'+
+      (e.img?'<img src="'+e.img+'" style="width:100%;max-height:260px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:18px">':'')+
+      '<div style="font-size:15px;color:var(--text);line-height:1.85;white-space:pre-wrap">'+e.body+'</div>'+
+    '</div>';
+  document.querySelector('.main-wrap').scrollTop=0;
+}
+
+function closeLearnDetail(){
+  const lv=document.getElementById('learn-list-view'), dv=document.getElementById('learn-detail-view');
+  if(lv)lv.style.display='block'; if(dv)dv.style.display='none';
+}
+
+function deleteLearnEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  const entries=loadLearn().filter(e=>e.id!==id);
+  saveLearn(entries); renderLearnList(); closeLearnDetail(); showToast('Deleted');
+}
+
+async function loadJournalRow(){
+  const {data,error}=await sb.from('journal_data').select('trades,learn,bible_progress').eq('user_id',currentUser.id).single();
+  if(error){ console.error('Konnte Journal nicht laden',error); _cache=[]; return; }
+  _cache=data.trades||[];
+  localStorage.setItem(LEARN_KEY, JSON.stringify(data.learn||[]));
+  bibleProgress=data.bible_progress||{};
+}
+
+async function startApp(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  await loadJournalRow();
+  updateStatus();
+  buildDock(); buildSplash(); switchTab('log'); renderRecentStrip();
+}
+
+async function init(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){ currentUser=session.user; await startApp(); }
+  else { document.getElementById('auth-screen').style.display='flex'; }
+
+  sb.auth.onAuthStateChange(async (event,session)=>{
+    if(event==='SIGNED_IN' && !currentUser){
+      currentUser=session.user;
+      await startApp();
+    } else if(event==='SIGNED_OUT'){
+      currentUser=null; _cache=null;
+      location.reload();
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>
