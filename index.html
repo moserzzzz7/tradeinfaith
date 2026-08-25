@@ -54,9 +54,15 @@
   .main-wrap{flex:1;overflow-y:auto}
   .main{--pad-x:clamp(24px,3vw,64px);--pad-t:30px;max-width:1600px;margin:0 auto;padding:var(--pad-t) var(--pad-x) 90px;position:relative}
   .section{display:none}
-  .section.active{display:block;animation:fadein .22s var(--ease-out) both}
+  /* Sichtbarkeit und Animation getrennt: .active zeigt nur an, .sec-in animiert.
+     Das Rendern passiert im selben Task wie das Setzen von .sec-in, also vor dem
+     ersten Paint -- die Animation startet fuer jeden Tab mit fertigem Inhalt. */
+  .section.active{display:block}
+  /* Bewusst ohne fill-mode: laeuft die Animation nicht (gedrosselter Tab), zeigt der
+     Abschnitt seinen normalen Zustand -- sichtbar ohne Animation statt unsichtbar. */
+  .section.sec-in{animation:fadein .18s var(--ease-out);will-change:transform,opacity}
   /* Alter Inhalt blendet kurz aus -- absolut positioniert, damit das Layout nicht springt */
-  .section.sec-out{position:absolute;top:var(--pad-t);left:var(--pad-x);right:var(--pad-x);pointer-events:none;animation:fadeout .12s var(--ease-out) both}
+  .section.sec-out{position:absolute;top:var(--pad-t);left:var(--pad-x);right:var(--pad-x);pointer-events:none;animation:fadeout .11s var(--ease-out) both;will-change:opacity}
   @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @keyframes fadeout{from{opacity:1}to{opacity:0}}
   .page-head{margin-bottom:28px}
@@ -340,29 +346,31 @@
   @media (max-width:520px){.dock-ico svg{width:18px;height:18px}}
 
   /* ===== Splash ===== */
-  #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;opacity:1;transition:opacity .45s ease}
+  #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;opacity:1;transition:opacity .18s ease}
   #splash.gone{opacity:0;pointer-events:none}
   #splash-canvas{position:fixed;inset:0;width:100%;height:100%;opacity:.3}
   #splash::after{content:'';position:fixed;inset:0;background:var(--bg);opacity:.88}
   #splash-inner{position:relative;z-index:2;text-align:center;padding:40px 22px;max-width:860px;width:100%;margin:auto 0}
-  .sp-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;opacity:0;animation:spIn .6s ease .05s forwards}
-  .sp-title{font-size:clamp(30px,5.4vw,52px);font-weight:700;letter-spacing:-1.4px;line-height:1.08;opacity:0;animation:spIn .6s ease .15s forwards}
-  .sp-sub{font-size:14px;color:var(--muted);margin-top:12px;margin-bottom:34px;opacity:0;animation:spIn .6s ease .28s forwards}
+  /* Kopfbereich blendet nur auf (keine Bewegung), Karten fliegen von unten herein.
+     backwards statt forwards: waehrend der Verzoegerung unsichtbar, danach normaler
+     Zustand -- laeuft die Animation nicht, ist der Splash sichtbar statt leer. */
+  .sp-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;animation:spIn .3s var(--ease-out) backwards}
+  .sp-title{font-size:clamp(30px,5.4vw,52px);font-weight:700;letter-spacing:-1.4px;line-height:1.08;animation:spIn .3s var(--ease-out) .03s backwards}
+  .sp-sub{font-size:14px;color:var(--muted);margin-top:12px;margin-bottom:34px;animation:spIn .3s var(--ease-out) .06s backwards}
   #sp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .sp-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px 16px;text-align:left;cursor:pointer;opacity:0;transform:translateY(12px);animation:spCard .5s cubic-bezier(.2,.7,.3,1) forwards;transition:border-color .18s,background .18s,transform .18s}
+  .sp-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px 16px;text-align:left;cursor:pointer;animation:spCard .3s var(--ease-out) backwards;transition:border-color .18s,background .18s,transform .18s}
   .sp-card:hover{border-color:var(--accent-border);background:var(--accent-bg);transform:translateY(-2px)}
   .sp-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
   .sp-card-ico{font-size:20px;line-height:1}
   .sp-card-name{font-size:14px;font-weight:600;margin-top:9px}
   .sp-card-desc{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
-  .sp-skip{margin-top:30px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:8px 12px;border-radius:8px;opacity:0;animation:spIn .6s ease .9s forwards;transition:color .15s}
+  .sp-skip{margin-top:30px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:8px 12px;border-radius:8px;animation:spIn .3s var(--ease-out) .26s backwards;transition:color .15s}
   .sp-skip:hover{color:var(--text)}
   .sp-hint{font-size:10.5px;color:var(--muted);opacity:.5;margin-top:4px}
-  @keyframes spIn{to{opacity:1}}
-  @keyframes spCard{to{opacity:1;transform:translateY(0)}}
+  @keyframes spIn{from{opacity:0}to{opacity:1}}
+  @keyframes spCard{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
   @media (max-width:820px){#sp-cards{grid-template-columns:repeat(2,1fr)}#dock-logo,#dock-right{flex:0 0 auto;min-width:0}#dockwrap{flex-wrap:wrap;justify-content:center;gap:10px}}
   @media (max-width:520px){#sp-cards{grid-template-columns:1fr}.dock-item{width:38px}.dock-ico{font-size:18px}}
-  @media (prefers-reduced-motion:reduce){.sp-card,.sp-title,.sp-sub,.sp-eyebrow,.sp-skip{animation-duration:.01s}#splash-canvas{display:none}}
 
   /* ===== Stats cockpit v2 ===== */
   .range-chips{display:flex;gap:6px}
@@ -455,10 +463,16 @@
   #sec-settings .btn,#sec-settings .delete-btn{height:var(--ctl-h);padding:0 20px;font-size:13px;font-weight:600;line-height:1;display:inline-flex;align-items:center;justify-content:center}
   #sec-settings .subgrid .field .btn{margin-top:auto;width:100%}
   @keyframes auth-spin{to{transform:rotate(360deg)}}
-  /* ===== Start-Uebergang beim Oeffnen der Seite ===== */
-  #auth-loading{transition:opacity .45s ease}
+  /* ===== Start ===== */
+  /* Kein eigener Ladebildschirm: nur eine leere Flaeche in Hintergrundfarbe, die
+     verhindert, dass das Login-Formular aufblitzt, bevor die Session geprueft ist.
+     Der Kreisel erscheint erst nach 600ms -- also nur, wenn es wirklich haengt. */
+  #auth-loading{transition:opacity .2s ease}
   #auth-loading.gone{opacity:0;pointer-events:none}
-  #auth-loading .al-inner{animation:screenIn .5s cubic-bezier(.2,.7,.3,1) both}
+  .al-spin{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;
+    border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;
+    opacity:0;animation:auth-spin .7s linear infinite,al-show .2s ease .6s forwards}
+  @keyframes al-show{to{opacity:1}}
   .screen-in{animation:screenIn .5s cubic-bezier(.2,.7,.3,1) both}
   @keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 </style>
@@ -467,10 +481,7 @@
 <span class="corner-cross tl">✝</span><span class="corner-cross tr">✝</span><span class="corner-cross bl">✝</span><span class="corner-cross br">✝</span>
 
 <div id="auth-loading" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;">
-  <div class="al-inner" style="text-align:center;">
-    <div style="font-size:22px;font-weight:600;color:var(--text);margin-bottom:16px;">✝ TradeInFaith</div>
-    <div style="width:26px;height:26px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;margin:0 auto;animation:auth-spin .7s linear infinite;"></div>
-  </div>
+  <div class="al-spin" aria-hidden="true"></div>
 </div>
 
 <div id="auth-screen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;">
@@ -1107,7 +1118,7 @@ function buildSplash(){
   const wrap=document.getElementById('sp-cards');
   wrap.innerHTML=SPLASH_PICKS.map((id,i)=>{
     const t=TABS.find(x=>x.id===id); if(!t)return '';
-    return '<div class="sp-card" role="button" tabindex="0" data-tab="'+t.id+'" style="animation-delay:'+(0.38+i*0.07).toFixed(2)+'s">'+
+    return '<div class="sp-card" role="button" tabindex="0" data-tab="'+t.id+'" style="animation-delay:'+(0.10+i*0.03).toFixed(2)+'s">'+
       '<div class="sp-card-ico">'+t.icon+'</div><div class="sp-card-name">'+t.name+'</div><div class="sp-card-desc">'+t.desc+'</div></div>';
   }).join('');
   wrap.querySelectorAll('.sp-card').forEach(el=>{
@@ -1158,44 +1169,72 @@ function closeSplash(tab){
   const sp=document.getElementById('splash'); if(!sp||sp.classList.contains('gone'))return;
   sp.classList.add('gone');
   document.removeEventListener('keydown',_spEsc);
-  setTimeout(()=>{ sp.style.display='none'; stopSplashCanvas(); },500);
-  switchTab(tab||'log');
-  // Erster Aufbau: Hauptinhalt einblenden, waehrend der Splash ausblendet
-  setTimeout(replaySectionEnter,200);
+  setTimeout(()=>{ sp.style.display='none'; stopSplashCanvas(); },220);
+  // Splash blendet aus, waehrend der Inhalt gleichzeitig hereingleitet (force=true,
+  // damit die Einblendung auch beim schon aktiven Log-Tab laeuft)
+  switchTab(tab||'log',true);
 }
 
 // Abschnittswechsel: neuer Inhalt blendet ein, alter blendet kurz aus.
 // Der ausgehende Abschnitt wird absolut positioniert, damit nichts springt und
 // der neue Abschnitt sofort sichtbar/messbar ist.
-const SEC_OUT_MS=120;
-function swapSection(next){
+const SEC_OUT_MS=110;
+function clearSecAnim(s){ s.classList.remove('sec-in','sec-out'); }
+
+// Reihenfolge ist bewusst: .sec-in setzen, dann rendern. Beides laeuft im selben Task,
+// also vor dem ersten Paint -- die Animation startet damit bereits mit fertigem Inhalt,
+// unabhaengig davon, wie teuer das Rendern des jeweiligen Tabs ist.
+// force=true spielt die Einblendung auch, wenn der Abschnitt schon aktiv ist.
+function swapSection(next,render,force){
   if(!next)return;
-  const cur=document.querySelector('.section.active:not(.sec-out)');
   // Reste aus schnellen Wechseln sofort aufraeumen
-  document.querySelectorAll('.section.sec-out').forEach(s=>s.classList.remove('active','sec-out'));
-  if(cur===next)return;
-  if(cur){
+  document.querySelectorAll('.section.sec-out').forEach(s=>{ s.classList.remove('active'); clearSecAnim(s); });
+  const cur=document.querySelector('.section.active');
+  if(cur&&cur!==next){
+    cur.classList.remove('sec-in');
     cur.classList.add('sec-out');
-    setTimeout(()=>{ cur.classList.remove('active','sec-out'); },SEC_OUT_MS);
+    setTimeout(()=>{ if(cur.classList.contains('sec-out')){ cur.classList.remove('active'); clearSecAnim(cur); } },SEC_OUT_MS);
   }
+  if(cur===next&&!force){ if(render)render(); return; }
+
+  clearSecAnim(next);
   next.classList.add('active');
-}
-// Enter-Animation eines bereits aktiven Abschnitts neu abspielen
-function replaySectionEnter(){
-  const sec=document.querySelector('.section.active:not(.sec-out)');
-  if(!sec)return;
-  sec.classList.remove('active');
-  void sec.offsetWidth;
-  sec.classList.add('active');
+  void next.offsetWidth;                 // Reflow -> Animation startet auch bei force neu
+  next.classList.add('sec-in');
+  // Sicherheitsnetz: falls animationend ausbleibt (gedrosselter/inaktiver Tab), wird
+  // sec-in trotzdem entfernt -- der Abschnitt darf nie unsichtbar haengen bleiben.
+  const fertig=()=>next.classList.remove('sec-in');
+  next.addEventListener('animationend',fertig,{once:true});
+  setTimeout(fertig,400);
+  if(render)render();
 }
 
-function switchTab(t){
+function switchTab(t,force){
   document.querySelectorAll('.dock-item').forEach(n=>n.classList.toggle('active',n.dataset.tab===t));
-  swapSection(document.getElementById('sec-'+t));
   const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0;
-  startParts();
-  if(t==='log')renderRecentStrip(); if(t==='list'){closeDetail();renderList();}
-  if(t==='stats')setStatsSubView(statsSubView); if(t==='faith')renderFaith(); if(t==='bible')renderBible(); if(t==='learn')renderLearnList();
+  // Ambient-Canvas anhalten; faith/stats starten ihn in ihrem eigenen Render neu.
+  stopAmbient();
+  swapSection(document.getElementById('sec-'+t),()=>{
+    if(t==='log')renderRecentStrip();
+    else if(t==='list'){closeDetail();renderList();}
+    else if(t==='stats')setStatsSubView(statsSubView);
+    else if(t==='faith')renderFaith();
+    else if(t==='bible')renderBible();
+    else if(t==='learn')renderLearnList();
+  },force);
+}
+
+// Nach dem Eintreffen der Daten den sichtbaren Tab neu fuellen -- ohne Animation
+function refreshActiveTab(){
+  const sec=document.querySelector('.section.active:not(.sec-out)');
+  if(!sec)return;
+  const t=sec.id.replace('sec-','');
+  if(t==='log')renderRecentStrip();
+  else if(t==='list')renderList();
+  else if(t==='stats')setStatsSubView(statsSubView);
+  else if(t==='faith')renderFaith();
+  else if(t==='bible')renderBible();
+  else if(t==='learn')renderLearnList();
 }
 
 function toggleTag(b){ b.classList.toggle('sel'); }
@@ -2304,25 +2343,26 @@ async function startApp(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('signup-screen').style.display='none';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  try{
-    await loadJournalRow();
-    updateStatus();
-    buildDock(); buildSplash(); switchTab('log'); renderRecentStrip();
-  } finally {
-    // Erst ausblenden, wenn die App fertig aufgebaut ist -> weiche Ueberblendung
-    hideAuthLoading();
-  }
+  // Huelle sofort zeigen. Die Journal-Abfrage dauert gemessen ~590ms (rund 1.7 MB,
+  // Screenshots stecken als Data-URLs in den Trades) -- darauf wird nicht gewartet.
+  buildDock(); buildSplash(); switchTab('log');
+  hideAuthLoading();
+  // Daten im Hintergrund nachladen und nachtragen
+  try{ await loadJournalRow(); }
+  catch(e){ console.error('Konnte Journal nicht laden',e); if(!_cache)_cache=[]; }
+  updateStatus();
+  refreshActiveTab();
 }
 
 let _preSettingsTab='log';
 function openSettings(){
   const activeDock=document.querySelector('.dock-item.active');
   if(activeDock) _preSettingsTab=activeDock.dataset.tab;
-  swapSection(document.getElementById('sec-settings'));
   document.querySelectorAll('.dock-item').forEach(n=>n.classList.remove('active'));
   const settingsItem=document.getElementById('dock-settings'); if(settingsItem)settingsItem.classList.add('active');
   const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0;
-  renderSettings();
+  stopAmbient();
+  swapSection(document.getElementById('sec-settings'),renderSettings);
 }
 function closeSettings(){ switchTab(_preSettingsTab); }
 function renderSettings(){
