@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Trade Journal</title>
+<title>TradeInFaith</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f7f6f3">
 <link rel="icon" href="icon-512.png">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Trade Journal">
+<meta name="apple-mobile-web-app-title" content="TradeInFaith">
 <script>(function(){try{if(localStorage.getItem('tj_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
 <style>
   :root {
@@ -313,8 +313,9 @@
   /* ===== Dock bar ===== */
   .app{display:flex;flex-direction:column;height:100vh}
   #dockwrap{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 22px 0;position:relative;z-index:40;flex-shrink:0}
-  #dock-logo{display:flex;flex-direction:column;min-width:190px}
-  #dock{display:flex;align-items:flex-end;gap:14px;background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:10px 18px 9px;box-shadow:var(--shadow-card)}
+  /* Beide Seiten gleich breit (flex:1 1 0) -> Dock sitzt exakt mittig */
+  #dock-logo{display:flex;flex-direction:column;flex:1 1 0;min-width:0}
+  #dock{display:flex;align-items:flex-end;gap:14px;flex:0 0 auto;background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:10px 18px 9px;box-shadow:var(--shadow-card)}
   .dock-item{width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--muted);transition:color .15s;user-select:none}
   .dock-item:hover,.dock-item.active{color:var(--text)}
   .dock-ico{font-size:21px;line-height:1.15;filter:grayscale(.35);transition:filter .15s,transform .18s cubic-bezier(.2,.8,.2,1);will-change:transform;display:flex;align-items:center;justify-content:center;height:24px}
@@ -326,7 +327,7 @@
   .dock-item.active .dock-dot{background:var(--accent)}
   .dock-item:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px}
   .dock-sep{width:1px;align-self:stretch;background:var(--border2);margin:2px 2px}
-  #dock-right{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+  #dock-right{display:flex;align-items:center;gap:10px;flex:1 1 0;justify-content:flex-end}
   .dock-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center;transition:all .15s}
   .dock-btn:hover{background:var(--surface2);color:var(--text)}
   /* Reduced Motion: Icon-Lift bleibt, nur ohne animierten Uebergang */
@@ -354,7 +355,7 @@
   .sp-hint{font-size:10.5px;color:var(--muted);opacity:.5;margin-top:4px}
   @keyframes spIn{to{opacity:1}}
   @keyframes spCard{to{opacity:1;transform:translateY(0)}}
-  @media (max-width:820px){#sp-cards{grid-template-columns:repeat(2,1fr)}#dock-logo,#dock-right{min-width:0}#dockwrap{flex-wrap:wrap;justify-content:center;gap:10px}}
+  @media (max-width:820px){#sp-cards{grid-template-columns:repeat(2,1fr)}#dock-logo,#dock-right{flex:0 0 auto;min-width:0}#dockwrap{flex-wrap:wrap;justify-content:center;gap:10px}}
   @media (max-width:520px){#sp-cards{grid-template-columns:1fr}.dock-item{width:38px}.dock-ico{font-size:18px}}
   @media (prefers-reduced-motion:reduce){.sp-card,.sp-title,.sp-sub,.sp-eyebrow,.sp-skip{animation-duration:.01s}#splash-canvas{display:none}}
 
@@ -449,14 +450,23 @@
   #sec-settings .btn,#sec-settings .delete-btn{height:var(--ctl-h);padding:0 20px;font-size:13px;font-weight:600;line-height:1;display:inline-flex;align-items:center;justify-content:center}
   #sec-settings .subgrid .field .btn{margin-top:auto;width:100%}
   @keyframes auth-spin{to{transform:rotate(360deg)}}
+  /* ===== Start-Uebergang beim Oeffnen der Seite ===== */
+  #auth-loading{transition:opacity .45s ease}
+  #auth-loading.gone{opacity:0;pointer-events:none}
+  #auth-loading .al-inner{animation:screenIn .5s cubic-bezier(.2,.7,.3,1) both}
+  .screen-in{animation:screenIn .5s cubic-bezier(.2,.7,.3,1) both}
+  @keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes screenFade{from{opacity:0}to{opacity:1}}
+  /* Reduced Motion: Ueberblendung bleibt, nur ohne Bewegung */
+  @media (prefers-reduced-motion:reduce){.screen-in,#auth-loading .al-inner{animation-name:screenFade}}
 </style>
 </head>
 <body>
 <span class="corner-cross tl">✝</span><span class="corner-cross tr">✝</span><span class="corner-cross bl">✝</span><span class="corner-cross br">✝</span>
 
 <div id="auth-loading" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;">
-  <div style="text-align:center;">
-    <div style="font-size:22px;font-weight:600;color:var(--text);margin-bottom:16px;">✝ Moser's Trade Journal</div>
+  <div class="al-inner" style="text-align:center;">
+    <div style="font-size:22px;font-weight:600;color:var(--text);margin-bottom:16px;">✝ TradeInFaith</div>
     <div style="width:26px;height:26px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;margin:0 auto;animation:auth-spin .7s linear infinite;"></div>
   </div>
 </div>
@@ -464,7 +474,7 @@
 <div id="auth-screen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;">
   <div style="width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:32px 28px;">
     <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:22px;font-weight:600;color:var(--text);">✝ Moser's Trade Journal</div>
+      <div style="font-size:22px;font-weight:600;color:var(--text);">✝ TradeInFaith</div>
       <div style="font-size:13px;color:var(--muted);margin-top:4px;">Discipline over profit</div>
     </div>
     <div id="auth-error" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
@@ -482,7 +492,7 @@
   <div style="width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:32px 28px;margin:24px 0;">
     <div style="text-align:center;margin-bottom:24px;">
       <div style="font-size:22px;font-weight:600;color:var(--text);">✝ Konto erstellen</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Moser's Trade Journal</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">TradeInFaith</div>
     </div>
     <div id="signup-error" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
@@ -511,7 +521,7 @@
   <canvas id="splash-canvas"></canvas>
   <div id="splash-inner">
     <div class="sp-eyebrow">&#10013; Discipline over profit</div>
-    <h1 class="sp-title">Moser&#39;s Trade Journal</h1>
+    <h1 class="sp-title">TradeInFaith</h1>
     <p class="sp-sub">ICT / Smart Money &middot; Wo willst du starten?</p>
     <div id="sp-cards"></div>
     <button class="sp-skip" onclick="closeSplash()">Einfach reingehen &rarr;</button>
@@ -521,7 +531,7 @@
 <div class="app">
   <header id="dockwrap">
     <div id="dock-logo">
-      <div class="logo-text"><span class="logo-dot"></span> Trade Journal</div>
+      <div class="logo-text"><span class="logo-dot"></span> TradeInFaith</div>
       <div class="logo-sub" id="trade-count">&ndash;</div>
     </div>
     <nav id="dock" aria-label="Bereiche"></nav>
@@ -2253,14 +2263,27 @@ async function loadJournalRow(){
   applyTheme(_settingsCache.theme||'light');
 }
 
+// Ladescreen weich ausblenden statt hart wegschalten
+function hideAuthLoading(){
+  const el=document.getElementById('auth-loading');
+  if(!el||el.dataset.gone)return;
+  el.dataset.gone='1';
+  el.classList.add('gone');
+  setTimeout(()=>{ el.style.display='none'; },500);
+}
+
 async function startApp(){
-  document.getElementById('auth-loading').style.display='none';
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('signup-screen').style.display='none';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  await loadJournalRow();
-  updateStatus();
-  buildDock(); buildSplash(); switchTab('log'); renderRecentStrip();
+  try{
+    await loadJournalRow();
+    updateStatus();
+    buildDock(); buildSplash(); switchTab('log'); renderRecentStrip();
+  } finally {
+    // Erst ausblenden, wenn die App fertig aufgebaut ist -> weiche Ueberblendung
+    hideAuthLoading();
+  }
 }
 
 let _preSettingsTab='log';
@@ -2344,8 +2367,10 @@ async function init(){
   const {data:{session}}=await sb.auth.getSession();
   if(session){ currentUser=session.user; await startApp(); }
   else {
-    document.getElementById('auth-loading').style.display='none';
-    document.getElementById('auth-screen').style.display='flex';
+    const s=document.getElementById('auth-screen');
+    s.style.display='flex';
+    s.classList.add('screen-in');
+    hideAuthLoading();
   }
 
   sb.auth.onAuthStateChange(async (event,session)=>{
