@@ -317,7 +317,8 @@
   #dock{display:flex;align-items:flex-end;gap:14px;background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:10px 18px 9px;box-shadow:var(--shadow-card)}
   .dock-item{width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--muted);transform-origin:bottom center;transition:color .15s,transform .18s cubic-bezier(.2,.8,.2,1);will-change:transform;user-select:none}
   .dock-item:hover,.dock-item.active{color:var(--text)}
-  .dock-ico{font-size:21px;line-height:1.15;filter:grayscale(.35);transition:filter .15s}
+  .dock-ico{font-size:21px;line-height:1.15;filter:grayscale(.35);transition:filter .15s;display:flex;align-items:center;justify-content:center;height:24px}
+  .dock-ico svg{width:21px;height:21px;display:block}
   .dock-item:hover .dock-ico,.dock-item.active .dock-ico{filter:none}
   .dock-label{font-size:9px;font-weight:600;letter-spacing:.03em;white-space:nowrap;opacity:.55;transition:opacity .15s}
   .dock-item:hover .dock-label,.dock-item.active .dock-label{opacity:1}
@@ -328,7 +329,9 @@
   #dock-right{display:flex;align-items:center;gap:10px;justify-content:flex-end}
   .dock-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center;transition:all .15s}
   .dock-btn:hover{background:var(--surface2);color:var(--text)}
+  /* Reduced Motion: Vergroesserung bleibt, nur ohne animierten Uebergang */
   @media (prefers-reduced-motion:reduce){.dock-item{transition:color .15s}}
+  @media (max-width:520px){.dock-ico svg{width:18px;height:18px}}
 
   /* ===== Splash ===== */
   #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;opacity:1;transition:opacity .45s ease}
@@ -438,6 +441,13 @@
   .theme-name{font-size:13px;font-weight:600;color:var(--text)}
   .theme-desc{font-size:11px;color:var(--muted);margin-top:2px}
   @media(max-width:600px){.theme-grid{grid-template-columns:1fr}}
+  /* Einheitliche Zeilenhoehe fuer alle Eingaben/Buttons in den Einstellungen */
+  #sec-settings{--ctl-h:42px}
+  #sec-settings .field{gap:8px}
+  #sec-settings .field .field-help{margin-top:0}
+  #sec-settings input,#sec-settings select{height:var(--ctl-h);padding:0 14px}
+  #sec-settings .btn,#sec-settings .delete-btn{height:var(--ctl-h);padding:0 20px;font-size:13px;font-weight:600;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+  #sec-settings .subgrid .field .btn{margin-top:auto;width:100%}
   @keyframes auth-spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -1021,13 +1031,18 @@ const TABS=[
 ];
 const SPLASH_PICKS=['log','list','stats','faith','bible','learn'];
 
+// Zahnrad (lucide "settings")
+const GEAR_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+  +'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>'
+  +'<circle cx="12" cy="12" r="3"/></svg>';
+
 function buildDock(){
   const d=document.getElementById('dock');
   d.innerHTML=TABS.map(t=>'<div class="dock-item" role="button" tabindex="0" data-tab="'+t.id+'" title="'+t.name+'">'+
     '<span class="dock-ico">'+t.icon+'</span><span class="dock-label">'+t.name+'</span><span class="dock-dot"></span></div>').join('')
     +'<div class="dock-sep"></div>'
     +'<div class="dock-item" role="button" tabindex="0" id="dock-settings" title="Einstellungen">'
-    +'<span class="dock-ico">⚙</span><span class="dock-label">Settings</span></div>';
+    +'<span class="dock-ico">'+GEAR_SVG+'</span><span class="dock-label">Settings</span><span class="dock-dot"></span></div>';
   d.querySelectorAll('.dock-item[data-tab]').forEach(el=>{
     el.addEventListener('click',()=>switchTab(el.dataset.tab));
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();switchTab(el.dataset.tab);} });
@@ -1038,19 +1053,38 @@ function buildDock(){
   initDockMagnify(d);
 }
 
+// macOS-Dock-Magnification: gehovertes Icon 1.4, direkte Nachbarn ~1.15, danach
+// weicher Auslauf. Laeuft auch bei "reduced motion" -- dort nur ohne Uebergang (CSS).
 function initDockMagnify(dock){
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const items=[...dock.querySelectorAll('.dock-item')];
-  dock.addEventListener('mousemove',e=>{
-    items.forEach(el=>{
-      const r=el.getBoundingClientRect();
-      const dist=Math.abs(e.clientX-(r.left+r.width/2))/(r.width||46);
-      const scale=dist<0.6?1.4:dist<1.6?1.15:dist<2.6?1.05:1;
-      el.style.transform=scale>1?'scale('+scale+')':'';
+  if(!items.length) return;
+  let centers=[],unit=46,raf=null,lastX=0;
+
+  function reset(){ items.forEach(el=>{ el.style.transform=''; }); }
+  // Immer im unskalierten Zustand messen, sonst misst man die eigene Skalierung mit.
+  function measure(){
+    reset();
+    const rects=items.map(el=>el.getBoundingClientRect());
+    centers=rects.map(r=>r.left+r.width/2);
+    unit=rects[0]&&rects[0].width?rects[0].width:46;
+  }
+  function apply(x){
+    items.forEach((el,i)=>{
+      const dist=Math.abs(x-centers[i])/unit;
+      const scale=1+0.4*Math.exp(-(dist*dist)/1.02);
+      el.style.transform=scale>1.005?'scale('+scale.toFixed(3)+')':'';
     });
+  }
+
+  dock.addEventListener('mouseenter',measure);
+  dock.addEventListener('mousemove',e=>{
+    lastX=e.clientX;
+    if(raf)return;
+    raf=requestAnimationFrame(()=>{ raf=null; apply(lastX); });
   });
   dock.addEventListener('mouseleave',()=>{
-    items.forEach(el=>{ el.style.transform=''; });
+    if(raf){ cancelAnimationFrame(raf); raf=null; }
+    reset();
   });
 }
 
