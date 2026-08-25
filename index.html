@@ -25,6 +25,8 @@
     --amber:#9a6b0d; --amber-bg:rgba(154,107,13,0.1);
     --violet:#6a4fc2; --orange:#b9591c;
     --radius:12px; --radius-sm:8px;
+    /* Kraeftigere ease-out-Kurve als die CSS-Defaults (Enter-Animationen) */
+    --ease-out:cubic-bezier(.23,1,.32,1);
     --shadow-card:0 1px 2px rgba(20,18,14,.05); --shadow-pop:0 6px 20px rgba(20,18,14,.1);
   }
   :root[data-theme="dark"] {
@@ -50,10 +52,13 @@
   .logo-sub{font-size:11px;color:var(--muted);margin-top:3px}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:all .3s}
   .main-wrap{flex:1;overflow-y:auto}
-  .main{max-width:1600px;margin:0 auto;padding:30px clamp(24px,3vw,64px) 90px}
+  .main{--pad-x:clamp(24px,3vw,64px);--pad-t:30px;max-width:1600px;margin:0 auto;padding:var(--pad-t) var(--pad-x) 90px;position:relative}
   .section{display:none}
-  .section.active{display:block;animation:fadein .22s ease}
-  @keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+  .section.active{display:block;animation:fadein .22s var(--ease-out) both}
+  /* Alter Inhalt blendet kurz aus -- absolut positioniert, damit das Layout nicht springt */
+  .section.sec-out{position:absolute;top:var(--pad-t);left:var(--pad-x);right:var(--pad-x);pointer-events:none;animation:fadeout .12s var(--ease-out) both}
+  @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes fadeout{from{opacity:1}to{opacity:0}}
   .page-head{margin-bottom:28px}
   .page-title{font-size:24px;font-weight:600;letter-spacing:-0.5px}
   .page-desc{font-size:13px;color:var(--muted);margin-top:4px}
@@ -456,9 +461,6 @@
   #auth-loading .al-inner{animation:screenIn .5s cubic-bezier(.2,.7,.3,1) both}
   .screen-in{animation:screenIn .5s cubic-bezier(.2,.7,.3,1) both}
   @keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  @keyframes screenFade{from{opacity:0}to{opacity:1}}
-  /* Reduced Motion: Ueberblendung bleibt, nur ohne Bewegung */
-  @media (prefers-reduced-motion:reduce){.screen-in,#auth-loading .al-inner{animation-name:screenFade}}
 </style>
 </head>
 <body>
@@ -1158,12 +1160,38 @@ function closeSplash(tab){
   document.removeEventListener('keydown',_spEsc);
   setTimeout(()=>{ sp.style.display='none'; stopSplashCanvas(); },500);
   switchTab(tab||'log');
+  // Erster Aufbau: Hauptinhalt einblenden, waehrend der Splash ausblendet
+  setTimeout(replaySectionEnter,200);
+}
+
+// Abschnittswechsel: neuer Inhalt blendet ein, alter blendet kurz aus.
+// Der ausgehende Abschnitt wird absolut positioniert, damit nichts springt und
+// der neue Abschnitt sofort sichtbar/messbar ist.
+const SEC_OUT_MS=120;
+function swapSection(next){
+  if(!next)return;
+  const cur=document.querySelector('.section.active:not(.sec-out)');
+  // Reste aus schnellen Wechseln sofort aufraeumen
+  document.querySelectorAll('.section.sec-out').forEach(s=>s.classList.remove('active','sec-out'));
+  if(cur===next)return;
+  if(cur){
+    cur.classList.add('sec-out');
+    setTimeout(()=>{ cur.classList.remove('active','sec-out'); },SEC_OUT_MS);
+  }
+  next.classList.add('active');
+}
+// Enter-Animation eines bereits aktiven Abschnitts neu abspielen
+function replaySectionEnter(){
+  const sec=document.querySelector('.section.active:not(.sec-out)');
+  if(!sec)return;
+  sec.classList.remove('active');
+  void sec.offsetWidth;
+  sec.classList.add('active');
 }
 
 function switchTab(t){
   document.querySelectorAll('.dock-item').forEach(n=>n.classList.toggle('active',n.dataset.tab===t));
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  const sec=document.getElementById('sec-'+t); if(sec)sec.classList.add('active');
+  swapSection(document.getElementById('sec-'+t));
   const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0;
   startParts();
   if(t==='log')renderRecentStrip(); if(t==='list'){closeDetail();renderList();}
@@ -2290,8 +2318,7 @@ let _preSettingsTab='log';
 function openSettings(){
   const activeDock=document.querySelector('.dock-item.active');
   if(activeDock) _preSettingsTab=activeDock.dataset.tab;
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('sec-settings').classList.add('active');
+  swapSection(document.getElementById('sec-settings'));
   document.querySelectorAll('.dock-item').forEach(n=>n.classList.remove('active'));
   const settingsItem=document.getElementById('dock-settings'); if(settingsItem)settingsItem.classList.add('active');
   const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0;
