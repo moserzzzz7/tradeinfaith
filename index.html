@@ -315,9 +315,9 @@
   #dockwrap{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 22px 0;position:relative;z-index:40;flex-shrink:0}
   #dock-logo{display:flex;flex-direction:column;min-width:190px}
   #dock{display:flex;align-items:flex-end;gap:14px;background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:10px 18px 9px;box-shadow:var(--shadow-card)}
-  .dock-item{width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--muted);transform-origin:bottom center;transition:color .15s,transform .18s cubic-bezier(.2,.8,.2,1);will-change:transform;user-select:none}
+  .dock-item{width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--muted);transition:color .15s;user-select:none}
   .dock-item:hover,.dock-item.active{color:var(--text)}
-  .dock-ico{font-size:21px;line-height:1.15;filter:grayscale(.35);transition:filter .15s;display:flex;align-items:center;justify-content:center;height:24px}
+  .dock-ico{font-size:21px;line-height:1.15;filter:grayscale(.35);transition:filter .15s,transform .18s cubic-bezier(.2,.8,.2,1);will-change:transform;display:flex;align-items:center;justify-content:center;height:24px}
   .dock-ico svg{width:21px;height:21px;display:block}
   .dock-item:hover .dock-ico,.dock-item.active .dock-ico{filter:none}
   .dock-label{font-size:9px;font-weight:600;letter-spacing:.03em;white-space:nowrap;opacity:.55;transition:opacity .15s}
@@ -329,8 +329,8 @@
   #dock-right{display:flex;align-items:center;gap:10px;justify-content:flex-end}
   .dock-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center;transition:all .15s}
   .dock-btn:hover{background:var(--surface2);color:var(--text)}
-  /* Reduced Motion: Vergroesserung bleibt, nur ohne animierten Uebergang */
-  @media (prefers-reduced-motion:reduce){.dock-item{transition:color .15s}}
+  /* Reduced Motion: Icon-Lift bleibt, nur ohne animierten Uebergang */
+  @media (prefers-reduced-motion:reduce){.dock-ico{transition:filter .15s}}
   @media (max-width:520px){.dock-ico svg{width:18px;height:18px}}
 
   /* ===== Splash ===== */
@@ -1053,15 +1053,17 @@ function buildDock(){
   initDockMagnify(d);
 }
 
-// macOS-Dock-Magnification: gehovertes Icon 1.4, direkte Nachbarn ~1.15, danach
-// weicher Auslauf. Laeuft auch bei "reduced motion" -- dort nur ohne Uebergang (CSS).
+// Dock-Hover: nichts wird groesser -- das Icon unter dem Cursor hebt sich 3px an,
+// direkte Nachbarn gedaempft mit. Labels bleiben stehen.
+// Laeuft auch bei "reduced motion" -- dort nur ohne Uebergang (CSS).
+const DOCK_LIFT=3;
 function initDockMagnify(dock){
   const items=[...dock.querySelectorAll('.dock-item')];
+  const icons=items.map(el=>el.querySelector('.dock-ico'));
   if(!items.length) return;
   let centers=[],unit=46,raf=null,lastX=0;
 
-  function reset(){ items.forEach(el=>{ el.style.transform=''; }); }
-  // Immer im unskalierten Zustand messen, sonst misst man die eigene Skalierung mit.
+  function reset(){ icons.forEach(el=>{ if(el)el.style.transform=''; }); }
   function measure(){
     reset();
     const rects=items.map(el=>el.getBoundingClientRect());
@@ -1069,10 +1071,11 @@ function initDockMagnify(dock){
     unit=rects[0]&&rects[0].width?rects[0].width:46;
   }
   function apply(x){
-    items.forEach((el,i)=>{
+    icons.forEach((el,i)=>{
+      if(!el)return;
       const dist=Math.abs(x-centers[i])/unit;
-      const scale=1+0.4*Math.exp(-(dist*dist)/1.02);
-      el.style.transform=scale>1.005?'scale('+scale.toFixed(3)+')':'';
+      const lift=DOCK_LIFT*Math.exp(-(dist*dist)/1.02);
+      el.style.transform=lift>0.2?'translateY(-'+lift.toFixed(2)+'px)':'';
     });
   }
 
