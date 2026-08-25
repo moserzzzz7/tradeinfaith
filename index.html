@@ -1053,10 +1053,10 @@ function buildDock(){
   initDockMagnify(d);
 }
 
-// Dock-Hover-Magnification: Icon unter dem Cursor 1.10, direkte Nachbarn ~1.04,
+// Dock-Hover-Magnification: Icon unter dem Cursor 1.20, direkte Nachbarn ~1.08,
 // danach weicher Auslauf. Skaliert nur das Icon, Labels bleiben stehen.
 // Laeuft auch bei "reduced motion" -- dort nur ohne Uebergang (CSS).
-const DOCK_MAG=0.10;
+const DOCK_MAG=0.20;
 function initDockMagnify(dock){
   const items=[...dock.querySelectorAll('.dock-item')];
   const icons=items.map(el=>el.querySelector('.dock-ico'));
