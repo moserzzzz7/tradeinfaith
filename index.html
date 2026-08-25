@@ -1053,10 +1053,10 @@ function buildDock(){
   initDockMagnify(d);
 }
 
-// Dock-Hover: nichts wird groesser -- das Icon unter dem Cursor hebt sich 3px an,
-// direkte Nachbarn gedaempft mit. Labels bleiben stehen.
+// Dock-Hover-Magnification: Icon unter dem Cursor 1.10, direkte Nachbarn ~1.04,
+// danach weicher Auslauf. Skaliert nur das Icon, Labels bleiben stehen.
 // Laeuft auch bei "reduced motion" -- dort nur ohne Uebergang (CSS).
-const DOCK_LIFT=3;
+const DOCK_MAG=0.10;
 function initDockMagnify(dock){
   const items=[...dock.querySelectorAll('.dock-item')];
   const icons=items.map(el=>el.querySelector('.dock-ico'));
@@ -1074,8 +1074,8 @@ function initDockMagnify(dock){
     icons.forEach((el,i)=>{
       if(!el)return;
       const dist=Math.abs(x-centers[i])/unit;
-      const lift=DOCK_LIFT*Math.exp(-(dist*dist)/1.02);
-      el.style.transform=lift>0.2?'translateY(-'+lift.toFixed(2)+'px)':'';
+      const scale=1+DOCK_MAG*Math.exp(-(dist*dist)/1.02);
+      el.style.transform=scale>1.005?'scale('+scale.toFixed(3)+')':'';
     });
   }
 
