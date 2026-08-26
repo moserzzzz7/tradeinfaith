@@ -2680,13 +2680,36 @@ function startIntroCanvas(){
     // Anker der neuesten Kerze. Am Ende des Aufbaus steht Kerze 0 damit wieder bei
     // PAD und die letzte hier -- das Endbild ist dasselbe wie ohne Scroll.
     X_RIGHT=W-PAD-BODY;
-    const lo=H*0.20, hi=H*0.82;          // y: kleiner Wert = hoher Kurs
+    // y: grosser Wert = tiefer Kurs. Erste Kerze steht fix unten, letzte fix oben --
+    // damit weiss der Zoom, wohin er zielt.
+    const START=H*0.84, END=H*0.16;
+
+    // Brownian Bridge: ein echter Random Walk, dessen Enden anschliessend auf null
+    // gezogen werden. Der Kurs schwankt unterwegs also frei (mal hoeher, mal tiefer,
+    // mal seitwaerts), trifft die beiden Fixpunkte aber garantiert. Vorher lag eine
+    // feste Trendlinie mit etwas Rauschen darauf -- da war der Trendschritt groesser
+    // als das Rauschen, wodurch jede Kerze zwangslaeufig stieg und der Chart wie eine
+    // gerade Linie aussah.
+    const w=[0];
+    for(let i=1;i<N;i++) w.push(w[i-1]+(Math.random()-0.5));
+    const a=w[0], b=w[N-1];
+    for(let i=0;i<N;i++) w[i]-=a+(b-a)*i/(N-1);
+    // Auf die groesste Auslenkung normieren, damit die Schwankung unabhaengig vom
+    // Zufall immer im gleichen Rahmen bleibt.
+    let mx=0; for(const v of w) mx=Math.max(mx,Math.abs(v));
+    const amp=H*0.15/(mx||1);
+
     candles=[]; tickIdx=-1;
-    let prev=hi;
+    let prev=START+H*0.025;              // Eroeffnung der ersten Kerze knapp darunter
     for(let i=0;i<N;i++){
-      const t=(i+1)/N;
-      const trend=hi+(lo-hi)*(t-0.09*Math.sin(t*Math.PI*3));
-      const c=Math.max(H*0.14,Math.min(H*0.88,trend+(Math.random()-0.5)*H*0.055));
+      const t=i/(N-1), ramp=START+(END-START)*t;
+      // Sanfte Durchbiegung nach unten in der Mitte, an beiden Enden null. Sie laesst
+      // dem Random Walk Luft nach oben, ohne dass er das Hoch der letzten Kerze
+      // antastet -- sonst laege der Hochpunkt gern mitten im Chart und der Zoom
+      // zielte nicht auf das sichtbare Hoch. y waechst nach unten, +sag = tieferer
+      // Kurs. Den Walk selbst ruehrt das nicht an, die Schwankung bleibt voll.
+      const sag=H*0.12*Math.sin(Math.PI*t);
+      const c=Math.max(H*0.10,Math.min(H*0.93,ramp+sag+w[i]*amp));
       candles.push({o:prev,c:c,base:c,wick:H*0.010+Math.random()*H*0.026});
       prev=c;
     }
