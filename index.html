@@ -2632,11 +2632,11 @@ function revealIntro(fast){
   box.classList.add('reveal');
   const logo=document.getElementById('intro-logo');
   if(logo){ logo.classList.remove('in'); logo.classList.add('out'); }
-  // Bewusst ausserhalb von _introTimers: raeumt auch dann auf, wenn endIntro die
-  // Timeline vorher stoppt. +200ms deckt den Stagger der aeusseren Kacheln ab.
-  setTimeout(()=>document.querySelectorAll('.intro-burst').forEach(el=>{
-    el.classList.remove('intro-burst'); el.style.removeProperty('--burst-d');
-  }),dur+200);
+  // intro-burst bleibt bewusst stehen. Nimmt man die Klasse wieder ab, greifen die
+  // Basis-Regeln (.sp-card -> spCard, .sp-title & Co -> spIn) als frisch angewandte
+  // Animationen und der Startbildschirm spielt seinen Aufbau ein zweites Mal.
+  // Stoerend ist die Klasse nicht: beide Burst-Keyframes laufen mit Fill-Mode
+  // backwards, tragen nach dem Ende also nichts mehr zum Computed Style bei.
   _introAt(fast?460:720,endIntro);
 }
 
@@ -2659,7 +2659,7 @@ function startIntroCanvas(){
   const GREEN=tok('--green','#0f8a5f'), RED=tok('--red','#c23b3b');
 
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  let W=0,H=0,PAD=0,SLOT=0,BODY=0,N=0,candles=[],tickIdx=-1;
+  let W=0,H=0,PAD=0,SLOT=0,BODY=0,N=0,X_RIGHT=0,candles=[],tickIdx=-1;
   const t0=performance.now();
 
   function size(){
@@ -2677,6 +2677,9 @@ function startIntroCanvas(){
     PAD=Math.max(24,W*0.06);
     N=Math.max(16,Math.min(38,Math.round((W-2*PAD)/34)));
     SLOT=(W-2*PAD)/N; BODY=Math.max(5,SLOT*0.52);
+    // Anker der neuesten Kerze. Am Ende des Aufbaus steht Kerze 0 damit wieder bei
+    // PAD und die letzte hier -- das Endbild ist dasselbe wie ohne Scroll.
+    X_RIGHT=W-PAD-BODY;
     const lo=H*0.20, hi=H*0.82;          // y: kleiner Wert = hoher Kurs
     candles=[]; tickIdx=-1;
     let prev=hi;
@@ -2689,7 +2692,7 @@ function startIntroCanvas(){
     }
     // Zoom-Ziel steht damit fest: die letzte Kerze oben rechts. Bewusst hier und nicht
     // pro Frame, damit die Kamerafahrt auch stimmt, wenn rAF gedrosselt wurde.
-    _introOX=Math.max(6,Math.min(96,(PAD+(N-1)*SLOT+SLOT/2)/Math.max(1,W)*100));
+    _introOX=Math.max(6,Math.min(96,(X_RIGHT+BODY/2)/Math.max(1,W)*100));
     _introOY=Math.max(6,Math.min(94,candles[N-1].c/Math.max(1,H)*100));
   }
 
@@ -2697,8 +2700,14 @@ function startIntroCanvas(){
   window.addEventListener('resize',()=>{ if(_introDone)return; size(); build(); });
 
   function frame(){
-    const step=INTRO_BUILD_MS/(N+1);
-    const shown=Math.max(0,Math.min(N,Math.floor((performance.now()-t0)/step)));
+    // p = Position des Aufbaus in Kerzenbreiten, bewusst gebrochen statt ganzzahlig:
+    // dadurch schiebt sich die ganze Formation kontinuierlich nach links, waehrend
+    // rechts die naechste Kerze hereinlaeuft. Der Vorlauf von 3 Slots haelt das Bild
+    // bei t=0 leer. Gedeckelt bei N-1: ist der Aufbau fertig, steht der Chart still
+    // mit der letzten Kerze am rechten Anker.
+    const step=INTRO_BUILD_MS/(N+2);
+    const p=Math.min(N-1,(performance.now()-t0)/step-3);
+    const shown=Math.max(0,Math.min(N,Math.floor(p)+1));
 
     // Nur die jeweils neueste Kerze zappelt leicht; die davor stehen wieder still.
     if(shown && tickIdx!==shown-1){
@@ -2708,8 +2717,11 @@ function startIntroCanvas(){
     if(tickIdx>=0){ const k=candles[tickIdx]; k.c=k.base+(Math.random()-.5)*H*0.012; }
 
     ctx.clearRect(0,0,W,H);
-    for(let i=0;i<shown;i++){
-      const k=candles[i], x=PAD+i*SLOT+(SLOT-BODY)/2;
+    // Bis shown+1 zeichnen: die gerade einlaufende Kerze haengt noch am rechten Rand
+    // und wird angeschnitten, statt im Bild aufzupoppen.
+    for(let i=0;i<Math.min(N,shown+1);i++){
+      const k=candles[i], x=X_RIGHT-(p-i)*SLOT;
+      if(x>W || x+BODY<0) continue;
       const col=(k.c<=k.o)?GREEN:RED, top=Math.min(k.o,k.c), bot=Math.max(k.o,k.c);
       ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=Math.max(1.2,BODY*0.11);
       ctx.beginPath(); ctx.moveTo(x+BODY/2,top-k.wick); ctx.lineTo(x+BODY/2,bot+k.wick); ctx.stroke();
