@@ -27,6 +27,8 @@
     --radius:12px; --radius-sm:8px;
     /* Kraeftigere ease-out-Kurve als die CSS-Defaults (Enter-Animationen) */
     --ease-out:cubic-bezier(.23,1,.32,1);
+    /* Sanfter als --ease-out: bremst sichtbar ab, statt sofort am Ziel zu sein */
+    --ease-burst:cubic-bezier(.18,.72,.3,1);
     --shadow-card:0 1px 2px rgba(20,18,14,.05); --shadow-pop:0 6px 20px rgba(20,18,14,.1);
   }
   :root[data-theme="dark"] {
@@ -345,6 +347,44 @@
   @media (prefers-reduced-motion:reduce){.dock-ico{transition:filter .15s}}
   @media (max-width:520px){.dock-ico svg{width:18px;height:18px}}
 
+  /* ===== Intro ===== */
+  /* Einmalige Startsequenz vor dem Startbildschirm. Liegt ueber Auth-Screen (9999)
+     und Splash (200), laeuft also unabhaengig davon, ob schon eine Session da ist.
+     Wird am Ende komplett aus dem DOM entfernt. */
+  #intro{position:fixed;inset:0;z-index:10050;overflow:hidden;cursor:pointer;user-select:none}
+  #intro-bg{position:absolute;inset:0;background:var(--bg);transition:opacity .3s ease}
+  #intro-stage{position:absolute;inset:0;opacity:0;transform-origin:70% 50%;transition:opacity .25s ease;will-change:transform,filter,opacity}
+  #intro-stage.on{opacity:1}
+  /* ease-in: die Kamera beschleunigt in den Chart hinein */
+  #intro-stage.zoom{opacity:0;transform:scale(9);filter:blur(6px);
+    transition:transform .4s cubic-bezier(.55,0,1,.45),filter .4s cubic-bezier(.55,0,1,.45),opacity .4s ease-in}
+  #intro-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #intro-logo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:0 22px;opacity:0;transform:scale(1.28);will-change:transform,opacity}
+  #intro-logo.in{opacity:1;transform:none;transition:opacity .5s var(--ease-out),transform .5s var(--ease-out)}
+  /* Die Kamerafahrt laeuft durch das Logo hindurch weiter */
+  #intro-logo.out{opacity:0;transform:scale(1.6);transition:opacity .34s ease-in,transform .4s ease-in}
+  .intro-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+  .intro-title{font-size:clamp(30px,5.4vw,52px);font-weight:700;letter-spacing:-1.4px;line-height:1.08}
+  .intro-sub{font-size:14px;color:var(--muted);margin-top:12px}
+  .intro-skip{position:absolute;bottom:34px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--muted);opacity:.4;animation:spIn .4s ease .9s backwards}
+  #intro.reveal #intro-bg,#intro.reveal #intro-stage,#intro.reveal .intro-skip{opacity:0}
+  #intro.reveal #intro-stage{transition:opacity .2s ease}
+  #intro.skip #intro-bg,#intro.skip #intro-stage{transition-duration:.18s}
+
+  /* "Urknall": der Startbildschirm waechst aus dem Zoom-Punkt heraus statt einzufaden.
+     Der Kachel-Scale sitzt im mitskalierenden Block -- beide multiplizieren sich, die
+     Kacheln starten also sichtbar klein und wachsen auf ihre Endgroesse.
+     backwards statt forwards, damit danach wieder die normalen Styles greifen
+     (sonst wuerde der gefuellte Animationswert den :hover-Transform blockieren). */
+  #splash.intro-burst #splash-inner,
+  #auth-screen.intro-burst>div{animation:introBurst var(--burst-d,700ms) var(--ease-burst) backwards}
+  #splash.intro-burst .sp-card{animation:introCard var(--burst-d,700ms) var(--ease-burst) backwards;animation-delay:calc(var(--sp-b,0) * .06s)}
+  #splash.intro-burst .sp-eyebrow,#splash.intro-burst .sp-title,
+  #splash.intro-burst .sp-sub,#splash.intro-burst .sp-skip{animation:none}
+  @keyframes introBurst{from{opacity:0;transform:scale(.45)}to{opacity:1;transform:none}}
+  @keyframes introCard{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:none}}
+
   /* ===== Splash ===== */
   #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;opacity:1;transition:opacity .18s ease}
   #splash.gone{opacity:0;pointer-events:none}
@@ -358,7 +398,7 @@
   .sp-title{font-size:clamp(30px,5.4vw,52px);font-weight:700;letter-spacing:-1.4px;line-height:1.08;animation:spIn .3s var(--ease-out) .03s backwards}
   .sp-sub{font-size:14px;color:var(--muted);margin-top:12px;margin-bottom:34px;animation:spIn .3s var(--ease-out) .06s backwards}
   #sp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .sp-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px 16px;text-align:left;cursor:pointer;animation:spCard .3s var(--ease-out) backwards;transition:border-color .18s,background .18s,transform .18s}
+  .sp-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px 16px;text-align:left;cursor:pointer;animation:spCard .3s var(--ease-out) backwards;animation-delay:calc(.10s + var(--sp-i,0) * .03s);transition:border-color .18s,background .18s,transform .18s}
   .sp-card:hover{border-color:var(--accent-border);background:var(--accent-bg);transform:translateY(-2px)}
   .sp-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
   .sp-card-ico{font-size:20px;line-height:1}
@@ -479,6 +519,17 @@
 </head>
 <body>
 <span class="corner-cross tl">✝</span><span class="corner-cross tr">✝</span><span class="corner-cross bl">✝</span><span class="corner-cross br">✝</span>
+
+<div id="intro" role="presentation">
+  <div id="intro-bg"></div>
+  <div id="intro-stage"><canvas id="intro-canvas" aria-hidden="true"></canvas></div>
+  <div id="intro-logo">
+    <div class="intro-eyebrow">&#10013; Discipline over profit</div>
+    <h1 class="intro-title">TradeInFaith</h1>
+    <p class="intro-sub">ICT / Smart Money</p>
+  </div>
+  <div class="intro-skip">Tippen zum &Uuml;berspringen</div>
+</div>
 
 <div id="auth-loading" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;">
   <div class="al-spin" aria-hidden="true"></div>
@@ -1118,7 +1169,10 @@ function buildSplash(){
   const wrap=document.getElementById('sp-cards');
   wrap.innerHTML=SPLASH_PICKS.map((id,i)=>{
     const t=TABS.find(x=>x.id===id); if(!t)return '';
-    return '<div class="sp-card" role="button" tabindex="0" data-tab="'+t.id+'" style="animation-delay:'+(0.10+i*0.03).toFixed(2)+'s">'+
+    // --sp-i: normale Reihenfolge links->rechts. --sp-b: Ring-Abstand zur Grid-Mitte,
+    // damit der Intro-Burst von innen nach aussen aufgeht.
+    const ring=Math.round(Math.abs(i-(SPLASH_PICKS.length-1)/2)-0.5);
+    return '<div class="sp-card" role="button" tabindex="0" data-tab="'+t.id+'" style="--sp-i:'+i+';--sp-b:'+Math.max(0,ring)+'">'+
       '<div class="sp-card-ico">'+t.icon+'</div><div class="sp-card-name">'+t.name+'</div><div class="sp-card-desc">'+t.desc+'</div></div>';
   }).join('');
   wrap.querySelectorAll('.sp-card').forEach(el=>{
@@ -1132,7 +1186,6 @@ function _spEsc(e){ if(e.key==='Escape')closeSplash(); }
 
 let _spRaf=null;
 function startSplashCanvas(){
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const cv=document.getElementById('splash-canvas'); if(!cv)return;
   const ctx=cv.getContext('2d');
   let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
@@ -1169,7 +1222,7 @@ function closeSplash(tab){
   const sp=document.getElementById('splash'); if(!sp||sp.classList.contains('gone'))return;
   sp.classList.add('gone');
   document.removeEventListener('keydown',_spEsc);
-  setTimeout(()=>{ sp.style.display='none'; stopSplashCanvas(); },220);
+  setTimeout(()=>{ stopSplashCanvas(); sp.remove(); },220);
   // Splash blendet aus, waehrend der Inhalt gleichzeitig hereingleitet (force=true,
   // damit die Einblendung auch beim schon aktiven Log-Tab laeuft)
   switchTab(tab||'log',true);
@@ -2430,6 +2483,185 @@ async function deleteAccount(){
   }catch(e){ showToast('Löschen fehlgeschlagen'); btn.disabled=false; }
 }
 
+/* ===== Intro-Animation =====
+   Einmalige Startsequenz beim App-Start: laufender Kerzenchart -> Zoom in den Chart
+   hinein -> Logo -> und aus demselben Schwung heraus waechst der Startbildschirm auf.
+   Vollstaendig gekapselt: ruehrt Tab-, Kachel- und Auth-Logik nicht an, laeuft ueber
+   allem und entfernt sich danach aus dem DOM.
+   Abschalten (spaetere Settings-Option): localStorage 'tj_intro_off' = '1'. */
+const INTRO_OFF_KEY='tj_intro_off';
+const INTRO_ZOOM_MS=1800, INTRO_LOGO_MS=2200, INTRO_REVEAL_MS=2800;
+const INTRO_BURST_MS=700, INTRO_BURST_FAST_MS=460;
+
+let _introTimers=[], _introRaf=null, _introSkipFn=null;
+let _introRevealed=false, _introDone=false, _introWaitStart=0;
+let _introOX=70, _introOY=50;   // Zoom-Ziel in Prozent -- Position der letzten Kerze
+
+function introEnabled(){ try{ return localStorage.getItem(INTRO_OFF_KEY)!=='1'; }catch(e){ return true; } }
+function _introAt(ms,fn){ _introTimers.push(setTimeout(fn,ms)); }
+function _introStop(){
+  _introTimers.forEach(clearTimeout); _introTimers=[];
+  if(_introRaf){ cancelAnimationFrame(_introRaf); _introRaf=null; }
+}
+function _introUnbind(){
+  if(!_introSkipFn)return;
+  document.removeEventListener('pointerdown',_introSkipFn,true);
+  document.removeEventListener('keydown',_introSkipFn,true);
+  _introSkipFn=null;
+}
+
+// Der Bildschirm, der unter dem Intro auftaucht. startApp() baut den Splash erst nach
+// der Session-Abfrage -- bis dahin gibt es hier nichts, worauf der Burst losgelassen
+// werden koennte. #splash ist position:fixed, offsetParent ist also nutzlos; stattdessen
+// zaehlt, ob die Kacheln schon gebaut sind.
+function _introTarget(){
+  const sp=document.getElementById('splash'), cards=document.getElementById('sp-cards');
+  if(sp && !sp.classList.contains('gone') && cards && cards.children.length) return sp;
+  const au=document.getElementById('auth-screen');
+  if(au && getComputedStyle(au).display!=='none') return au;
+  return null;
+}
+
+function startIntro(){
+  const box=document.getElementById('intro');
+  if(!box || _introDone) return;
+  if(!introEnabled()){ box.remove(); return; }
+  const stage=document.getElementById('intro-stage');
+
+  _introSkipFn=function(e){
+    // capture=true und stopImmediatePropagation: ein Escape waehrend des Intros darf
+    // nicht zusaetzlich den darunterliegenden Splash ueber _spEsc mitschliessen.
+    if(e.type==='keydown'){ e.preventDefault(); e.stopImmediatePropagation(); }
+    skipIntro();
+  };
+  document.addEventListener('pointerdown',_introSkipFn,true);
+  document.addEventListener('keydown',_introSkipFn,true);
+
+  startIntroCanvas();
+  requestAnimationFrame(()=>stage.classList.add('on'));
+
+  _introAt(INTRO_ZOOM_MS,()=>{
+    stage.style.transformOrigin=_introOX.toFixed(1)+'% '+_introOY.toFixed(1)+'%';
+    stage.classList.add('zoom');
+  });
+  _introAt(INTRO_LOGO_MS,()=>{
+    if(_introRaf){ cancelAnimationFrame(_introRaf); _introRaf=null; }
+    const logo=document.getElementById('intro-logo'); if(logo)logo.classList.add('in');
+  });
+  _introAt(INTRO_REVEAL_MS,()=>revealIntro(false));
+}
+
+// Tap/Klick/Taste: nicht hart abschneiden, sondern direkt in die Reveal-Phase springen.
+function skipIntro(){
+  if(_introRevealed||_introDone)return;
+  _introUnbind(); _introStop();
+  revealIntro(true);
+}
+
+// Reveal: Hintergrund weg, Logo skaliert weiter raus -- und im selben Schwung waechst
+// der Startbildschirm aus der Mitte auf seine Endgroesse.
+function revealIntro(fast){
+  if(_introRevealed||_introDone)return;
+  const box=document.getElementById('intro'); if(!box)return;
+  const target=_introTarget();
+  if(!target){
+    // Session noch nicht aufgeloest: das Logo haelt lieber kurz laenger, als in ein
+    // leeres Overlay bzw. den Lade-Spinner zu blenden. Nach 2s trotzdem weiter.
+    if(!_introWaitStart) _introWaitStart=performance.now();
+    if(performance.now()-_introWaitStart<2000){
+      _introAt(60,()=>revealIntro(fast));
+      return;
+    }
+  }
+  _introRevealed=true;
+  _introUnbind(); _introStop();
+
+  const dur=fast?INTRO_BURST_FAST_MS:INTRO_BURST_MS;
+  if(target){
+    if(target.id==='auth-screen') target.classList.remove('screen-in');
+    target.style.setProperty('--burst-d',dur+'ms');
+    target.classList.add('intro-burst');
+  }
+  box.style.pointerEvents='none';
+  if(fast) box.classList.add('skip');
+  box.classList.add('reveal');
+  const logo=document.getElementById('intro-logo');
+  if(logo){ logo.classList.remove('in'); logo.classList.add('out'); }
+  _introAt(fast?460:720,endIntro);
+}
+
+function endIntro(){
+  if(_introDone)return;
+  _introDone=true;
+  _introUnbind(); _introStop();
+  const box=document.getElementById('intro'); if(box)box.remove();
+}
+
+// Live-Chart: Kerzen laufen kontinuierlich durch, die rechte Kerze tickt.
+// Ein einziger rAF-Loop, DPR auf 2 gedeckelt; stoppt nach der Zoom-Phase.
+function startIntroCanvas(){
+  const cv=document.getElementById('intro-canvas'); if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const cs=getComputedStyle(document.documentElement);
+  const tok=(n,f)=>{ const v=cs.getPropertyValue(n).trim(); return v||f; };
+  const GREEN=tok('--green','#0f8a5f'), RED=tok('--red','#c23b3b');
+  const GRID=tok('--border','rgba(20,18,14,.09)'), MUTED=tok('--muted','#6b6862');
+
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const SLOT=30, BODY=15, SPEED=1.9;
+  let W=0,H=0,price=0,candles=[],off=0,liveIdx=0;
+
+  function size(){
+    W=cv.clientWidth||window.innerWidth; H=cv.clientHeight||window.innerHeight;
+    cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function mk(){
+    const o=price;
+    // leichter Aufwaertsdrift, damit die Sequenz nach Fortschritt aussieht
+    const c=Math.max(H*0.15,Math.min(H*0.85,o+(Math.random()-0.545)*H*0.11));
+    price=c;
+    return {o:o,c:c,base:c,wick:H*0.012+Math.random()*H*0.028};
+  }
+  function seed(){ price=H*0.6; candles=[]; off=0; const n=Math.ceil(W/SLOT)+3; for(let i=0;i<n;i++)candles.push(mk()); }
+  size(); seed();
+  window.addEventListener('resize',()=>{ if(_introDone)return; size(); seed(); });
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.lineWidth=1; ctx.strokeStyle=GRID;
+    for(let g=1;g<5;g++){ const y=Math.round(H*g/5)+.5; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    let lx=W*0.7, ly=H/2;
+    for(let i=0;i<candles.length;i++){
+      const k=candles[i], x=i*SLOT-off;
+      if(x>W || x+BODY<0) continue;
+      const col=(k.c<=k.o)?GREEN:RED, top=Math.min(k.o,k.c), bot=Math.max(k.o,k.c);
+      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(x+BODY/2,top-k.wick); ctx.lineTo(x+BODY/2,bot+k.wick); ctx.stroke();
+      ctx.fillRect(x,top,BODY,Math.max(2,bot-top));
+      if(x+BODY<=W){ lx=x+BODY/2; ly=k.c; liveIdx=i; }
+    }
+    // Preislinie auf Hoehe der letzten Kerze
+    ctx.save();
+    ctx.setLineDash([5,7]); ctx.globalAlpha=.45; ctx.strokeStyle=MUTED; ctx.lineWidth=1;
+    const py=Math.round(ly)+.5;
+    ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
+    ctx.restore();
+    // Zoom-Ziel: dorthin faehrt die Kamera in Phase 2
+    _introOX=Math.max(12,Math.min(86,lx/Math.max(1,W)*100));
+    _introOY=Math.max(8,Math.min(92,ly/Math.max(1,H)*100));
+  }
+  function frame(){
+    off+=SPEED;
+    if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+    const live=candles[liveIdx];
+    if(live) live.c=Math.max(H*0.15,Math.min(H*0.85,live.base+(Math.random()-.5)*H*0.014));
+    draw();
+    _introRaf=requestAnimationFrame(frame);
+  }
+  frame();
+}
+
 async function init(){
   const {data:{session}}=await sb.auth.getSession();
   if(session){ currentUser=session.user; await startApp(); }
@@ -2450,6 +2682,7 @@ async function init(){
     }
   });
 }
+startIntro();
 init();
 </script>
 </body>
