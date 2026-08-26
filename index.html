@@ -1195,12 +1195,20 @@ function buildSplash(){
 }
 function _spEsc(e){ if(e.key==='Escape')closeSplash(); }
 
-let _spRaf=null;
+let _spRaf=null, _spRestart=null;
 function startSplashCanvas(){
   const cv=document.getElementById('splash-canvas'); if(!cv)return;
   const ctx=cv.getContext('2d');
-  let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
-  function size(){ if(!cv.isConnected)return; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  let W=0,H=0,LO=0,HI=0,MID=0,SPAN=0,dpr=Math.min(window.devicePixelRatio||1,2);
+  // Band zwischen 20% und 80% der Hoehe aktiv bespielen -- oben und unten bleiben je
+  // 20% Sicherheitsabstand. Wird in size() mitgezogen, damit es bei Fensteraenderung
+  // nicht auf der alten Hoehe haengen bleibt.
+  function size(){
+    if(!cv.isConnected)return;
+    W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    LO=H*0.20; HI=H*0.80; MID=(LO+HI)/2; SPAN=HI-LO;
+  }
   size(); window.addEventListener('resize',size);
   const SLOT=22, BODY=11;
   // Farben aus dem Theme, bei Theme-Wechsel neu gelesen (Attribut-Check ist billig)
@@ -1213,13 +1221,12 @@ function startSplashCanvas(){
     COL_UP=cs.getPropertyValue('--green').trim()||COL_UP;
     COL_DN=cs.getPropertyValue('--red').trim()||COL_DN;
   }
-  let price=H/2, candles=[];
-  // Band zwischen 20% und 80% der Hoehe aktiv bespielen -- oben und unten bleiben je
-  // 20% Sicherheitsabstand. Ein reiner Random Walk haengt dafuer zu lange um die Mitte,
-  // deshalb laeuft eine langsame Welle als Zielkurs darunter; das Rauschen obendrauf
-  // macht die einzelnen Kerzen unregelmaessig.
-  const LO=H*0.20, HI=H*0.80, MID=(LO+HI)/2, SPAN=HI-LO;
-  let phase=Math.random()*Math.PI*2;
+  let candles=[];
+  // Ein reiner Random Walk haengt zu lange um die Mitte, deshalb laeuft eine langsame
+  // Welle als Zielkurs darunter; das Rauschen obendrauf macht die einzelnen Kerzen
+  // unregelmaessig. Startpunkt unten, Welle zieht zuerst nach oben: der Chart beginnt
+  // unten links und steigt -- derselbe Eindruck wie beim Intro-Chart davor.
+  let price=HI, phase=-Math.PI/2;
   function mk(){
     const o=price;
     phase+=0.085;
@@ -1229,11 +1236,24 @@ function startSplashCanvas(){
     const w=Math.random()*H*0.03;
     return {o:o,c:c,h:Math.min(o,c)-w,l:Math.max(o,c)+w};
   }
-  for(let i=0;i<Math.ceil(window.innerWidth/SLOT)+3;i++) candles.push(mk());
-  let off=0;
+  // Aufbau: der Chart startet leer und waechst von links nach, bis er die Breite
+  // fuellt. Danach laeuft er wie gehabt langsam weiter und rueckt rechts nach.
+  // Der Startzeitpunkt wird beim Reveal neu gesetzt (restartSplashBuild) --
+  // startSplashCanvas laeuft schon beim Boot, der Startbildschirm ist aber erst rund
+  // 2.8s spaeter zu sehen; ohne das waere der Chart beim Erscheinen laengst voll.
+  const NMAX=Math.ceil(window.innerWidth/SLOT)+3, SP_BUILD_MS=2800;
+  let off=0, t0=performance.now();
+  _spRestart=()=>{ candles=[]; price=HI; phase=-Math.PI/2; off=0; t0=performance.now(); };
+
   function frame(){
-    off+=0.45;
-    if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+    const soll=Math.min(NMAX,Math.floor((performance.now()-t0)/(SP_BUILD_MS/NMAX)));
+    while(candles.length<soll) candles.push(mk());
+    // Nachruecken erst, wenn die volle Breite steht -- sonst wandert der Chart unter
+    // dem Wachsen weg und die Indizes verschieben sich mitten im Aufbau.
+    if(candles.length>=NMAX){
+      off+=0.45;
+      if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+    }
     colors();
     ctx.clearRect(0,0,W,H);
     candles.forEach((k,i)=>{
@@ -1249,6 +1269,9 @@ function startSplashCanvas(){
   frame();
 }
 function stopSplashCanvas(){ if(_spRaf){cancelAnimationFrame(_spRaf); _spRaf=null;} }
+// Setzt den Aufbau des Hintergrund-Charts zurueck auf leer, damit er erst dann
+// waechst, wenn der Startbildschirm tatsaechlich sichtbar wird.
+function restartSplashBuild(){ if(_spRestart)_spRestart(); }
 
 function closeSplash(tab,fromEl){
   const sp=document.getElementById('splash'); if(!sp||sp.classList.contains('gone'))return;
@@ -2624,6 +2647,8 @@ function revealIntro(fast){
   const dur=fast?INTRO_BURST_FAST_MS:INTRO_BURST_MS;
   if(target){
     if(target.id==='auth-screen') target.classList.remove('screen-in');
+    // Der Hintergrund-Chart faengt jetzt erst an zu wachsen, nicht schon beim Boot
+    if(target.id==='splash') restartSplashBuild();
     target.style.setProperty('--burst-d',dur+'ms');
     target.classList.add('intro-burst');
   }
