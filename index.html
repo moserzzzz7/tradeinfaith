@@ -62,10 +62,14 @@
   .section.active{display:block}
   /* Bewusst ohne fill-mode: laeuft die Animation nicht (gedrosselter Tab), zeigt der
      Abschnitt seinen normalen Zustand -- sichtbar ohne Animation statt unsichtbar. */
-  .section.sec-in{animation:fadein .18s var(--ease-out);will-change:transform,opacity}
+  .section.sec-in{animation:secIn .24s var(--ease-burst);transform-origin:50% 0;will-change:transform,opacity}
+  /* Ankunft aus einer Splash-Kachel: gleiche Optik wie der Intro-Burst, nur kurz */
+  body.from-splash .section.sec-in{animation:secBurst .3s var(--ease-burst) .08s backwards}
   /* Alter Inhalt blendet kurz aus -- absolut positioniert, damit das Layout nicht springt */
   .section.sec-out{position:absolute;top:var(--pad-t);left:var(--pad-x);right:var(--pad-x);pointer-events:none;animation:fadeout .11s var(--ease-out) both;will-change:opacity}
   @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes secIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  @keyframes secBurst{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
   @keyframes fadeout{from{opacity:1}to{opacity:0}}
   .page-head{margin-bottom:28px}
   .page-title{font-size:24px;font-weight:600;letter-spacing:-0.5px}
@@ -388,8 +392,15 @@
   /* ===== Splash ===== */
   #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;opacity:1;transition:opacity .18s ease}
   #splash.gone{opacity:0;pointer-events:none}
-  #splash-canvas{position:fixed;inset:0;width:100%;height:100%;opacity:.3}
-  #splash::after{content:'';position:fixed;inset:0;background:var(--bg);opacity:.88}
+  /* Kachel angetippt: Kamera schiebt in deren Mitte hinein (transform-origin
+     setzt closeSplash), danach kommt der Tab im selben Burst-Stil heraus. */
+  /* Die Opacity-Kurve haelt bewusst lange oben und faellt erst spaet -- sonst ist
+     der Splash ausgeblendet, bevor man das Hineinzoomen ueberhaupt sieht. */
+  #splash.sp-dive{opacity:0;transition:opacity .3s cubic-bezier(.7,0,.9,.4)}
+  #splash.sp-dive #splash-inner{opacity:0;transform:scale(1.5);
+    transition:transform .32s cubic-bezier(.45,0,.85,.55),opacity .3s cubic-bezier(.7,0,.9,.4)}
+  #splash-canvas{position:fixed;inset:0;width:100%;height:100%;opacity:.6}
+  #splash::after{content:'';position:fixed;inset:0;background:var(--bg);opacity:.74}
   #splash-inner{position:relative;z-index:2;text-align:center;padding:40px 22px;max-width:860px;width:100%;margin:auto 0}
   /* Kopfbereich blendet nur auf (keine Bewegung), Karten fliegen von unten herein.
      backwards statt forwards: waehrend der Verzoegerung unsichtbar, danach normaler
@@ -1176,8 +1187,8 @@ function buildSplash(){
       '<div class="sp-card-ico">'+t.icon+'</div><div class="sp-card-name">'+t.name+'</div><div class="sp-card-desc">'+t.desc+'</div></div>';
   }).join('');
   wrap.querySelectorAll('.sp-card').forEach(el=>{
-    el.addEventListener('click',()=>closeSplash(el.dataset.tab));
-    el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();closeSplash(el.dataset.tab);} });
+    el.addEventListener('click',()=>closeSplash(el.dataset.tab,el));
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();closeSplash(el.dataset.tab,el);} });
   });
   startSplashCanvas();
   document.addEventListener('keydown',_spEsc);
@@ -1189,24 +1200,45 @@ function startSplashCanvas(){
   const cv=document.getElementById('splash-canvas'); if(!cv)return;
   const ctx=cv.getContext('2d');
   let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
-  function size(){ W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  function size(){ if(!cv.isConnected)return; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
   size(); window.addEventListener('resize',size);
   const SLOT=22, BODY=11;
+  // Farben aus dem Theme, bei Theme-Wechsel neu gelesen (Attribut-Check ist billig)
+  let _spTheme=null, COL_UP='#0f8a5f', COL_DN='#c23b3b';
+  function colors(){
+    const th=document.documentElement.getAttribute('data-theme')||'light';
+    if(th===_spTheme)return;
+    _spTheme=th;
+    const cs=getComputedStyle(document.documentElement);
+    COL_UP=cs.getPropertyValue('--green').trim()||COL_UP;
+    COL_DN=cs.getPropertyValue('--red').trim()||COL_DN;
+  }
   let price=H/2, candles=[];
+  // Band zwischen 20% und 80% der Hoehe aktiv bespielen -- oben und unten bleiben je
+  // 20% Sicherheitsabstand. Ein reiner Random Walk haengt dafuer zu lange um die Mitte,
+  // deshalb laeuft eine langsame Welle als Zielkurs darunter; das Rauschen obendrauf
+  // macht die einzelnen Kerzen unregelmaessig.
+  const LO=H*0.20, HI=H*0.80, MID=(LO+HI)/2, SPAN=HI-LO;
+  let phase=Math.random()*Math.PI*2;
   function mk(){
-    const o=price, mv=(Math.random()-0.48)*26, c=Math.max(H*0.18,Math.min(H*0.82,o+mv));
+    const o=price;
+    phase+=0.085;
+    const target=MID+Math.sin(phase)*SPAN*0.46;
+    const c=Math.max(LO,Math.min(HI,o+(target-o)*0.35+(Math.random()-0.5)*SPAN*0.16));
     price=c;
-    return {o:o,c:c,h:Math.min(o,c)-Math.random()*14,l:Math.max(o,c)+Math.random()*14};
+    const w=Math.random()*H*0.03;
+    return {o:o,c:c,h:Math.min(o,c)-w,l:Math.max(o,c)+w};
   }
   for(let i=0;i<Math.ceil(window.innerWidth/SLOT)+3;i++) candles.push(mk());
   let off=0;
   function frame(){
     off+=0.45;
     if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+    colors();
     ctx.clearRect(0,0,W,H);
     candles.forEach((k,i)=>{
       const x=i*SLOT-off, up=k.c<k.o;
-      const col=up?'#34d399':'#f87171';
+      const col=up?COL_UP:COL_DN;
       ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.4;
       ctx.beginPath(); ctx.moveTo(x+BODY/2,k.h); ctx.lineTo(x+BODY/2,k.l); ctx.stroke();
       const top=Math.min(k.o,k.c), hgt=Math.max(2,Math.abs(k.c-k.o));
@@ -1218,11 +1250,22 @@ function startSplashCanvas(){
 }
 function stopSplashCanvas(){ if(_spRaf){cancelAnimationFrame(_spRaf); _spRaf=null;} }
 
-function closeSplash(tab){
+function closeSplash(tab,fromEl){
   const sp=document.getElementById('splash'); if(!sp||sp.classList.contains('gone'))return;
-  sp.classList.add('gone');
+  // Zoom-Ziel ist die Mitte der angetippten Kachel; ohne Kachel (Esc / "Einfach
+  // reingehen") bleibt die Vorgabe aus dem Stylesheet, also die Bildmitte.
+  const inner=document.getElementById('splash-inner');
+  if(inner&&fromEl){
+    const r=fromEl.getBoundingClientRect(), b=inner.getBoundingClientRect();
+    if(b.width&&b.height) inner.style.transformOrigin=
+      ((r.left+r.width/2-b.left)/b.width*100).toFixed(1)+'% '+
+      ((r.top+r.height/2-b.top)/b.height*100).toFixed(1)+'%';
+  }
+  sp.classList.add('sp-dive','gone');
   document.removeEventListener('keydown',_spEsc);
-  setTimeout(()=>{ stopSplashCanvas(); sp.remove(); },220);
+  setTimeout(()=>{ stopSplashCanvas(); sp.remove(); },320);
+  document.body.classList.add('from-splash');
+  setTimeout(()=>document.body.classList.remove('from-splash'),450);
   // Splash blendet aus, waehrend der Inhalt gleichzeitig hereingleitet (force=true,
   // damit die Einblendung auch beim schon aktiven Log-Tab laeuft)
   switchTab(tab||'log',true);
@@ -2490,7 +2533,9 @@ async function deleteAccount(){
    allem und entfernt sich danach aus dem DOM.
    Abschalten (spaetere Settings-Option): localStorage 'tj_intro_off' = '1'. */
 const INTRO_OFF_KEY='tj_intro_off';
-const INTRO_ZOOM_MS=1800, INTRO_LOGO_MS=2200, INTRO_REVEAL_MS=2800;
+const INTRO_BUILD_MS=1500;                       // Aufbau des Kerzencharts
+const INTRO_ZOOM_MS=INTRO_BUILD_MS+280;          // fertiger Chart steht kurz, dann Zoom
+const INTRO_LOGO_MS=INTRO_ZOOM_MS+400, INTRO_REVEAL_MS=INTRO_LOGO_MS+620;
 const INTRO_BURST_MS=700, INTRO_BURST_FAST_MS=460;
 
 let _introTimers=[], _introRaf=null, _introSkipFn=null;
@@ -2587,6 +2632,11 @@ function revealIntro(fast){
   box.classList.add('reveal');
   const logo=document.getElementById('intro-logo');
   if(logo){ logo.classList.remove('in'); logo.classList.add('out'); }
+  // Bewusst ausserhalb von _introTimers: raeumt auch dann auf, wenn endIntro die
+  // Timeline vorher stoppt. +200ms deckt den Stagger der aeusseren Kacheln ab.
+  setTimeout(()=>document.querySelectorAll('.intro-burst').forEach(el=>{
+    el.classList.remove('intro-burst'); el.style.removeProperty('--burst-d');
+  }),dur+200);
   _introAt(fast?460:720,endIntro);
 }
 
@@ -2597,66 +2647,74 @@ function endIntro(){
   const box=document.getElementById('intro'); if(box)box.remove();
 }
 
-// Live-Chart: Kerzen laufen kontinuierlich durch, die rechte Kerze tickt.
-// Ein einziger rAF-Loop, DPR auf 2 gedeckelt; stoppt nach der Zoom-Phase.
+// Aufbau-Chart: startet leer, die Kerzen erscheinen einzeln von unten links nach oben
+// rechts. Bewusst ohne Grid und ohne Preislinie -- die haben als wandernde Striche im
+// Bild gestoert, der Chart besteht nur aus Kerzen.
+// Ein rAF-Loop, DPR auf 2 gedeckelt; stoppt nach der Zoom-Phase.
 function startIntroCanvas(){
   const cv=document.getElementById('intro-canvas'); if(!cv)return;
   const ctx=cv.getContext('2d');
   const cs=getComputedStyle(document.documentElement);
   const tok=(n,f)=>{ const v=cs.getPropertyValue(n).trim(); return v||f; };
   const GREEN=tok('--green','#0f8a5f'), RED=tok('--red','#c23b3b');
-  const GRID=tok('--border','rgba(20,18,14,.09)'), MUTED=tok('--muted','#6b6862');
 
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  const SLOT=30, BODY=15, SPEED=1.9;
-  let W=0,H=0,price=0,candles=[],off=0,liveIdx=0;
+  let W=0,H=0,PAD=0,SLOT=0,BODY=0,N=0,candles=[],tickIdx=-1;
+  const t0=performance.now();
 
   function size(){
+    if(!cv.isConnected)return;
     W=cv.clientWidth||window.innerWidth; H=cv.clientHeight||window.innerHeight;
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  function mk(){
-    const o=price;
-    // leichter Aufwaertsdrift, damit die Sequenz nach Fortschritt aussieht
-    const c=Math.max(H*0.15,Math.min(H*0.85,o+(Math.random()-0.545)*H*0.11));
-    price=c;
-    return {o:o,c:c,base:c,wick:H*0.012+Math.random()*H*0.028};
-  }
-  function seed(){ price=H*0.6; candles=[]; off=0; const n=Math.ceil(W/SLOT)+3; for(let i=0;i<n;i++)candles.push(mk()); }
-  size(); seed();
-  window.addEventListener('resize',()=>{ if(_introDone)return; size(); seed(); });
 
-  function draw(){
+  // Kompletter Kursverlauf wird vorab gewuerfelt: klarer Aufwaertstrend von unten links
+  // nach oben rechts, die Sinus-Welle setzt ein paar sichtbare Ruecksetzer hinein.
+  // Die Kerzenzahl haengt an der Breite, bleibt aber gedeckelt, damit jede Kerze auch
+  // auf breiten Screens einzeln erkennbar bleibt.
+  function build(){
+    PAD=Math.max(24,W*0.06);
+    N=Math.max(16,Math.min(38,Math.round((W-2*PAD)/34)));
+    SLOT=(W-2*PAD)/N; BODY=Math.max(5,SLOT*0.52);
+    const lo=H*0.20, hi=H*0.82;          // y: kleiner Wert = hoher Kurs
+    candles=[]; tickIdx=-1;
+    let prev=hi;
+    for(let i=0;i<N;i++){
+      const t=(i+1)/N;
+      const trend=hi+(lo-hi)*(t-0.09*Math.sin(t*Math.PI*3));
+      const c=Math.max(H*0.14,Math.min(H*0.88,trend+(Math.random()-0.5)*H*0.055));
+      candles.push({o:prev,c:c,base:c,wick:H*0.010+Math.random()*H*0.026});
+      prev=c;
+    }
+    // Zoom-Ziel steht damit fest: die letzte Kerze oben rechts. Bewusst hier und nicht
+    // pro Frame, damit die Kamerafahrt auch stimmt, wenn rAF gedrosselt wurde.
+    _introOX=Math.max(6,Math.min(96,(PAD+(N-1)*SLOT+SLOT/2)/Math.max(1,W)*100));
+    _introOY=Math.max(6,Math.min(94,candles[N-1].c/Math.max(1,H)*100));
+  }
+
+  size(); build();
+  window.addEventListener('resize',()=>{ if(_introDone)return; size(); build(); });
+
+  function frame(){
+    const step=INTRO_BUILD_MS/(N+1);
+    const shown=Math.max(0,Math.min(N,Math.floor((performance.now()-t0)/step)));
+
+    // Nur die jeweils neueste Kerze zappelt leicht; die davor stehen wieder still.
+    if(shown && tickIdx!==shown-1){
+      if(tickIdx>=0 && candles[tickIdx]) candles[tickIdx].c=candles[tickIdx].base;
+      tickIdx=shown-1;
+    }
+    if(tickIdx>=0){ const k=candles[tickIdx]; k.c=k.base+(Math.random()-.5)*H*0.012; }
+
     ctx.clearRect(0,0,W,H);
-    ctx.lineWidth=1; ctx.strokeStyle=GRID;
-    for(let g=1;g<5;g++){ const y=Math.round(H*g/5)+.5; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-    let lx=W*0.7, ly=H/2;
-    for(let i=0;i<candles.length;i++){
-      const k=candles[i], x=i*SLOT-off;
-      if(x>W || x+BODY<0) continue;
+    for(let i=0;i<shown;i++){
+      const k=candles[i], x=PAD+i*SLOT+(SLOT-BODY)/2;
       const col=(k.c<=k.o)?GREEN:RED, top=Math.min(k.o,k.c), bot=Math.max(k.o,k.c);
-      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.6;
+      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=Math.max(1.2,BODY*0.11);
       ctx.beginPath(); ctx.moveTo(x+BODY/2,top-k.wick); ctx.lineTo(x+BODY/2,bot+k.wick); ctx.stroke();
       ctx.fillRect(x,top,BODY,Math.max(2,bot-top));
-      if(x+BODY<=W){ lx=x+BODY/2; ly=k.c; liveIdx=i; }
     }
-    // Preislinie auf Hoehe der letzten Kerze
-    ctx.save();
-    ctx.setLineDash([5,7]); ctx.globalAlpha=.45; ctx.strokeStyle=MUTED; ctx.lineWidth=1;
-    const py=Math.round(ly)+.5;
-    ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
-    ctx.restore();
-    // Zoom-Ziel: dorthin faehrt die Kamera in Phase 2
-    _introOX=Math.max(12,Math.min(86,lx/Math.max(1,W)*100));
-    _introOY=Math.max(8,Math.min(92,ly/Math.max(1,H)*100));
-  }
-  function frame(){
-    off+=SPEED;
-    if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
-    const live=candles[liveIdx];
-    if(live) live.c=Math.max(H*0.15,Math.min(H*0.85,live.base+(Math.random()-.5)*H*0.014));
-    draw();
     _introRaf=requestAnimationFrame(frame);
   }
   frame();
