@@ -2684,7 +2684,7 @@ function startIntroCanvas(){
   const GREEN=tok('--green','#0f8a5f'), RED=tok('--red','#c23b3b');
 
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  let W=0,H=0,PAD=0,SLOT=0,BODY=0,N=0,candles=[],tickIdx=-1;
+  let W=0,H=0,PAD=0,SLOT=0,BODY=0,N=0,candles=[];
   const t0=performance.now();
 
   function size(){
@@ -2699,9 +2699,11 @@ function startIntroCanvas(){
   // Die Kerzenzahl haengt an der Breite, bleibt aber gedeckelt, damit jede Kerze auch
   // auf breiten Screens einzeln erkennbar bleibt.
   function build(){
+    // PAD gilt nur rechts: die erste Kerze sitzt buendig am linken Rand (x=0),
+    // rechts bleibt Luft, damit die letzte Kerze nicht am Bildrand klebt.
     PAD=Math.max(24,W*0.06);
-    N=Math.max(16,Math.min(38,Math.round((W-2*PAD)/34)));
-    SLOT=(W-2*PAD)/N; BODY=Math.max(5,SLOT*0.52);
+    N=Math.max(16,Math.min(38,Math.round((W-PAD)/34)));
+    SLOT=(W-PAD)/N; BODY=Math.max(5,SLOT*0.52);
     // y: grosser Wert = tiefer Kurs. Erste Kerze steht fix unten, letzte fix oben --
     // damit weiss der Zoom, wohin er zielt.
     const START=H*0.84, END=H*0.16;
@@ -2721,7 +2723,7 @@ function startIntroCanvas(){
     let mx=0; for(const v of w) mx=Math.max(mx,Math.abs(v));
     const amp=H*0.15/(mx||1);
 
-    candles=[]; tickIdx=-1;
+    candles=[];
     let prev=START+H*0.025;              // Eroeffnung der ersten Kerze knapp darunter
     for(let i=0;i<N;i++){
       const t=i/(N-1), ramp=START+(END-START)*t;
@@ -2732,12 +2734,12 @@ function startIntroCanvas(){
       // Kurs. Den Walk selbst ruehrt das nicht an, die Schwankung bleibt voll.
       const sag=H*0.12*Math.sin(Math.PI*t);
       const c=Math.max(H*0.10,Math.min(H*0.93,ramp+sag+w[i]*amp));
-      candles.push({o:prev,c:c,base:c,wick:H*0.010+Math.random()*H*0.026});
+      candles.push({o:prev,c:c,wick:H*0.010+Math.random()*H*0.026});
       prev=c;
     }
     // Zoom-Ziel steht damit fest: die letzte Kerze oben rechts. Bewusst hier und nicht
     // pro Frame, damit die Kamerafahrt auch stimmt, wenn rAF gedrosselt wurde.
-    _introOX=Math.max(6,Math.min(96,(PAD+(N-1)*SLOT+SLOT/2)/Math.max(1,W)*100));
+    _introOX=Math.max(6,Math.min(96,((N-1)*SLOT+BODY/2)/Math.max(1,W)*100));
     _introOY=Math.max(6,Math.min(94,candles[N-1].c/Math.max(1,H)*100));
   }
 
@@ -2750,16 +2752,14 @@ function startIntroCanvas(){
     // waehrend des Aufbaus -- die Formation steht und waechst nach rechts.
     const shown=Math.max(0,Math.min(N,Math.floor((performance.now()-t0)/(INTRO_BUILD_MS/N))));
 
-    // Nur die jeweils neueste Kerze zappelt leicht; die davor stehen wieder still.
-    if(shown && tickIdx!==shown-1){
-      if(tickIdx>=0 && candles[tickIdx]) candles[tickIdx].c=candles[tickIdx].base;
-      tickIdx=shown-1;
-    }
-    if(tickIdx>=0){ const k=candles[tickIdx]; k.c=k.base+(Math.random()-.5)*H*0.012; }
-
+    // Jede Kerze steht ab dem Moment still, in dem sie erscheint. Frueher wackelte die
+    // jeweils neueste Kerze pro Frame zufaellig ("Live-Tick"). Bei ~40ms pro Kerze war
+    // davon waehrend des Aufbaus nur Rauschen zu sehen, und die letzte Kerze blieb
+    // danach dauerhaft die neueste -- sie flatterte die ganze Standzeit und den
+    // kompletten Zoom hindurch weiter.
     ctx.clearRect(0,0,W,H);
     for(let i=0;i<shown;i++){
-      const k=candles[i], x=PAD+i*SLOT+(SLOT-BODY)/2;
+      const k=candles[i], x=i*SLOT;
       const col=(k.c<=k.o)?GREEN:RED, top=Math.min(k.o,k.c), bot=Math.max(k.o,k.c);
       ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=Math.max(1.2,BODY*0.11);
       ctx.beginPath(); ctx.moveTo(x+BODY/2,top-k.wick); ctx.lineTo(x+BODY/2,bot+k.wick); ctx.stroke();
