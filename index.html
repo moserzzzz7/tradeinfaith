@@ -271,6 +271,8 @@
 
   /* ===== TRADE WIZARD ===== */
   .wz-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:8px}
+  .draft-note{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--muted);font-size:11px}
+  .draft-note button{border:0;background:transparent;color:var(--accent);font:inherit;cursor:pointer;padding:2px 0;white-space:nowrap}
   .wz-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
   .wz-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);transition:all .3s}
   .wz-step.active .wz-num{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -630,6 +632,7 @@
       </div>
 
       <div id="trade-wizard">
+        <div class="draft-note"><span id="trade-draft-status">Entwurf wird automatisch gespeichert · Screenshots ausgenommen</span><button type="button" onclick="discardTradeDraft()">Entwurf verwerfen</button></div>
         <div class="wz-progress">
           <div class="wz-step active" onclick="goStep(1)"><div class="wz-num">1</div><div class="wz-name">Plan</div></div>
           <div class="wz-step" onclick="goStep(2)"><div class="wz-num">2</div><div class="wz-name">Setup</div></div>
@@ -1087,20 +1090,29 @@ async function handleSignOut(){
   location.reload();
 }
 
-let _cache=null;
-async function loadTrades(){ return _cache||[]; }
+let _cache=null, _journalLoadPromise=null;
+async function loadTrades(){ if(_cache===null&&_journalLoadPromise){try{await _journalLoadPromise;}catch(e){}} return _cache||[]; }
+function tradeCounts(data){
+  const entries=data||[], trades=entries.filter(t=>!t.isNoTrade).length;
+  return {trades,noTrades:entries.length-trades};
+}
+function tradeCountLabel(data){
+  const counts=tradeCounts(data);
+  return counts.trades+' trade'+(counts.trades!==1?'s':'')+(counts.noTrades?' · '+counts.noTrades+' no-trade day'+(counts.noTrades!==1?'s':''):'');
+}
 async function saveTrades(data){
-  _cache=data;
-  document.getElementById('trade-count').textContent=data.length+' trade'+(data.length!==1?'s':'')+' logged';
-  if(!currentUser) return;
-  const {error}=await sb.from('journal_data').update({trades:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
-  if(error){ console.error('Sync fehlgeschlagen',error); return; }
-  showSaved(); updateStatus();
+  if(!currentUser)return false;
+  if(_cache===null&&_journalLoadPromise){try{await _journalLoadPromise;}catch(e){return false;}}
+  if(_cache===null)return false;
+  try{
+    const {error}=await sb.from('journal_data').update({trades:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
+    if(error){ console.error('Sync fehlgeschlagen',error); return false; }
+  }catch(error){ console.error('Sync fehlgeschlagen',error); return false; }
+  _cache=data; updateStatus(); showSaved(); return true;
 }
 function showSaved(){ const el=document.getElementById('save-ind'); el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
 function updateStatus(){
-  const n=(_cache||[]).length;
-  document.getElementById('trade-count').textContent=n+' trade'+(n!==1?'s':'')+' logged';
+  document.getElementById('trade-count').textContent=_cache===null?'–':tradeCountLabel(_cache);
 }
 function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 function openLightbox(src){ document.getElementById('img-lightbox-img').src=src; document.getElementById('img-lightbox').classList.add('open'); }
@@ -1356,10 +1368,10 @@ function refreshActiveTab(){
   else if(t==='learn')renderLearnList();
 }
 
-function toggleTag(b){ b.classList.toggle('sel'); }
-function toggleEmo(b){ document.querySelectorAll('.emo').forEach(e=>e.classList.remove('sel')); b.classList.toggle('sel'); }
-function toggleTf(btn,concept){ btn.classList.toggle('sel'); const row=document.getElementById('tf-'+concept); if(btn.classList.contains('sel')) row.classList.add('open'); else row.classList.remove('open'); }
-function toggleChip(b){ b.classList.toggle('sel'); }
+function toggleTag(b){ b.classList.toggle('sel'); scheduleTradeDraft(); }
+function toggleEmo(b){ document.querySelectorAll('.emo').forEach(e=>e.classList.remove('sel')); b.classList.toggle('sel'); scheduleTradeDraft(); }
+function toggleTf(btn,concept){ btn.classList.toggle('sel'); const row=document.getElementById('tf-'+concept); if(btn.classList.contains('sel')) row.classList.add('open'); else row.classList.remove('open'); scheduleTradeDraft(); }
+function toggleChip(b){ b.classList.toggle('sel'); scheduleTradeDraft(); }
 
 function getSetup(){
   const out=[];
@@ -1450,7 +1462,7 @@ function getNtReasons(){ return [...document.querySelectorAll('#nt-reasons .tag.
 function gv(id){ const el=document.getElementById(id); return el?el.value:''; }
 
 async function saveNoTrade(){
-  const data=await loadTrades();
+  const data=[...(await loadTrades())];
   const t={
     id:Date.now(), isNoTrade:true, result:'No Trade',
     date:gv('nt-date')||new Date().toISOString().slice(0,10),
@@ -1462,7 +1474,8 @@ async function saveNoTrade(){
     rightCall:ntForm['nt-rightcall']||'',
     emotion:ntForm['nt-feel']||''
   };
-  data.unshift(t); await saveTrades(data);
+  data.unshift(t);
+  if(!await saveTrades(data)){ showToast('Speichern fehlgeschlagen'); return; }
   ntForm={};
   document.querySelectorAll('#notrade-form input,#notrade-form textarea').forEach(el=>el.value='');
   document.querySelectorAll('#notrade-form .opt,#notrade-form .tag').forEach(b=>b.classList.remove('sel'));
@@ -1473,11 +1486,86 @@ async function saveNoTrade(){
 
 let form={instrument:'MNQ',direction:'Long'};
 let curStep=1; const STEPS=5;
-function goStep(n){ if(n<1||n>STEPS)return; curStep=n; document.querySelectorAll('.wz-panel').forEach(p=>p.classList.remove('active')); const pan=document.getElementById('wz-'+n); if(pan)pan.classList.add('active'); document.querySelectorAll('.wz-step').forEach((el,i)=>{ el.classList.toggle('active',i+1===n); el.classList.toggle('done',i+1<n); }); const f=document.getElementById('wz-fill'); if(f)f.style.width=((n-1)/(STEPS-1)*100)+'%'; const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0; }
+const TRADE_DRAFT_VERSION=1;
+let _tradeDraftTimer=null, _tradeDraftSuspended=false, _tradeDraftRestored=false, _tradeDraftBound=false;
+function tradeDraftKey(){ return currentUser?'tj_trade_draft_'+currentUser.id:null; }
+function draftStatus(text){ const el=document.getElementById('trade-draft-status'); if(el)el.textContent=text; }
+function collectTradeDraft(){
+  const fields={};
+  document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard textarea,#trade-wizard select').forEach(el=>{ if(el.id)fields[el.id]=el.value; });
+  const setupButtons=[...document.querySelectorAll('#setup-tags button')];
+  return {v:TRADE_DRAFT_VERSION,savedAt:Date.now(),step:curStep,form:{...form},fields,selectedSetupIndexes:setupButtons.map((button,index)=>button.classList.contains('sel')?index:-1).filter(index=>index>=0),emotion:getEmo()};
+}
+function saveTradeDraftNow(){
+  if(_tradeDraftSuspended)return;
+  const key=tradeDraftKey(); if(!key)return;
+  try{
+    const draft=collectTradeDraft();
+    localStorage.setItem(key,JSON.stringify(draft));
+    draftStatus('Entwurf gespeichert · '+new Date(draft.savedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · Screenshots ausgenommen');
+  }catch(e){ draftStatus('Entwurf konnte lokal nicht gespeichert werden'); }
+}
+function scheduleTradeDraft(){
+  if(_tradeDraftSuspended||currentMode!=='trade')return;
+  clearTimeout(_tradeDraftTimer);
+  _tradeDraftTimer=setTimeout(saveTradeDraftNow,400);
+}
+function clearTradeDraft(){
+  clearTimeout(_tradeDraftTimer); _tradeDraftTimer=null;
+  const key=tradeDraftKey(); if(key){ try{ localStorage.removeItem(key); }catch(e){} }
+  draftStatus('Entwurf wird automatisch gespeichert · Screenshots ausgenommen');
+}
+function initTradeDraft(){
+  if(_tradeDraftBound)return; _tradeDraftBound=true;
+  const wizard=document.getElementById('trade-wizard'); if(!wizard)return;
+  wizard.addEventListener('input',e=>{ if(e.target.matches('input:not([type=file]),textarea,select'))scheduleTradeDraft(); });
+}
+function restoreTradeDraft(){
+  if(_tradeDraftRestored)return;
+  const key=tradeDraftKey(); if(!key)return;
+  _tradeDraftRestored=true;
+  let draft;
+  try{ draft=JSON.parse(localStorage.getItem(key)||'null'); }catch(e){ clearTradeDraft(); return; }
+  if(!draft)return;
+  if(draft.v!==TRADE_DRAFT_VERSION){ clearTradeDraft(); return; }
+  _tradeDraftSuspended=true; clearTimeout(_tradeDraftTimer); _tradeDraftTimer=null;
+  try{
+    clearForm();
+    Object.entries(draft.fields||{}).forEach(([id,value])=>{ const el=document.getElementById(id); if(el&&el.type!=='file')el.value=value; });
+    Object.entries(draft.form||{}).forEach(([field,value])=>{
+      const seg=[...document.querySelectorAll('#trade-wizard .seg')].find(el=>el.dataset.field===field);
+      const opt=seg&&[...seg.querySelectorAll('.opt')].find(el=>el.dataset.v===String(value));
+      if(opt){ choice(field,opt); return; }
+      const rating=[...document.querySelectorAll('#trade-wizard .rate')].find(el=>el.dataset.field===field);
+      const dot=rating&&rating.querySelectorAll('.dot')[Number(value)-1];
+      if(dot){ rate(field,dot); return; }
+      form[field]=value;
+    });
+    const setupButtons=[...document.querySelectorAll('#setup-tags button')];
+    (draft.selectedSetupIndexes||[]).forEach(index=>{
+      const button=setupButtons[index]; if(!button)return;
+      if(button.classList.contains('tf-main'))toggleTf(button,button.dataset.concept);
+      else if(button.classList.contains('tf-chip'))toggleChip(button);
+      else toggleTag(button);
+    });
+    if(draft.emotion){ const emotion=[...document.querySelectorAll('#trade-wizard .emo')].find(el=>el.textContent===draft.emotion); if(emotion)toggleEmo(emotion); }
+    updateExec(); updateSetupQ();
+    goStep(Math.max(1,Math.min(STEPS,Number(draft.step)||1)),true);
+    draftStatus('Entwurf wiederhergestellt · '+new Date(draft.savedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · Screenshot erneut auswählen');
+  }catch(e){ console.error('Entwurf konnte nicht wiederhergestellt werden',e); draftStatus('Entwurf konnte nicht wiederhergestellt werden · Daten bleiben lokal erhalten'); }
+  finally{ _tradeDraftSuspended=false; }
+}
+function discardTradeDraft(){
+  if(!confirm('Entwurf wirklich verwerfen? Alle Eingaben außer bereits gespeicherten Trades gehen verloren.'))return;
+  _tradeDraftSuspended=true;
+  try{ clearTradeDraft(); clearForm(); goStep(1,true); showToast('Entwurf verworfen'); }
+  finally{ _tradeDraftSuspended=false; }
+}
+function goStep(n,skipDraft){ if(n<1||n>STEPS)return; curStep=n; document.querySelectorAll('.wz-panel').forEach(p=>p.classList.remove('active')); const pan=document.getElementById('wz-'+n); if(pan)pan.classList.add('active'); document.querySelectorAll('.wz-step').forEach((el,i)=>{ el.classList.toggle('active',i+1===n); el.classList.toggle('done',i+1<n); }); const f=document.getElementById('wz-fill'); if(f)f.style.width=((n-1)/(STEPS-1)*100)+'%'; const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0; if(!skipDraft)scheduleTradeDraft(); }
 function nextStep(){ goStep(curStep+1); }
 function prevStep(){ goStep(curStep-1); }
-function choice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); form[field]=btn.dataset.v; if(field==='toPlan'||field==='chased'||field==='patience'||field==='confirmation')updateExec(); if(field==='grade'||field==='matchesPlaybook'||field==='proWouldTake')updateSetupQ(); }
-function rate(field,btn){ const grp=btn.parentElement; const dots=[...grp.querySelectorAll('.dot')]; const idx=dots.indexOf(btn); dots.forEach((d,i)=>d.classList.toggle('on',i<=idx)); form[field]=idx+1; if(field==='execQuality')updateExec(); }
+function choice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); form[field]=btn.dataset.v; if(field==='toPlan'||field==='chased'||field==='patience'||field==='confirmation')updateExec(); if(field==='grade'||field==='matchesPlaybook'||field==='proWouldTake')updateSetupQ(); scheduleTradeDraft(); }
+function rate(field,btn){ const grp=btn.parentElement; const dots=[...grp.querySelectorAll('.dot')]; const idx=dots.indexOf(btn); dots.forEach((d,i)=>d.classList.toggle('on',i<=idx)); form[field]=idx+1; if(field==='execQuality')updateExec(); scheduleTradeDraft(); }
 function execScoreCalc(){ let s=0; s+=form.toPlan==='Yes'?30:form.toPlan==='Partial'?15:0; s+=form.chased==='No'?20:0; s+=form.patience==='Yes'?20:0; s+=form.confirmation==='Yes'?15:0; s+=form.execQuality?Math.round(form.execQuality/5*15):0; return Math.min(100,s); }
 function updateExec(){ const sc=execScoreCalc(); const col=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)'; const f=document.getElementById('exec-fill'),n=document.getElementById('exec-num'); if(f){f.style.width=sc+'%';f.style.background=col;} if(n){n.textContent=sc;n.style.color=col;} }
 function updateSetupQ(){ const map={'A+':100,'A':80,'B':60}; let s=map[form.grade]||0; if(s&&form.matchesPlaybook==='No')s-=15; if(s&&form.proWouldTake==='No')s-=15; s=Math.max(0,s); const col=s>=90?'var(--green)':s>=70?'var(--accent)':'var(--amber)'; const f=document.getElementById('setq-fill'),l=document.getElementById('setq-label'); if(f){f.style.width=s+'%';f.style.background=col;} if(l){l.textContent=form.grade?('Grade '+form.grade):'—';l.style.color=form.grade?col:'var(--muted)';} }
@@ -1489,7 +1577,7 @@ async function saveTrade(){
   const saveBtn=document.querySelector('#sec-log .wz-nav .btn-primary');
   if(saveBtn) saveBtn.disabled=true;
   try{
-    const data=await loadTrades();
+    const data=[...(await loadTrades())];
     const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
     let pnlVal=g('f-pnl')!==''?parseFloat(g('f-pnl')):null;
     if(pnlVal!==null && !isNaN(pnlVal)){
@@ -1515,7 +1603,12 @@ async function saveTrade(){
       why:g('f-factor'), better:g('f-lesson'),
       screenshot:getImg()
     };
-    data.unshift(t); await saveTrades(data); clearForm(); showToast('Trade saved ✓'); goStep(1);
+    data.unshift(t);
+    if(!await saveTrades(data)){ saveTradeDraftNow(); showToast('Speichern fehlgeschlagen · Entwurf bleibt erhalten'); return; }
+    _tradeDraftSuspended=true;
+    try{ clearTradeDraft(); clearForm(); goStep(1,true); }
+    finally{ _tradeDraftSuspended=false; }
+    showToast('Trade saved ✓');
   } finally {
     _savingTrade=false;
     if(saveBtn) saveBtn.disabled=false;
@@ -1549,7 +1642,7 @@ async function renderRecentStrip(){
   const dec=data.filter(t=>t.result==='Win'||t.result==='Loss');
   const w=dec.filter(t=>t.result==='Win').length;
   const wr=dec.length?Math.round(w/dec.length*100):0;
-  el.innerHTML='<span class="recent-strip-lab">Last trades</span><span class="recent-dots">'+dots+'</span><span class="recent-strip-wr">'+wr+'% win rate</span>';
+  el.innerHTML='<span class="recent-strip-lab">Last '+data.length+' trades</span><span class="recent-dots">'+dots+'</span><span class="recent-strip-wr">'+(dec.length?wr+'% win rate · '+w+'/'+dec.length+' decided':'No decided trades')+'</span>';
 }
 let listFilter='all';
 function setListFilter(f){ listFilter=f; document.querySelectorAll('#list-filters .fchip').forEach(c=>c.classList.toggle('active',c.dataset.f===f)); renderList(); }
@@ -1565,7 +1658,7 @@ function matchesListFilter(t){
 async function renderList(){
   const all=await loadTrades(), el=document.getElementById('trades-el');
   const data=all.filter(matchesListFilter);
-  document.getElementById('list-desc').textContent=(listFilter==='all'?all.length+' logged trade'+(all.length!==1?'s':''):data.length+' of '+all.length+' trades');
+  document.getElementById('list-desc').textContent=(listFilter==='all'?tradeCountLabel(all):data.length+' matching entries · '+tradeCountLabel(all));
   if(!all.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No trades yet.</p></div>'; return; }
   if(!data.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No trades match this filter.</p></div>'; return; }
   el.innerHTML=data.map(t=>{
@@ -1624,7 +1717,7 @@ async function openDetail(id){
   document.getElementById('list-view').classList.add('hidden'); document.getElementById('detail-view').classList.add('open'); document.querySelector('.main-wrap').scrollTop=0;
 }
 function closeDetail(){ document.getElementById('detail-view').classList.remove('open'); document.getElementById('list-view').classList.remove('hidden'); }
-async function deleteTrade(id){ if(!confirm('Delete?'))return; const d=(await loadTrades()).filter(t=>t.id!==id); await saveTrades(d); closeDetail(); renderList(); showToast('Deleted'); }
+async function deleteTrade(id){ if(!confirm('Delete?'))return; const d=(await loadTrades()).filter(t=>t.id!==id); if(!await saveTrades(d)){showToast('Delete failed');return;} closeDetail(); renderList(); showToast('Deleted'); }
 
 function animateCount(el,target,dur,suffix){ if(!el)return; dur=dur||1000; suffix=suffix||''; const t0=performance.now(); function step(now){ const p=Math.min(1,(now-t0)/dur); const ev=1-Math.pow(1-p,3); el.textContent=Math.round(target*ev)+suffix; if(p<1)requestAnimationFrame(step); } requestAnimationFrame(step); }
 
@@ -1811,12 +1904,12 @@ async function renderStats(){
         '<div class="hero-foot"><span>'+(hasPnl?'Kumuliert \u00FCber '+pnlTrades.length+' Trade'+(pnlTrades.length!==1?'s':'')+' mit P&L':'Wins \u2212 Losses kumuliert')+'</span><span>'+wins+'W \u00B7 '+losses+'L \u00B7 '+bes+'BE</span></div>'+
       '</div>'+
       '<div class="hero-card donut-card">'+
-        '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">win rate</div></div></div>'+
+        '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">win rate · '+(statsRange?'last '+statsRange+' days':'all trades')+'</div></div></div>'+
         '<div class="legend"><span><span class="dotc" style="background:var(--green)"></span>'+wins+' Wins</span><span><span class="dotc" style="background:var(--red)"></span>'+losses+' Losses</span><span><span class="dotc" style="background:var(--muted)"></span>'+bes+' Breakeven</span></div>'+
       '</div>'+
     '</div>'+
     '<div class="kpi-row">'+
-      '<div class="gcard"><div class="g-label">Total trades</div><div class="g-val count accent" data-to="'+total+'">0</div><div class="g-sub">logged</div></div>'+
+      '<div class="gcard"><div class="g-label">Total trades</div><div class="g-val accent">'+total+'</div><div class="g-sub">in selected period</div></div>'+
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Win</div><div class="g-val" style="color:'+(winPnls.length?'var(--green)':'var(--muted)')+'">'+(winPnls.length?'$'+Math.round(avgWin).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(winPnls.length?winPnls.length+' Wins mit P&L':'keine P&L-Daten')+'</div></div>':'')+
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Loss</div><div class="g-val" style="color:'+(lossPnls.length?'var(--red)':'var(--muted)')+'">'+(lossPnls.length?'$'+Math.round(avgLoss).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(lossPnls.length?lossPnls.length+' Losses mit P&L':'keine P&L-Daten')+'</div></div>':'')+
       '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val count" data-to="'+rbP+'" data-suffix="%" style="color:'+(rbP>=70?'var(--green)':'var(--amber)')+'">0</div><div class="g-sub">discipline</div></div>'+
@@ -1880,7 +1973,7 @@ async function renderReview(){
 }
 
 async function exportJSON(){ const data=await loadTrades(); const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='trades-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showToast('Exported ✓'); }
-function importJSON(input){ const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=async e=>{ try{ const d=JSON.parse(e.target.result); if(Array.isArray(d)){ await saveTrades(d); showToast('Imported '+d.length+' trades ✓'); renderList(); } else alert('Wrong format'); }catch(err){ alert('Could not read file.'); } }; r.readAsText(f); input.value=''; }
+function importJSON(input){ const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=async e=>{ try{ const d=JSON.parse(e.target.result); if(Array.isArray(d)){ if(!await saveTrades(d)){showToast('Import failed');return;} showToast('Imported '+d.length+' trades ✓'); renderList(); } else alert('Wrong format'); }catch(err){ alert('Could not read file.'); } }; r.readAsText(f); input.value=''; }
 
 
 // ── BIBLE ──────────────────────────────────────────────────────────────────
@@ -2441,7 +2534,7 @@ function deleteLearnEntry(id){
 
 async function loadJournalRow(){
   const {data,error}=await sb.from('journal_data').select('trades,learn,bible_progress,settings').eq('user_id',currentUser.id).single();
-  if(error){ console.error('Konnte Journal nicht laden',error); _cache=[]; return; }
+  if(error){ console.error('Konnte Journal nicht laden',error); return; }
   _cache=data.trades||[];
   localStorage.setItem(LEARN_KEY, JSON.stringify(data.learn||[]));
   bibleProgress=data.bible_progress||{};
@@ -2462,13 +2555,16 @@ async function startApp(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('signup-screen').style.display='none';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  // Huelle sofort zeigen. Die Journal-Abfrage dauert gemessen ~590ms (rund 1.7 MB,
-  // Screenshots stecken als Data-URLs in den Trades) -- darauf wird nicht gewartet.
+  // Die Journal-Abfrage startet vor der bedienbaren Huelle. loadTrades wartet auf
+  // dieselbe Promise, damit ein schneller Save nie eine noch leere Historie ueberschreibt.
+  _journalLoadPromise=loadJournalRow();
   buildDock(); buildSplash(); switchTab('log');
+  initTradeDraft(); restoreTradeDraft();
   hideAuthLoading();
   // Daten im Hintergrund nachladen und nachtragen
-  try{ await loadJournalRow(); }
-  catch(e){ console.error('Konnte Journal nicht laden',e); if(!_cache)_cache=[]; }
+  try{ await _journalLoadPromise; }
+  catch(e){ console.error('Konnte Journal nicht laden',e); }
+  finally{ _journalLoadPromise=null; }
   updateStatus();
   refreshActiveTab();
 }
@@ -2555,7 +2651,7 @@ async function deleteAccount(){
    Vollstaendig gekapselt: ruehrt Tab-, Kachel- und Auth-Logik nicht an, laeuft ueber
    allem und entfernt sich danach aus dem DOM.
    Abschalten (spaetere Settings-Option): localStorage 'tj_intro_off' = '1'. */
-const INTRO_OFF_KEY='tj_intro_off';
+const INTRO_OFF_KEY='tj_intro_off', INTRO_SEEN_KEY='tj_intro_seen';
 const INTRO_BUILD_MS=1500;                       // Aufbau des Kerzencharts
 const INTRO_ZOOM_MS=INTRO_BUILD_MS+280;          // fertiger Chart steht kurz, dann Zoom
 const INTRO_LOGO_MS=INTRO_ZOOM_MS+400, INTRO_REVEAL_MS=INTRO_LOGO_MS+620;
@@ -2565,7 +2661,7 @@ let _introTimers=[], _introRaf=null, _introSkipFn=null;
 let _introRevealed=false, _introDone=false, _introWaitStart=0;
 let _introOX=70, _introOY=50;   // Zoom-Ziel in Prozent -- Position der letzten Kerze
 
-function introEnabled(){ try{ return localStorage.getItem(INTRO_OFF_KEY)!=='1'; }catch(e){ return true; } }
+function introEnabled(){ try{ return localStorage.getItem(INTRO_OFF_KEY)!=='1'&&localStorage.getItem(INTRO_SEEN_KEY)!=='1'; }catch(e){ return true; } }
 function _introAt(ms,fn){ _introTimers.push(setTimeout(fn,ms)); }
 function _introStop(){
   _introTimers.forEach(clearTimeout); _introTimers=[];
@@ -2642,6 +2738,7 @@ function revealIntro(fast){
     }
   }
   _introRevealed=true;
+  try{ localStorage.setItem(INTRO_SEEN_KEY,'1'); }catch(e){}
   _introUnbind(); _introStop();
 
   const dur=fast?INTRO_BURST_FAST_MS:INTRO_BURST_MS;
