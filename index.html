@@ -225,9 +225,9 @@
   .perf-area{transition:opacity 1.2s ease .3s}
   .donut-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:8px 0}
   .donut-svg{width:160px;height:160px}
-  .donut-center{position:absolute;text-align:center;pointer-events:none}
-  .donut-cap{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
-  .donut-big{font-size:30px;font-weight:800;line-height:1}
+  .donut-center{position:absolute;text-align:center;pointer-events:none;max-width:96px}
+  .donut-cap{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;line-height:1.25}
+  .donut-big{font-size:26px;font-weight:800;line-height:1}
   .donut-seg{transition:stroke-dasharray 1s cubic-bezier(.3,.8,.2,1)}
   .legend{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:10px;flex-wrap:wrap}
   .legend span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
@@ -236,9 +236,9 @@
   .cal-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px;font-family:inherit}
   .cal-nav button:hover{background:var(--surface3)}
   .cal-month-label{font-weight:600;font-size:16px}
-  .cal-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:8px}
+  .cal-weekdays{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:8px}
   .cal-weekdays span{text-align:center;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;width:100%}
+  .cal-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:100%}
   .cal-cell{border-radius:12px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:120px;min-width:0;box-sizing:border-box;overflow:hidden;padding:10px 6px}
   .cal-cell.empty{background:transparent}
   .cal-daynum{font-size:13px;font-weight:600;color:var(--muted);position:absolute;top:9px;left:11px}
@@ -677,22 +677,10 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Pre-Trade Bias</div>
-          <div class="subgrid" style="margin-bottom:16px">
-            <div class="field"><label>HTF Bias</label><div class="seg" data-field="htfbias"><button class="opt" data-v="Bullish" onclick="choice('htfbias',this)">Bullish</button><button class="opt" data-v="Bearish" onclick="choice('htfbias',this)">Bearish</button><button class="opt" data-v="Neutral" onclick="choice('htfbias',this)">Neutral</button></div></div>
-            <div class="field"><label>Premium / Discount</label><div class="seg" data-field="pd"><button class="opt" data-v="Discount" onclick="choice('pd',this)">Discount</button><button class="opt" data-v="Premium" onclick="choice('pd',this)">Premium</button><button class="opt" data-v="Equilibrium" onclick="choice('pd',this)">Equilibrium</button></div></div>
-          </div>
-          <div class="field" style="margin-bottom:16px"><label>PDH / PDL</label><div class="seg" data-field="pdh"><button class="opt" data-v="PDH swept" onclick="choice('pdh',this)">PDH swept</button><button class="opt" data-v="PDL swept" onclick="choice('pdh',this)">PDL swept</button><button class="opt" data-v="Not swept" onclick="choice('pdh',this)">Not swept</button><button class="opt" data-v="Both swept" onclick="choice('pdh',this)">Both</button></div></div>
-          <div class="field"><label>Why this bias?</label><textarea id="f-bwhy" placeholder="Daily FVG, unswept liquidity, weekly OB, SMT between MNQ & ES..."></textarea></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Targets & Plan</div>
-          <div class="field" style="margin-bottom:16px"><label>Key levels & liquidity targets</label><textarea id="f-levels" placeholder="Draw on liquidity: PWH 21540, PDL 21380, sell-side below... where is price drawn to?"></textarea></div>
-          <div class="subgrid" style="margin-bottom:16px">
-            <div class="field"><label>Expectations & Primary scenario</label><textarea id="f-exp" placeholder="What do you expect from today's session? If price sweeps PDL and shifts structure, I long the discount FVG..."></textarea></div>
-            <div class="field"><label>Alternative scenario</label><textarea id="f-scen2" placeholder="If price holds premium and rejects, I stay flat / look short..."></textarea></div>
-          </div>
+          <div class="card-title">Bias &amp; Plan for the day</div>
+          <div class="field" style="margin-bottom:16px"><label>HTF Bias</label><div class="seg" data-field="htfbias"><button class="opt" data-v="Bullish" onclick="choice('htfbias',this)">Bullish</button><button class="opt" data-v="Bearish" onclick="choice('htfbias',this)">Bearish</button><button class="opt" data-v="Neutral" onclick="choice('htfbias',this)">Neutral</button></div></div>
+          <div class="field" style="margin-bottom:16px"><label>Bias — why?</label><textarea id="f-bwhy" placeholder="Daily FVG, unswept liquidity, weekly OB, SMT between MNQ & ES..."></textarea></div>
+          <div class="field"><label>Expectations for the day</label><textarea id="f-exp" placeholder="What do you expect from today's session? If price sweeps PDL and shifts structure, I long the discount FVG..."></textarea></div>
         </div>
 
         <div class="wz-nav"><span></span><button class="btn btn-primary" onclick="nextStep()">Next: Setup →</button></div>
@@ -704,22 +692,20 @@
           <div class="card-title">PD Arrays / Concepts</div>
           <div id="setup-tags">
             <div class="tag-group"><div class="tag-group-label">Liquidity</div><div class="tag-wrap">
-              <button class="tag" onclick="toggleTag(this)">Liquidity Sweep</button><button class="tag" onclick="toggleTag(this)">Turtle Soup</button><button class="tag" onclick="toggleTag(this)">EQH / EQL</button><button class="tag" onclick="toggleTag(this)">Judas Swing</button><button class="tag" onclick="toggleTag(this)">Liquidity Void</button><button class="tag" onclick="toggleTag(this)">Stop Hunt</button>
+              <button class="tag" onclick="toggleTag(this)">Liquidity Sweep</button><button class="tag" onclick="toggleTag(this)">Stop Hunt</button><button class="tag" onclick="toggleTag(this)">Judas Swing</button>
             </div></div>
-            <div class="tag-group"><div class="tag-group-label">Imbalance / FVG</div><div class="tag-wrap">
-              <button class="tag" onclick="toggleTag(this)">BPR</button><button class="tag" onclick="toggleTag(this)">Volume Imbalance</button>
-            </div>
+            <div class="tag-group"><div class="tag-group-label">Imbalance / FVG</div>
               <div class="tf-block"><button class="tag tf-main" data-concept="FVG" onclick="toggleTf(this,'FVG')">FVG</button><div class="tf-row" id="tf-FVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
               <div class="tf-block"><button class="tag tf-main" data-concept="IFVG" onclick="toggleTf(this,'IFVG')">IFVG</button><div class="tf-row" id="tf-IFVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
             </div>
             <div class="tag-group"><div class="tag-group-label">Structure / Order Blocks</div><div class="tag-wrap">
-              <button class="tag" onclick="toggleTag(this)">OB</button><button class="tag" onclick="toggleTag(this)">Breaker</button><button class="tag" onclick="toggleTag(this)">Rejection Block</button><button class="tag" onclick="toggleTag(this)">MSS</button><button class="tag" onclick="toggleTag(this)">BOS</button><button class="tag" onclick="toggleTag(this)">CISD</button><button class="tag" onclick="toggleTag(this)">Displacement</button>
+              <button class="tag" onclick="toggleTag(this)">OB</button><button class="tag" onclick="toggleTag(this)">Rejection Block</button><button class="tag" onclick="toggleTag(this)">MSS</button><button class="tag" onclick="toggleTag(this)">BOS</button><button class="tag" onclick="toggleTag(this)">CISD</button>
             </div></div>
             <div class="tag-group"><div class="tag-group-label">Targets</div><div class="tag-wrap">
-              <button class="tag" onclick="toggleTag(this)">All Time High</button><button class="tag" onclick="toggleTag(this)">All Time Low</button><button class="tag" onclick="toggleTag(this)">PDH</button><button class="tag" onclick="toggleTag(this)">PDL</button><button class="tag" onclick="toggleTag(this)">PWH</button><button class="tag" onclick="toggleTag(this)">PWL</button><button class="tag" onclick="toggleTag(this)">Daily Open</button><button class="tag" onclick="toggleTag(this)">Weekly Open</button><button class="tag" onclick="toggleTag(this)">NY Session High</button><button class="tag" onclick="toggleTag(this)">NY Session Low</button><button class="tag" onclick="toggleTag(this)">London Session High</button><button class="tag" onclick="toggleTag(this)">London Session Low</button><button class="tag" onclick="toggleTag(this)">Asia Session High</button><button class="tag" onclick="toggleTag(this)">Asia Session Low</button><button class="tag" onclick="toggleTag(this)">Equal Highs</button><button class="tag" onclick="toggleTag(this)">Equal Lows</button>
+              <button class="tag" onclick="toggleTag(this)">PDH</button><button class="tag" onclick="toggleTag(this)">PDL</button><button class="tag" onclick="toggleTag(this)">PWH</button><button class="tag" onclick="toggleTag(this)">PWL</button><button class="tag" onclick="toggleTag(this)">Daily Open</button><button class="tag" onclick="toggleTag(this)">Weekly Open</button><button class="tag" onclick="toggleTag(this)">NY Session High</button><button class="tag" onclick="toggleTag(this)">NY Session Low</button><button class="tag" onclick="toggleTag(this)">Asia Session High</button><button class="tag" onclick="toggleTag(this)">Asia Session Low</button><button class="tag" onclick="toggleTag(this)">Equal Highs</button><button class="tag" onclick="toggleTag(this)">Equal Lows</button>
             </div></div>
-            <div class="tag-group"><div class="tag-group-label">Context / Time</div><div class="tag-wrap">
-              <button class="tag" onclick="toggleTag(this)">SMT Divergence</button><button class="tag" onclick="toggleTag(this)">OTE</button><button class="tag" onclick="toggleTag(this)">Power of 3</button><button class="tag" onclick="toggleTag(this)">Silver Bullet</button><button class="tag" onclick="toggleTag(this)">Asian Range</button><button class="tag" onclick="toggleTag(this)">NWOG</button><button class="tag" onclick="toggleTag(this)">NDOG</button>
+            <div class="tag-group"><div class="tag-group-label">Context</div><div class="tag-wrap">
+              <button class="tag" onclick="toggleTag(this)">SMT Divergence</button><button class="tag" onclick="toggleTag(this)">OTE</button><button class="tag" onclick="toggleTag(this)">Silver Bullet</button>
             </div></div>
           </div>
           <div class="field" style="margin-top:6px"><label>Confirmations</label><textarea id="f-conf" placeholder="What confirmed it? Displacement, M1 FVG, reaction at level, CISD..."></textarea></div>
@@ -772,8 +758,7 @@
           <div class="card-title">Before the Trade</div>
           <div class="field" style="margin-bottom:14px"><label>Focus</label><div class="rate" data-field="preFocus"><button class="dot" onclick="rate('preFocus',this)">1</button><button class="dot" onclick="rate('preFocus',this)">2</button><button class="dot" onclick="rate('preFocus',this)">3</button><button class="dot" onclick="rate('preFocus',this)">4</button><button class="dot" onclick="rate('preFocus',this)">5</button></div></div>
           <div class="field" style="margin-bottom:14px"><label>Patience</label><div class="rate" data-field="prePatience"><button class="dot" onclick="rate('prePatience',this)">1</button><button class="dot" onclick="rate('prePatience',this)">2</button><button class="dot" onclick="rate('prePatience',this)">3</button><button class="dot" onclick="rate('prePatience',this)">4</button><button class="dot" onclick="rate('prePatience',this)">5</button></div></div>
-          <div class="field" style="margin-bottom:14px"><label>Energy level</label><div class="rate" data-field="preEnergy"><button class="dot" onclick="rate('preEnergy',this)">1</button><button class="dot" onclick="rate('preEnergy',this)">2</button><button class="dot" onclick="rate('preEnergy',this)">3</button><button class="dot" onclick="rate('preEnergy',this)">4</button><button class="dot" onclick="rate('preEnergy',this)">5</button></div></div>
-          <div class="field"><label>Mental state going in</label><div class="seg" data-field="preState"><button class="opt" data-v="Clear" onclick="choice('preState',this)">Clear</button><button class="opt" data-v="Calm" onclick="choice('preState',this)">Calm</button><button class="opt" data-v="Tense" onclick="choice('preState',this)">Tense</button><button class="opt" data-v="Distracted" onclick="choice('preState',this)">Distracted</button><button class="opt" data-v="Tired" onclick="choice('preState',this)">Tired</button></div></div>
+          <div class="field"><label>Energy level</label><div class="rate" data-field="preEnergy"><button class="dot" onclick="rate('preEnergy',this)">1</button><button class="dot" onclick="rate('preEnergy',this)">2</button><button class="dot" onclick="rate('preEnergy',this)">3</button><button class="dot" onclick="rate('preEnergy',this)">4</button><button class="dot" onclick="rate('preEnergy',this)">5</button></div></div>
         </div>
 
         <div class="card">
@@ -784,7 +769,7 @@
           </div>
           <div class="field" style="margin-bottom:14px"><label>Satisfied with execution (regardless of result)?</label><div class="seg yn" data-field="satisfied"><button class="opt" data-v="Yes" onclick="choice('satisfied',this)">Yes</button><button class="opt" data-v="No" onclick="choice('satisfied',this)">No</button></div></div>
           <div class="field" style="margin-bottom:14px"><label>How did you feel?</label><div class="emo-wrap">
-            <button class="emo" onclick="toggleEmo(this)">😌 Calm</button><button class="emo" onclick="toggleEmo(this)">😤 Impatient</button><button class="emo" onclick="toggleEmo(this)">😰 Anxious</button><button class="emo" onclick="toggleEmo(this)">🤩 Overconfident</button><button class="emo" onclick="toggleEmo(this)">😓 FOMO</button><button class="emo" onclick="toggleEmo(this)">😶 Neutral</button><button class="emo" onclick="toggleEmo(this)">😩 Revenge</button>
+            <button class="emo" onclick="toggleEmo(this)">😊 Good</button><button class="emo" onclick="toggleEmo(this)">😌 Calm</button><button class="emo" onclick="toggleEmo(this)">🧘 Patient</button><button class="emo" onclick="toggleEmo(this)">🎯 Focused</button><button class="emo" onclick="toggleEmo(this)">💪 Disciplined</button><button class="emo" onclick="toggleEmo(this)">😶 Neutral</button><button class="emo" onclick="toggleEmo(this)">😤 Impatient</button><button class="emo" onclick="toggleEmo(this)">😰 Anxious</button><button class="emo" onclick="toggleEmo(this)">🤩 Overconfident</button><button class="emo" onclick="toggleEmo(this)">😓 FOMO</button><button class="emo" onclick="toggleEmo(this)">😩 Revenge</button>
           </div></div>
           <div class="field"><label>Mindset notes</label><textarea id="f-mind" placeholder="Anything about your state that influenced decisions?"></textarea></div>
         </div>
@@ -1509,7 +1494,7 @@ async function saveNoTrade(){
 
 let form={instrument:'MNQ',direction:'Long'};
 let curStep=1; const STEPS=5;
-const TRADE_DRAFT_VERSION=1;
+const TRADE_DRAFT_VERSION=2;
 let _tradeDraftTimer=null, _tradeDraftSuspended=false, _tradeDraftRestored=false, _tradeDraftBound=false;
 function tradeDraftKey(){ return currentUser?'tj_trade_draft_'+currentUser.id:null; }
 function draftStatus(text){ const el=document.getElementById('trade-draft-status'); if(el)el.textContent=text; }
@@ -1834,6 +1819,31 @@ function donutSVG(w,l,b){
   return '<svg viewBox="0 0 140 140" class="donut-svg"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--surface2)" stroke-width="16"/>'+parts+'</svg>';
 }
 
+// Weekly P&L: Netto-Gewinn/Verlust je Kalenderwoche (Mo-Start), jüngste zuerst.
+function weeklyPnlHTML(trades){
+  const wk={};
+  trades.forEach(t=>{
+    if(!t.date)return;
+    const p=t.date.split('-').map(Number);
+    const ws=weekStartMonday(new Date(p[0],p[1]-1,p[2]));
+    const key=ws.getFullYear()+'-'+String(ws.getMonth()+1).padStart(2,'0')+'-'+String(ws.getDate()).padStart(2,'0');
+    const e=wk[key]||(wk[key]={start:ws,w:0,l:0,pnl:0,hp:0});
+    if(t.result==='Win')e.w++; else if(t.result==='Loss')e.l++;
+    if(t.pnl!==undefined&&t.pnl!==null&&t.pnl!==''){ e.pnl+=pnlOf(t); e.hp++; }
+  });
+  const rows=Object.values(wk).sort((a,b)=>b.start-a.start).slice(0,12);
+  if(!rows.length) return '<p style="color:var(--muted);font-size:13px">Noch keine Trades im Zeitraum.</p>';
+  const max=Math.max(1,...rows.map(r=>Math.abs(r.pnl)));
+  return rows.map(r=>{
+    const lbl=r.start.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit'});
+    const col=r.pnl>0?'var(--green)':r.pnl<0?'var(--red)':'var(--muted)';
+    const wpct=Math.round(Math.abs(r.pnl)/max*100);
+    return '<div class="bar-row"><span class="bar-label">KW '+lbl+'</span>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+wpct+'%;background:'+col+'"></div></div>'+
+      '<span class="bar-val" style="color:'+col+'">'+(r.hp?money(r.pnl):'–')+' · '+r.w+'W '+r.l+'L</span></div>';
+  }).join('');
+}
+
 let calY=null, calM=null;
 function fmtCompact(n){
   const abs=Math.abs(n);
@@ -1848,13 +1858,17 @@ function calendarHTML(trades,y,m){
     if(t.pnl===undefined||t.pnl===null||t.pnl==='')return;
     pnlMap[t.date]=(pnlMap[t.date]||0)+Number(t.pnl);
   });
-  const first=new Date(y,m,1), startOffset=(first.getDay()+6)%7, daysInMonth=new Date(y,m+1,0).getDate();
+  const first=new Date(y,m,1), daysInMonth=new Date(y,m+1,0).getDate();
+  // Nur Handelstage (Mo–Fr). Wochenend-Spalten fallen weg; das Grid hat 5 Spalten.
+  const firstDow=(first.getDay()+6)%7;            // Mo=0 … So=6
+  const startOffset=firstDow<5?firstDow:0;
   const monthLabel=first.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const wdLabels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const wdLabels=['Mon','Tue','Wed','Thu','Fri'];
   let cells='';
   for(let i=0;i<startOffset;i++) cells+='<div class="cal-cell empty"></div>';
   let monthTotal=0, tradedDays=0, monthTrades=0;
   for(let d=1; d<=daysInMonth; d++){
+    if(((new Date(y,m,d).getDay()+6)%7)>=5) continue;   // Sa/So überspringen
     const key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const count=countMap[key], val=pnlMap[key];
     if(count){
@@ -2048,7 +2062,7 @@ async function renderStats(){
         '<div class="hero-foot"><span>'+(hasPnl?'Kumuliert \u00FCber '+pnlTrades.length+' Trade'+(pnlTrades.length!==1?'s':'')+' mit P&L':'Wins \u2212 Losses kumuliert')+'</span><span>'+wins+'W \u00B7 '+losses+'L \u00B7 '+bes+'BE</span></div>'+
       '</div>'+
       '<div class="hero-card donut-card">'+
-        '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">win rate · '+(statsRange?'last '+statsRange+' days':'all trades')+'</div></div></div>'+
+        '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">Win rate</div></div></div>'+
         '<div class="legend"><span><span class="dotc" style="background:var(--green)"></span>'+wins+' Wins</span><span><span class="dotc" style="background:var(--red)"></span>'+losses+' Losses</span><span><span class="dotc" style="background:var(--muted)"></span>'+bes+' Breakeven</span></div>'+
       '</div>'+
     '</div>'+
@@ -2062,6 +2076,7 @@ async function renderStats(){
     '</div>'+
     disciplineStripHTML(ds,total,rbP,planP,emoP)+
     '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
+    '<div class="fcard"><div class="fcard-title">Weekly P&amp;L</div>'+weeklyPnlHTML(trades)+'</div>'+
     '<div class="grid-2col">'+
       disciplineGapBlock(trades,hasPnl)+
       conceptEdgeBlock(trades,hasPnl)+
@@ -2100,7 +2115,7 @@ async function renderReview(){
   // Emotion -> Ergebnis: bisher nur als Textzeile in den Faith-Insights, hier als
   // quantifizierte Tabelle -- passt in die Muster-Ansicht und zum Disziplin-Fokus
   // der Cockpit-Aenderungen.
-  const EMO_ORDER=['😌 Calm','😶 Neutral','😤 Impatient','😰 Anxious','🤩 Overconfident','😓 FOMO','😩 Revenge'];
+  const EMO_ORDER=['😊 Good','😌 Calm','🧘 Patient','🎯 Focused','💪 Disciplined','😶 Neutral','😤 Impatient','😰 Anxious','🤩 Overconfident','😓 FOMO','😩 Revenge'];
   const emoStats={};
   data.forEach(t=>{
     if(!t.emotion)return;
@@ -2564,6 +2579,12 @@ async function renderFaith(){
   const titleMap={win:'After a Win',loss:'After a Loss',be:'After a Breakeven',daily:'Word for Today'};
   const msgMap={win:'Give God the glory — stay humble.',loss:'A loss is not the end. He is still good.',be:'Trust His timing. Patience is a position.',daily:'A word for today — log your result for more.'};
 
+  const chaptersRead=Object.values(bibleProgress||{}).reduce((s,a)=>s+((a&&a.length)||0),0);
+  const bibleTotal=bibleData?bibleData.books.filter(b=>b.available).reduce((s,b)=>s+b.chapters.length,0):0;
+  const bibleLine=chaptersRead>0
+    ?chaptersRead+' Kapitel gelesen'+(bibleTotal?' · '+Math.round(chaptersRead/bibleTotal*100)+'%':'')
+    :'Noch kein Kapitel als gelesen markiert.';
+
   el.innerHTML=
     '<div class="hero">'+
       '<div class="hero-eyebrow"><span class="hero-title">Faith &amp; Discipline</span><canvas class="mini-candles" id="mini-c" width="84" height="34"></canvas></div>'+
@@ -2581,6 +2602,12 @@ async function renderFaith(){
     '</div>'+
     '<div class="fcard"><div class="fcard-title">✓ '+titleMap[cat]+' — '+msgMap[cat]+'</div><div id="faith-verse"></div><button class="verse-btn" id="verse-btn" onclick="nextVerse()"></button></div>'+
     '<div class="fcard"><div class="fcard-title">⟶ Trade Reflection</div><div class="timeline" id="faith-timeline">'+timelineHtml(latest)+'</div></div>'+
+    '<div class="fcard"><div class="fcard-title">📖 Bibel</div>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">'+
+        '<span style="color:var(--muted);font-size:14px">'+bibleLine+'</span>'+
+        '<button class="btn btn-primary" onclick="switchTab(\'bible\')">Bibel öffnen</button>'+
+      '</div>'+
+    '</div>'+
     '<div class="insight-card"><div class="insight-head"><span class="insight-badge">✦</span><span class="insight-title">Faith Insights — from your journal</span></div>'+
       faithInsights(data).map(t=>'<div class="insight-item"><span class="insight-dot">◆</span><span>'+t+'</span></div>').join('')+
     '</div>';
