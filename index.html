@@ -3046,6 +3046,10 @@ async function init(){
     }
   });
 }
+// Kommt die Seite aus dem Back-/Forward-Cache (kein echter Reload -- die Skripte
+// laufen dann nicht neu, das entfernte #intro-Overlay bleibt weg), einmal frisch
+// laden, damit die Startsequenz auch bei "zurueck" / erneutem Aufruf wieder laeuft.
+window.addEventListener('pageshow',function(e){ if(e.persisted) location.reload(); });
 startIntro();
 init();
 </script>
