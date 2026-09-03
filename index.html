@@ -301,6 +301,12 @@
   .wz-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:8px}
   .draft-note{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--muted);font-size:11px}
   .draft-note button{border:0;background:transparent;color:var(--accent);font:inherit;cursor:pointer;padding:2px 0;white-space:nowrap}
+  .edit-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:10px 14px;border:1px solid var(--accent-border);border-left:3px solid var(--accent);border-radius:var(--radius-sm);background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:600}
+  .edit-banner button{border:1px solid var(--accent-border);background:transparent;color:var(--accent);font:inherit;cursor:pointer;padding:4px 11px;border-radius:6px;white-space:nowrap}
+  .edit-banner button:hover{background:var(--surface)}
+  .edit-btn{border:1px solid var(--accent-border);background:transparent;color:var(--accent);padding:8px 15px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+  .detail-actions{display:flex;gap:8px;flex-shrink:0}
+  .edit-btn:hover{background:var(--accent-bg)}
   .wz-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
   .wz-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);transition:all .3s}
   .wz-step.active .wz-num{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -661,6 +667,7 @@
 
       <div id="trade-wizard">
         <div class="draft-note"><span id="trade-draft-status">Entwurf wird automatisch gespeichert · Screenshots ausgenommen</span><button type="button" onclick="discardTradeDraft()">Entwurf verwerfen</button></div>
+        <div id="edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">Trade bearbeiten</span><button type="button" onclick="cancelEdit()">Bearbeitung abbrechen</button></div>
         <div class="wz-progress">
           <div class="wz-step active" onclick="goStep(1)"><div class="wz-num">1</div><div class="wz-name">Plan</div></div>
           <div class="wz-step" onclick="goStep(2)"><div class="wz-num">2</div><div class="wz-name">Setup</div></div>
@@ -814,6 +821,7 @@
       </div><!-- /trade-wizard -->
 
       <div id="notrade-form" style="display:none">
+        <div id="nt-edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">No-Trade-Tag bearbeiten</span><button type="button" onclick="cancelEditNoTrade()">Bearbeitung abbrechen</button></div>
         <div class="card">
           <div class="card-title">The Day</div>
           <div class="subgrid" style="margin-bottom:16px">
@@ -1402,13 +1410,16 @@ function getSetup(){
 function getEmo(){ const s=document.querySelector('.emo.sel'); return s?s.textContent:''; }
 function handleImg(i){ const f=i.files[0]; if(!f)return; loadImgFile(f); }
 
+function setScreenshotPreview(src){
+  const p=document.getElementById('img-prev');
+  p.src=src; p.style.display='block';
+  const hint=document.getElementById('screenshot-hint');
+  if(hint)hint.innerHTML='✅ Screenshot geladen &nbsp;<button onclick="clearScreenshot()" style="background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);padding:3px 9px;border-radius:6px;font-size:11px;cursor:pointer">✕ Remove</button>';
+}
+
 function loadImgFile(f){
   const r=new FileReader();
-  r.onload=e=>{
-    const p=document.getElementById('img-prev');
-    p.src=e.target.result; p.style.display='block';
-    document.getElementById('screenshot-hint').innerHTML='✅ Screenshot geladen &nbsp;<button onclick="clearScreenshot()" style="background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);padding:3px 9px;border-radius:6px;font-size:11px;cursor:pointer">✕ Remove</button>';
-  };
+  r.onload=e=>{ setScreenshotPreview(e.target.result); };
   r.readAsDataURL(f);
 }
 
@@ -1456,6 +1467,9 @@ let ntForm={};
 let currentMode='trade';
 
 function setMode(mode){
+  // Moduswechsel bricht eine laufende Bearbeitung im jeweils anderen Formular ab
+  if(mode==='trade' && editingNoTradeId!==null) abortNoTradeEdit();
+  if(mode==='notrade' && editingTradeId!==null) abortTradeEdit();
   currentMode=mode;
   const tw=document.getElementById('trade-wizard'), nf=document.getElementById('notrade-form');
   const bt=document.getElementById('mode-trade'), bn=document.getElementById('mode-notrade');
@@ -1477,7 +1491,7 @@ function gv(id){ const el=document.getElementById(id); return el?el.value:''; }
 async function saveNoTrade(){
   const data=[...(await loadTrades())];
   const t={
-    id:Date.now(), isNoTrade:true, result:'No Trade',
+    id:editingNoTradeId!==null?editingNoTradeId:Date.now(), isNoTrade:true, result:'No Trade',
     date:gv('nt-date')||new Date().toISOString().slice(0,10),
     instrument:ntForm['nt-instrument']||'MNQ', direction:'--',
     bias:gv('nt-bias'), seen:gv('nt-seen'),
@@ -1487,6 +1501,23 @@ async function saveNoTrade(){
     rightCall:ntForm['nt-rightcall']||'',
     emotion:ntForm['nt-feel']||''
   };
+  if(editingNoTradeId!==null){
+    const idx=data.findIndex(x=>x.id===editingNoTradeId);
+    if(idx<0){ showToast('Eintrag nicht mehr vorhanden — Bearbeitung abgebrochen'); finishEditNoTrade(); return; }
+    // Select-Werte des Originals, die keiner aktuellen Option entsprechen
+    // (Altdaten/Import), nicht mit '' überschreiben.
+    const patch={...t};
+    Object.entries({instrument:'nt-instrument',fomo:'nt-fomo',feel:'nt-feel',rightCall:'nt-rightcall'}).forEach(([key,field])=>{
+      const orig=data[idx][key];
+      if(ntForm[field]===undefined && orig && !ntOptionExists(field,orig)) delete patch[key];
+    });
+    if(ntForm['nt-feel']===undefined && data[idx].emotion && !ntOptionExists('nt-feel',data[idx].emotion)) delete patch.emotion;
+    data[idx]={...data[idx],...patch};
+    if(!await saveTrades(data)){ showToast('Speichern fehlgeschlagen'); return; }
+    finishEditNoTrade();
+    showToast('No-Trade-Tag aktualisiert ✓');
+    return;
+  }
   data.unshift(t);
   if(!await saveTrades(data)){ showToast('Speichern fehlgeschlagen'); return; }
   ntForm={};
@@ -1502,6 +1533,8 @@ let curStep=1; const STEPS=5;
 const TRADE_DRAFT_VERSION=2;
 let _tradeDraftTimer=null, _tradeDraftSuspended=false, _tradeDraftRestored=false, _tradeDraftBound=false;
 function tradeDraftKey(){ return currentUser?'tj_trade_draft_'+currentUser.id:null; }
+function tradeEditRecoveryKey(){ return currentUser?'tj_trade_edit_recovery_'+currentUser.id:null; }
+function clearTradeEditRecovery(){ const k=tradeEditRecoveryKey(); if(k){ try{ localStorage.removeItem(k); }catch(e){} } }
 function draftStatus(text){ const el=document.getElementById('trade-draft-status'); if(el)el.textContent=text; }
 function collectTradeDraft(){
   const fields={};
@@ -1543,37 +1576,224 @@ function restoreTradeDraft(){
   if(draft.v!==TRADE_DRAFT_VERSION){ clearTradeDraft(); return; }
   _tradeDraftSuspended=true; clearTimeout(_tradeDraftTimer); _tradeDraftTimer=null;
   try{
-    clearForm();
-    Object.entries(draft.fields||{}).forEach(([id,value])=>{ const el=document.getElementById(id); if(el&&el.type!=='file')el.value=value; });
-    Object.entries(draft.form||{}).forEach(([field,value])=>{
-      const seg=[...document.querySelectorAll('#trade-wizard .seg')].find(el=>el.dataset.field===field);
-      const opt=seg&&[...seg.querySelectorAll('.opt')].find(el=>el.dataset.v===String(value));
-      if(opt){ choice(field,opt); return; }
-      const rating=[...document.querySelectorAll('#trade-wizard .rate')].find(el=>el.dataset.field===field);
-      const dot=rating&&rating.querySelectorAll('.dot')[Number(value)-1];
-      if(dot){ rate(field,dot); return; }
-      form[field]=value;
-    });
-    const setupButtons=[...document.querySelectorAll('#setup-tags button')];
-    (draft.selectedSetupIndexes||[]).forEach(index=>{
-      const button=setupButtons[index]; if(!button)return;
-      if(button.classList.contains('tf-main'))toggleTf(button,button.dataset.concept);
-      else if(button.classList.contains('tf-chip'))toggleChip(button);
-      else toggleTag(button);
-    });
-    if(draft.emotion){ const emotion=[...document.querySelectorAll('#trade-wizard .emo')].find(el=>el.textContent===draft.emotion); if(emotion)toggleEmo(emotion); }
-    updateExec(); updateSetupQ();
-    goStep(Math.max(1,Math.min(STEPS,Number(draft.step)||1)),true);
+    applyTradeDraft(draft);
     draftStatus('Entwurf wiederhergestellt · '+new Date(draft.savedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · Screenshot erneut auswählen');
   }catch(e){ console.error('Entwurf konnte nicht wiederhergestellt werden',e); draftStatus('Entwurf konnte nicht wiederhergestellt werden · Daten bleiben lokal erhalten'); }
   finally{ _tradeDraftSuspended=false; }
 }
+// Schreibt einen Draft-/Trade-Snapshot zurück in den Wizard. Wird sowohl vom
+// Entwurf-Restore als auch vom Bearbeiten gespeicherter Trades genutzt.
+function applyTradeDraft(draft){
+  clearForm();
+  Object.entries(draft.fields||{}).forEach(([id,value])=>{ const el=document.getElementById(id); if(el&&el.type!=='file')el.value=value; });
+  Object.entries(draft.form||{}).forEach(([field,value])=>{
+    const seg=[...document.querySelectorAll('#trade-wizard .seg')].find(el=>el.dataset.field===field);
+    const opt=seg&&[...seg.querySelectorAll('.opt')].find(el=>el.dataset.v===String(value));
+    if(opt){ choice(field,opt); return; }
+    const rating=[...document.querySelectorAll('#trade-wizard .rate')].find(el=>el.dataset.field===field);
+    const dot=rating&&rating.querySelectorAll('.dot')[Number(value)-1];
+    if(dot){ rate(field,dot); return; }
+    form[field]=value;
+  });
+  const setupButtons=[...document.querySelectorAll('#setup-tags button')];
+  (draft.selectedSetupIndexes||[]).forEach(index=>{
+    const button=setupButtons[index]; if(!button)return;
+    if(button.classList.contains('tf-main'))toggleTf(button,button.dataset.concept);
+    else if(button.classList.contains('tf-chip'))toggleChip(button);
+    else toggleTag(button);
+  });
+  if(draft.emotion){ const emotion=[...document.querySelectorAll('#trade-wizard .emo')].find(el=>el.textContent===draft.emotion); if(emotion)toggleEmo(emotion); }
+  updateExec(); updateSetupQ();
+  goStep(Math.max(1,Math.min(STEPS,Number(draft.step)||1)),true);
+}
 function discardTradeDraft(){
+  if(editingTradeId!==null)return;
   if(!confirm('Entwurf wirklich verwerfen? Alle Eingaben außer bereits gespeicherten Trades gehen verloren.'))return;
   _tradeDraftSuspended=true;
   try{ clearTradeDraft(); clearForm(); goStep(1,true); showToast('Entwurf verworfen'); }
   finally{ _tradeDraftSuspended=false; }
 }
+
+/* ===== Gespeicherte Trades bearbeiten =====
+   editingTradeId / editingNoTradeId zeigen an, dass der Wizard bzw. das
+   No-Trade-Formular gerade einen bestehenden Eintrag bearbeitet statt einen
+   neuen anzulegen. Beim Einstieg wird der laufende Entwurf (falls vorhanden)
+   in _preEditSnapshot gesichert und beim Verlassen wiederhergestellt, damit
+   eine angefangene neue Eingabe nicht verloren geht. */
+let editingTradeId=null, editingNoTradeId=null, _preEditSnapshot=null, _preEditNtSnapshot=null;
+
+// true, wenn ein gespeichertes Setup-Label (z.B. "OB", "FVG 5m", "FVG") einem
+// Button im aktuellen Wizard entspricht. Nicht zuordenbare Labels sind Altdaten.
+function setupLabelHasButton(raw){
+  const label=String(raw).trim();
+  const tf=label.match(/^(FVG|IFVG)(?:\s+(.+))?$/);
+  if(tf){
+    const main=document.querySelector('#setup-tags .tf-main[data-concept="'+tf[1]+'"]');
+    if(!main) return false;
+    if(!tf[2]) return true;
+    return [...document.querySelectorAll('#tf-'+tf[1]+' .tf-chip')].some(c=>c.textContent.trim()===tf[2].trim());
+  }
+  return [...document.querySelectorAll('#setup-tags .tag:not(.tf-main)')].some(x=>x.textContent.trim()===label);
+}
+
+function tradeToDraft(t){
+  const str=v=>(v===0||v)?String(v):'';
+  const fields={
+    'f-date':t.date||'', 'f-bwhy':t.biasWhy||'', 'f-exp':t.expectations||'',
+    'f-levels':t.keyLevels||'', 'f-scen2':t.scenarioAlt||'',
+    'f-conf':t.confirmations||'', 'f-contracts':str(t.contracts),
+    'f-ext':t.externalFactors||t.news||'', 'f-mind':t.mindset||'', 'f-pnl':str(t.pnl),
+    'f-factor':t.biggestFactor||t.why||'', 'f-bestrule':t.bestRule||'',
+    'f-mistake':t.worstMistake||'', 'f-lesson':t.lesson||t.better||''
+  };
+  const wForm={};
+  const segMap={instrument:t.instrument,direction:t.direction,htfbias:t.htfbias,grade:t.grade,
+    matchesPlaybook:t.matchesPlaybook,proWouldTake:t.proWouldTake,toPlan:t.toPlan,chased:t.chased,
+    patience:t.patience,confirmation:t.confirmationPresent,rulebased:t.rulebased,
+    doubts:t.doubts,deviated:t.deviated,satisfied:t.satisfied,result:t.result};
+  Object.entries(segMap).forEach(([k,v])=>{ if(v!==undefined&&v!==null&&v!=='')wForm[k]=v; });
+  [['execQuality',t.execQuality],['preFocus',t.preFocus],['prePatience',t.prePatience],['preEnergy',t.preEnergy]]
+    .forEach(([k,v])=>{ if(v)wForm[k]=v; });
+  const setupButtons=[...document.querySelectorAll('#setup-tags button')];
+  const sel=[];
+  const pushMain=concept=>{
+    const main=setupButtons.find(b=>b.classList.contains('tf-main')&&b.dataset.concept===concept);
+    if(main&&sel.indexOf(setupButtons.indexOf(main))<0)sel.push(setupButtons.indexOf(main));
+  };
+  (t.setup||[]).forEach(raw=>{
+    // Nur zuordenbare Labels werden vorausgewählt; nicht zuordenbare bleiben
+    // unangetastet und werden beim Speichern via setupLabelHasButton erhalten.
+    const label=String(raw).trim();
+    const tf=label.match(/^(FVG|IFVG)(?:\s+(.+))?$/);
+    if(tf){
+      if(tf[2]){
+        const chip=[...document.querySelectorAll('#tf-'+tf[1]+' .tf-chip')].find(c=>c.textContent.trim()===tf[2].trim());
+        if(chip){ pushMain(tf[1]); sel.push(setupButtons.indexOf(chip)); }
+      } else if(document.querySelector('#setup-tags .tf-main[data-concept="'+tf[1]+'"]')){
+        pushMain(tf[1]);
+      }
+    } else {
+      const b=setupButtons.find(x=>!x.classList.contains('tf-main')&&!x.classList.contains('tf-chip')&&x.textContent.trim()===label);
+      if(b)sel.push(setupButtons.indexOf(b));
+    }
+  });
+  return {v:TRADE_DRAFT_VERSION,step:1,form:wForm,fields,selectedSetupIndexes:sel,emotion:t.emotion||''};
+}
+
+function enterEditUI(t){
+  const b=document.getElementById('edit-banner'); if(b)b.style.display='flex';
+  const lab=document.querySelector('#edit-banner .edit-banner-label');
+  if(lab)lab.textContent='Trade vom '+(t.date||'?')+' bearbeiten';
+  const btn=document.querySelector('#wz-5 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Änderungen speichern';
+  // Entwurf-Hinweis (mit "Entwurf verwerfen") ergibt beim Bearbeiten keinen Sinn
+  const dn=document.querySelector('#trade-wizard .draft-note'); if(dn)dn.style.display='none';
+}
+function exitEditUI(){
+  const b=document.getElementById('edit-banner'); if(b)b.style.display='none';
+  const btn=document.querySelector('#wz-5 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Save Trade';
+  const dn=document.querySelector('#trade-wizard .draft-note'); if(dn)dn.style.display='';
+}
+function _restoreWizardBaseline(){
+  if(_preEditSnapshot){
+    applyTradeDraft(_preEditSnapshot.draft);
+    if(_preEditSnapshot.screenshot)setScreenshotPreview(_preEditSnapshot.screenshot); else clearScreenshot();
+    _preEditSnapshot=null;
+  } else { clearForm(); goStep(1,true); }
+}
+function abortTradeEdit(){
+  if(editingTradeId===null)return;
+  editingTradeId=null;
+  clearTradeEditRecovery();
+  exitEditUI();
+  _restoreWizardBaseline();
+  _tradeDraftSuspended=false;
+}
+function finishEdit(){ abortTradeEdit(); switchTab('list',true); }
+function cancelEdit(){ if(editingTradeId===null)return; finishEdit(); showToast('Bearbeitung abgebrochen'); }
+
+async function editTrade(id){
+  const t=(await loadTrades()).find(x=>x.id===id);
+  if(!t){ showToast('Trade nicht gefunden'); return; }
+  if(t.isNoTrade){ editNoTrade(t); return; }
+  if(editingTradeId===null) _preEditSnapshot={draft:collectTradeDraft(),screenshot:getImg()};
+  _tradeDraftSuspended=true;
+  clearTimeout(_tradeDraftTimer); _tradeDraftTimer=null;
+  switchTab('log',true);
+  setMode('trade');
+  editingTradeId=id;
+  // Nach einem fehlgeschlagenen Speichern liegen die letzten Änderungen lokal vor
+  let recovered=null,recShotCleared=false;
+  try{ const r=JSON.parse(localStorage.getItem(tradeEditRecoveryKey())||'null'); if(r&&r.id===id&&r.draft){ recovered=r.draft; recShotCleared=!!r.shotCleared; } }catch(e){}
+  applyTradeDraft(recovered||tradeToDraft(t));
+  if(recShotCleared) clearScreenshot();
+  else if(t.screenshot) setScreenshotPreview(t.screenshot);
+  else clearScreenshot();
+  enterEditUI(t);
+  closeDetail();
+  goStep(1,true);
+  showToast(recovered?'Nicht gespeicherte Änderungen wiederhergestellt · Screenshot ggf. neu wählen':'Bearbeitungsmodus · im letzten Schritt speichern');
+}
+
+function ntFormReset(){
+  ntForm={};
+  document.querySelectorAll('#notrade-form input,#notrade-form textarea').forEach(el=>el.value='');
+  document.querySelectorAll('#notrade-form .opt,#notrade-form .tag').forEach(x=>x.classList.remove('sel'));
+  const di=document.querySelector('#notrade-form [data-field="nt-instrument"] [data-v="MNQ"]'); if(di)di.classList.add('sel');
+}
+function collectNtSnapshot(){
+  const fields={};
+  document.querySelectorAll('#notrade-form input,#notrade-form textarea').forEach(el=>{ if(el.id)fields[el.id]=el.value; });
+  return {fields,ntForm:{...ntForm},reasons:[...document.querySelectorAll('#nt-reasons .tag.sel')].map(b=>b.textContent)};
+}
+function applyNtSnapshot(s){
+  ntFormReset();
+  document.querySelectorAll('#notrade-form input,#notrade-form textarea').forEach(el=>{ if(el.id&&s.fields&&s.fields[el.id]!==undefined)el.value=s.fields[el.id]; });
+  Object.entries(s.ntForm||{}).forEach(([f,v])=>ntSelect(f,v));
+  const reasons=s.reasons||[];
+  document.querySelectorAll('#nt-reasons .tag').forEach(b=>b.classList.toggle('sel',reasons.indexOf(b.textContent)>=0));
+}
+function abortNoTradeEdit(){
+  if(editingNoTradeId===null)return;
+  editingNoTradeId=null;
+  const b=document.getElementById('nt-edit-banner'); if(b)b.style.display='none';
+  const sb=document.querySelector('#notrade-form .btn-row .btn-primary'); if(sb)sb.textContent='✓ Save No-Trade Day';
+  if(_preEditNtSnapshot){ applyNtSnapshot(_preEditNtSnapshot); _preEditNtSnapshot=null; }
+  else ntFormReset();
+}
+function finishEditNoTrade(){ abortNoTradeEdit(); setMode('trade'); switchTab('list',true); }
+function cancelEditNoTrade(){ if(editingNoTradeId===null)return; finishEditNoTrade(); showToast('Bearbeitung abgebrochen'); }
+
+function ntOptionExists(field,v){
+  const seg=document.querySelector('#notrade-form .seg[data-field="'+field+'"]');
+  return !!(seg && [...seg.querySelectorAll('.opt')].some(o=>o.dataset.v===String(v)));
+}
+function ntSelect(field,v){
+  if(v===undefined||v===null||v==='')return;
+  const seg=document.querySelector('#notrade-form .seg[data-field="'+field+'"]');
+  const opt=seg&&[...seg.querySelectorAll('.opt')].find(o=>o.dataset.v===String(v));
+  if(opt)ntChoice(field,opt);
+}
+function editNoTrade(t){
+  if(editingNoTradeId===null) _preEditNtSnapshot=collectNtSnapshot();
+  switchTab('log',true);
+  setMode('notrade');
+  editingNoTradeId=t.id;
+  ntFormReset();
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el)el.value=val||''; };
+  set('nt-date',t.date); set('nt-bias',t.bias); set('nt-seen',t.seen);
+  set('nt-notes',t.notes); set('nt-lesson',t.lesson);
+  ntSelect('nt-instrument',t.instrument); ntSelect('nt-fomo',t.fomo);
+  ntSelect('nt-feel',t.feel||t.emotion); ntSelect('nt-rightcall',t.rightCall);
+  const reasons=t.noTradeReasons||[];
+  document.querySelectorAll('#nt-reasons .tag').forEach(b=>b.classList.toggle('sel',reasons.indexOf(b.textContent)>=0));
+  const banner=document.getElementById('nt-edit-banner'); if(banner)banner.style.display='flex';
+  const lab=document.querySelector('#nt-edit-banner .edit-banner-label');
+  if(lab)lab.textContent='No-Trade-Tag vom '+(t.date||'?')+' bearbeiten';
+  const sb=document.querySelector('#notrade-form .btn-row .btn-primary'); if(sb)sb.textContent='✓ Änderungen speichern';
+  closeDetail();
+  showToast('Bearbeitungsmodus');
+}
+
 function goStep(n,skipDraft){ if(n<1||n>STEPS)return; curStep=n; document.querySelectorAll('.wz-panel').forEach(p=>p.classList.remove('active')); const pan=document.getElementById('wz-'+n); if(pan)pan.classList.add('active'); document.querySelectorAll('.wz-step').forEach((el,i)=>{ el.classList.toggle('active',i+1===n); el.classList.toggle('done',i+1<n); }); const f=document.getElementById('wz-fill'); if(f)f.style.width=((n-1)/(STEPS-1)*100)+'%'; const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0; if(!skipDraft)scheduleTradeDraft(); }
 function nextStep(){ goStep(curStep+1); }
 function prevStep(){ goStep(curStep-1); }
@@ -1587,7 +1807,9 @@ let _savingTrade=false;
 async function saveTrade(){
   if(_savingTrade) return;
   _savingTrade=true;
-  const saveBtn=document.querySelector('#sec-log .wz-nav .btn-primary');
+  // gezielt der Speichern-Button in Schritt 5 -- '#sec-log .wz-nav .btn-primary'
+  // haette den "Next"-Button aus Schritt 1 erwischt
+  const saveBtn=document.querySelector('#wz-5 .wz-nav .btn-primary');
   if(saveBtn) saveBtn.disabled=true;
   try{
     const data=[...(await loadTrades())];
@@ -1598,7 +1820,7 @@ async function saveTrade(){
       if(form.result==='Win' && pnlVal<0) pnlVal=-pnlVal;
     }
     const t={
-      id:Date.now(),
+      id:editingTradeId!==null?editingTradeId:Date.now(),
       date:g('f-date')||new Date().toISOString().slice(0,10),
       instrument:form.instrument||'MNQ', direction:form.direction||'Long',
       htfbias:form.htfbias||'Neutral', pd:form.pd||'', pdh:form.pdh||'', biasWhy:g('f-bwhy'),
@@ -1616,25 +1838,55 @@ async function saveTrade(){
       why:g('f-factor'), better:g('f-lesson'),
       screenshot:getImg()
     };
-    data.unshift(t);
-    if(!await saveTrades(data)){ saveTradeDraftNow(); showToast('Speichern fehlgeschlagen · Entwurf bleibt erhalten'); return; }
-    _tradeDraftSuspended=true;
-    try{ clearTradeDraft(); clearForm(); goStep(1,true); }
-    finally{ _tradeDraftSuspended=false; }
-    showToast('Trade saved ✓');
+    if(editingTradeId!==null){
+      const idx=data.findIndex(x=>x.id===editingTradeId);
+      if(idx<0){ showToast('Trade nicht mehr vorhanden — Bearbeitung abgebrochen'); finishEdit(); return; }
+      // Altdaten-Felder ohne Eingabefeld im aktuellen Wizard nicht überschreiben.
+      // Sobald wieder ein Feld existiert, greift der Schutz für diesen Key nicht mehr.
+      const patch={...t};
+      const legacyInputs={pd:null,pdh:null,keyLevels:'f-levels',scenarioAlt:'f-scen2',preState:null};
+      Object.entries(legacyInputs).forEach(([k,inputId])=>{
+        if(!patch[k] && !(inputId && document.getElementById(inputId))) delete patch[k];
+      });
+      // Setup-Werte des Originals, die keinem aktuellen Button entsprechen
+      // (Altdaten/Import), gehen sonst still verloren -> anhängen.
+      const orphanSetup=(data[idx].setup||[]).filter(s=>!setupLabelHasButton(s));
+      if(orphanSetup.length) patch.setup=[...(patch.setup||[]), ...orphanSetup];
+      // Emotion wird per DOM gelesen -> nicht zuordenbare Altwerte nicht leeren
+      if(!patch.emotion && data[idx].emotion &&
+         ![...document.querySelectorAll('#trade-wizard .emo')].some(b=>b.textContent===data[idx].emotion)){
+        delete patch.emotion;
+      }
+      data[idx]={...data[idx],...patch};
+      if(!await saveTrades(data)){
+        try{ const k=tradeEditRecoveryKey(); if(k)localStorage.setItem(k,JSON.stringify({id:editingTradeId,draft:collectTradeDraft(),shotCleared:getImg()===''})); }catch(e){}
+        showToast('Speichern fehlgeschlagen — Änderungen bleiben im Formular'); return;
+      }
+      finishEdit();
+      showToast('Trade aktualisiert ✓');
+    } else {
+      data.unshift(t);
+      if(!await saveTrades(data)){ saveTradeDraftNow(); showToast('Speichern fehlgeschlagen · Entwurf bleibt erhalten'); return; }
+      _tradeDraftSuspended=true;
+      try{ clearTradeDraft(); clearForm(); goStep(1,true); }
+      finally{ _tradeDraftSuspended=false; }
+      showToast('Trade saved ✓');
+    }
   } finally {
     _savingTrade=false;
     if(saveBtn) saveBtn.disabled=false;
   }
 }
 function clearForm(){
+  // Nur den Trade-Wizard leeren -- #sec-log enthaelt auch das No-Trade-Formular,
+  // dessen angefangene Eingaben hier sonst mitgeloescht wuerden.
   form={};
-  document.querySelectorAll('#sec-log input:not([type=file]),#sec-log select,#sec-log textarea').forEach(el=>{ el.tagName==='SELECT'?(el.selectedIndex=0):(el.value=''); });
-  document.querySelectorAll('#sec-log .tag,#sec-log .emo,#sec-log .tf-chip,#sec-log .opt,#sec-log .dot').forEach(b=>b.classList.remove('sel','on'));
-  document.querySelectorAll('#sec-log .tf-row').forEach(r=>r.classList.remove('open'));
+  document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard select,#trade-wizard textarea').forEach(el=>{ el.tagName==='SELECT'?(el.selectedIndex=0):(el.value=''); });
+  document.querySelectorAll('#trade-wizard .tag,#trade-wizard .emo,#trade-wizard .tf-chip,#trade-wizard .opt,#trade-wizard .dot').forEach(b=>b.classList.remove('sel','on'));
+  document.querySelectorAll('#trade-wizard .tf-row').forEach(r=>r.classList.remove('open'));
   // restore default segmented selections
-  const di=document.querySelector('.seg[data-field="instrument"] .opt[data-v="MNQ"]'); if(di)di.classList.add('sel');
-  const dd=document.querySelector('.seg[data-field="direction"] .opt[data-v="Long"]'); if(dd)dd.classList.add('sel');
+  const di=document.querySelector('#trade-wizard .seg[data-field="instrument"] .opt[data-v="MNQ"]'); if(di)di.classList.add('sel');
+  const dd=document.querySelector('#trade-wizard .seg[data-field="direction"] .opt[data-v="Long"]'); if(dd)dd.classList.add('sel');
   form.instrument='MNQ'; form.direction='Long';
   const p=document.getElementById('img-prev'); p.src=''; p.style.display='none';
   document.getElementById('f-img').value='';
@@ -1688,7 +1940,7 @@ function renderNoTradeDetail(t){
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div>'+
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span class="nt-badge" style="font-size:15px">🚫 No Trade</span><span class="badge nt">Discipline Day</span></div>'+
     '<div style="color:var(--muted);font-size:13px">'+t.date+' · '+t.instrument+'</div></div>'+
-    '<button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div>'+
+    '<div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Bearbeiten</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
     (t.bias||t.seen||(t.noTradeReasons&&t.noTradeReasons.length)?
       '<div class="card"><div class="card-title">Market Read</div><div class="dl">'+
       rows('Bias',t.bias)+rows('Seen but skipped',t.seen)+
@@ -1720,7 +1972,7 @@ async function openDetail(id){
   const execBadge = (t.executionScore!==undefined&&t.executionScore!==null&&t.executionScore!=='')?'<span class="badge" style="background:rgba(52,211,153,.12);color:var(--green)">Exec '+t.executionScore+'</span>':'';
   const pnlBadge = (t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='')?'<span class="badge" style="background:'+(t.pnl>=0?'rgba(52,211,153,.15);color:var(--green)':'rgba(248,113,113,.15);color:var(--red)')+'">'+(t.pnl>=0?'+':'')+'$'+t.pnl.toFixed(2)+'</span>':'';
   document.getElementById('detail-el').innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+t.instrument+'" style="font-size:13px;padding:4px 12px">'+t.instrument+'</span><span style="font-size:21px;font-weight:600">'+t.direction+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+t.instrument+'" style="font-size:13px;padding:4px 12px">'+t.instrument+'</span><span style="font-size:21px;font-weight:600">'+t.direction+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Bearbeiten</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
     (t.screenshot?'<img src="'+t.screenshot+'" class="shot-thumb" onclick="openLightbox(\''+t.screenshot+'\')">':'')+
     (planRows?'<div class="card"><div class="card-title">Plan & Bias</div><div class="dl">'+planRows+'</div></div>':'')+
     (setupRows?'<div class="card"><div class="card-title">Setup & Quality</div><div class="dl">'+setupRows+'</div></div>':'')+
