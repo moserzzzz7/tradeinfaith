@@ -223,11 +223,10 @@
   .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .perf-svg{width:100%;height:200px;display:block}
   .perf-area{transition:opacity 1.2s ease .3s}
-  .ring-wrap,.donut-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:8px 0}
-  .ring-svg{width:170px;height:170px}.donut-svg{width:160px;height:160px}
-  .ring-center,.donut-center{position:absolute;text-align:center;pointer-events:none}
-  .ring-score{font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1}
-  .ring-cap,.donut-cap{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+  .donut-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:8px 0}
+  .donut-svg{width:160px;height:160px}
+  .donut-center{position:absolute;text-align:center;pointer-events:none}
+  .donut-cap{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
   .donut-big{font-size:30px;font-weight:800;line-height:1}
   .donut-seg{transition:stroke-dasharray 1s cubic-bezier(.3,.8,.2,1)}
   .legend{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:10px;flex-wrap:wrap}
@@ -258,6 +257,30 @@
   .sbar-fill{height:100%;border-radius:5px;width:0;transition:width 1s cubic-bezier(.3,.8,.2,1)}
   .sbar-val{width:46px;text-align:right;font-size:13px;font-weight:600}
   .sbar-n{width:52px;text-align:right;font-size:11px;color:var(--muted)}
+  .sbar-money{width:82px;text-align:right;font-size:12px;font-weight:600;flex-shrink:0}
+  /* Disziplin-Leiste unter der KPI-Reihe: flaches Band, bewusst ohne Schatten und
+     mit kleinerem Radius als die Cards -- Hierarchie ueber Form, nicht ueber noch
+     eine gleiche Card. */
+  .disc-strip{display:flex;flex-wrap:wrap;align-items:stretch;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .disc-seg{flex:1 1 128px;min-width:0;padding:13px 18px;border-left:1px solid var(--border)}
+  .disc-seg:first-child{border-left:0;background:var(--surface2)}
+  .disc-lab{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);line-height:1.3}
+  .disc-val{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-top:6px}
+  .disc-u{font-size:12px;font-weight:600;color:var(--muted);margin-left:3px}
+  .disc-meter{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;margin-top:9px}
+  .disc-meter>i{display:block;height:100%;width:0;border-radius:3px;transition:width 1s cubic-bezier(.3,.8,.2,1)}
+  @media (max-width:760px){.disc-seg{flex-basis:50%}.disc-seg:nth-child(2n+1){border-left:0}}
+  /* Beitrags-/Geld-Balken der beiden unteren Cockpit-Widgets -- gleiche Sprache
+     wie .sbar-*, nur breitere Wertspalte fuer Betraege. */
+  .mbar-row{display:flex;align-items:center;gap:12px;padding:9px 0}
+  .mbar-name{width:116px;flex-shrink:0;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mbar-track{flex:1;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
+  .mbar-fill{height:100%;width:0;border-radius:5px;transition:width 1s cubic-bezier(.3,.8,.2,1)}
+  .mbar-fill.pos{background:var(--green)} .mbar-fill.neg{background:var(--red)}
+  .mbar-val{width:92px;text-align:right;font-size:13px;font-weight:600;flex-shrink:0}
+  .mbar-n{width:74px;text-align:right;font-size:11px;color:var(--muted);flex-shrink:0}
+  .fcard-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.65}
+  @media (max-width:760px){.mbar-name{width:84px}.mbar-val{width:74px}.mbar-n{width:52px}.sbar-money{width:64px}}
   .pt-row{display:flex;gap:0;overflow-x:auto}
   .pt-step{flex:1;min-width:70px;text-align:center;position:relative;padding:0 6px;opacity:.45;transition:opacity .4s}
   .pt-step.done{opacity:1}
@@ -1733,6 +1756,29 @@ function disciplineScore(data){
   return Math.max(0,Math.min(100,Math.round(rbPct*0.6+wr*0.2+emo*0.2)));
 }
 
+// Rule-based Trades am Stueck, von neu nach alt gezaehlt -- die Serie gilt aber als
+// gerissen, sobald >3 Kalendertage ohne Trade vergehen (zwischen zwei Trades oder
+// zwischen dem letzten Trade und heute). Haelt die Streak "lebendig", statt sie nach
+// einem guten Lauf dauerhaft einzufrieren.
+const STREAK_GAP_DAYS=3;
+function parseDay(s){ const p=String(s||'').split('-').map(Number); return (p.length===3&&p.every(n=>!isNaN(n)))?new Date(p[0],p[1]-1,p[2]):null; }
+function disciplineStreak(trades){
+  const dated=trades.filter(t=>parseDay(t.date))
+    .sort((a,b)=> a.date<b.date?1 : a.date>b.date?-1 : (b.id||0)-(a.id||0));
+  if(!dated.length) return {count:0,stale:false,gap:0};
+  const DAY=864e5, today=new Date(); today.setHours(0,0,0,0);
+  const gap=Math.round((today-parseDay(dated[0].date))/DAY);
+  if(gap>STREAK_GAP_DAYS) return {count:0,stale:true,gap};
+  let count=0, prev=null;
+  for(const t of dated){
+    const d=parseDay(t.date);
+    if(prev && Math.round((prev-d)/DAY)>STREAK_GAP_DAYS) break;
+    if(t.rulebased!=='yes') break;
+    count++; prev=d;
+  }
+  return {count,stale:false,gap};
+}
+
 let statsRange=0;
 function setStatsRange(r){ statsRange=r; document.querySelectorAll('#range-chips .rchip').forEach(c=>c.classList.toggle('active',+c.dataset.range===r)); renderStats(); }
 
@@ -1788,11 +1834,6 @@ function donutSVG(w,l,b){
   return '<svg viewBox="0 0 140 140" class="donut-svg"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--surface2)" stroke-width="16"/>'+parts+'</svg>';
 }
 
-function ringSVG(score){
-  const r=58,c=2*Math.PI*r,cx=72,cy=72, col=score>=75?'#34d399':score>=50?'#fbbf24':'#f87171';
-  return '<svg viewBox="0 0 144 144" class="ring-svg"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--surface2)" stroke-width="12"/><circle class="ring-prog" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="12" stroke-linecap="round" transform="rotate(-90 '+cx+' '+cy+')" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+c.toFixed(1)+'" data-target="'+((1-score/100)*c).toFixed(1)+'" style="transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)"/></svg>';
-}
-
 let calY=null, calM=null;
 function fmtCompact(n){
   const abs=Math.abs(n);
@@ -1841,10 +1882,111 @@ function changeCalMonth(delta){
   renderCalendar();
 }
 
-function barBlock(title,rows){
-  if(!rows.length) return '<div class="fcard"><div class="fcard-title">'+title+'</div><p style="color:var(--muted);font-size:13px">Not enough data yet.</p></div>';
-  const body=rows.map(r=>'<div class="sbar-row"><span class="sbar-name">'+r.name+'</span><div class="sbar-track"><div class="sbar-fill" data-w="'+r.wr+'%" style="background:'+wrColor(r.wr)+'"></div></div><span class="sbar-val" style="color:'+wrColor(r.wr)+'">'+r.wr+'%</span><span class="sbar-n">'+r.w+'/'+(r.w+r.l)+'</span></div>').join('');
-  return '<div class="fcard"><div class="fcard-title">'+title+'</div>'+body+'</div>';
+function fcardEmpty(title,msg){
+  return '<div class="fcard"><div class="fcard-title">'+title+'</div><p style="color:var(--muted);font-size:13px">'+(msg||'Not enough data yet.')+'</p></div>';
+}
+
+// Volle-Breite-Leiste unter den 6 KPI-Kaesteln: Discipline Score (x/10), Anzahl
+// genommener Trades im Zeitraum und die drei Disziplin-Treiber als Prozentwerte.
+function disciplineStripHTML(score,total,rbP,planP,emoP){
+  const col=score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+  const pct=v=>v===null?'–':v+'<span class="disc-u">%</span>';
+  const seg=(lab,val)=>'<div class="disc-seg"><div class="disc-lab">'+lab+'</div><div class="disc-val">'+val+'</div></div>';
+  return '<div class="disc-strip">'+
+    '<div class="disc-seg"><div class="disc-lab">Discipline Score</div>'+
+      '<div class="disc-val" style="color:'+col+'">'+(score/10).toFixed(1)+'<span class="disc-u">/ 10</span></div>'+
+      '<div class="disc-meter"><i data-w="'+score+'%" style="background:'+col+'"></i></div></div>'+
+    seg('Trades taken',String(total))+
+    seg('Rule-based',pct(rbP))+
+    seg('Plan followed',pct(planP))+
+    seg('Emotional control',pct(emoP))+
+  '</div>';
+}
+
+// Ersetzt "Performance by Instrument": trennt Ergebnis nach Regeltreue, damit
+// sichtbar wird, ob Verluste aus der Strategie oder aus dem Abweichen kommen.
+function disciplineGapBlock(trades,hasPnl){
+  const defs=[{name:'Rule-based',k:'yes',col:'var(--green)'},{name:'Partial',k:'partial',col:'var(--amber)'},{name:'Deviated',k:'no',col:'var(--red)'}];
+  const rows=defs.map(d=>{
+    const a=trades.filter(t=>t.rulebased===d.k);
+    const w=a.filter(t=>t.result==='Win').length, l=a.filter(t=>t.result==='Loss').length;
+    const wp=a.filter(t=>t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='');
+    return {name:d.name,k:d.k,col:d.col,w,l,dec:w+l,wr:(w+l)?Math.round(w/(w+l)*100):0,n:a.length,
+      wp:wp.length, avg:wp.length?wp.reduce((s,t)=>s+pnlOf(t),0)/wp.length:null};
+  }).filter(r=>r.n>0);
+  if(!rows.length) return fcardEmpty('Discipline Gap','Log a few trades and mark whether you followed your rules.');
+  const body=rows.map(r=>{
+    const m=hasPnl?'<span class="sbar-money" style="color:'+(r.avg===null?'var(--muted)':r.avg>=0?'var(--green)':'var(--red)')+'">'+(r.avg===null?'–':money(r.avg))+'</span>':'';
+    return '<div class="sbar-row"><span class="sbar-name">'+r.name+'</span>'+
+      '<div class="sbar-track"><div class="sbar-fill" data-w="'+(r.dec?r.wr:0)+'%" style="background:'+r.col+'"></div></div>'+
+      '<span class="sbar-val" style="color:'+r.col+'">'+(r.dec?r.wr+'%':'–')+'</span>'+m+
+      '<span class="sbar-n">'+r.n+'</span></div>';
+  }).join('');
+  const rb=rows.find(r=>r.k==='yes'), pa=rows.find(r=>r.k==='partial'), dev=rows.find(r=>r.k==='no');
+  const offRules=(pa?pa.n:0)+(dev?dev.n:0);
+  let note;
+  if(hasPnl && rb && dev && rb.avg!==null && dev.avg!==null && dev.wp>0){
+    const delta=rb.avg-dev.avg;
+    note=delta>0
+      ? 'Following your rules is worth about $'+Math.round(delta).toLocaleString('de-CH')+' per trade · the '+dev.wp+' measured deviation'+(dev.wp!==1?'s':'')+' cost about $'+Math.round(delta*dev.wp).toLocaleString('de-CH')+'.'
+      : 'No P&L penalty for deviating in this sample yet — the broken habit is still the risk.';
+  } else if(rb && rb.dec>0 && dev && dev.dec>0){
+    note='Rule-based win rate '+rb.wr+'% vs '+dev.wr+'% when you deviated.';
+  } else if(rb && !offRules){
+    note='Every logged trade followed your rules. That is the baseline to hold.';
+  } else if(!rb){
+    note='No fully rule-based trades logged yet — that run is the benchmark to build.';
+  } else {
+    note='Rule-based trades are the benchmark — keep the deviations rare and measured.';
+  }
+  return '<div class="fcard"><div class="fcard-title">Discipline Gap</div>'+body+'<p class="fcard-note">'+note+'</p></div>';
+}
+
+// FVG/IFVG auf den Concept-Namen zusammenfassen (Timeframe abschneiden), pro Trade
+// entdoppeln.
+function conceptsOf(t){
+  const s=new Set();
+  (t.setup||[]).forEach(x=>{ const m=/^(FVG|IFVG)\b/.exec(x); s.add(m?m[1]:x); });
+  return [...s];
+}
+
+// Ersetzt "Performance by HTF Bias": zeigt, welche ICT-Concepts das Konto real
+// getragen oder belastet haben (bzw. Trefferquote, solange kein P&L erfasst ist).
+function conceptEdgeBlock(trades,hasPnl){
+  const map={};
+  trades.forEach(t=>{
+    const hp=t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='';
+    conceptsOf(t).forEach(c=>{
+      const m=map[c]||(map[c]={w:0,l:0,n:0,pnl:0,hp:0});
+      m.n++;
+      if(t.result==='Win')m.w++; else if(t.result==='Loss')m.l++;
+      if(hp){ m.pnl+=pnlOf(t); m.hp++; }
+    });
+  });
+  let rows=Object.entries(map).map(([name,m])=>({name,...m,dec:m.w+m.l,wr:(m.w+m.l)?Math.round(m.w/(m.w+m.l)*100):0}))
+    .filter(r=>r.n>=2);
+  if(!rows.length) return fcardEmpty('ICT Concept Edge','Tag the concepts behind at least two trades to see which ones carry your edge.');
+  if(hasPnl && rows.some(r=>r.hp)){
+    rows=rows.filter(r=>r.hp).sort((a,b)=>Math.abs(b.pnl)-Math.abs(a.pnl)).slice(0,7);
+    const mx=Math.max.apply(null,rows.map(r=>Math.abs(r.pnl)).concat(1));
+    const body=rows.map(r=>{
+      const pos=r.pnl>=0;
+      return '<div class="mbar-row"><span class="mbar-name" title="'+r.name+'">'+r.name+'</span>'+
+        '<div class="mbar-track"><div class="mbar-fill '+(pos?'pos':'neg')+'" data-w="'+Math.round(Math.abs(r.pnl)/mx*100)+'%"></div></div>'+
+        '<span class="mbar-val" style="color:'+(pos?'var(--green)':'var(--red)')+'">'+money(r.pnl)+'</span>'+
+        '<span class="mbar-n">'+r.wr+'% · '+r.hp+'</span></div>';
+    }).join('');
+    return '<div class="fcard"><div class="fcard-title">ICT Concept Edge</div>'+body+
+      '<p class="fcard-note">Net P&amp;L each tagged concept has produced · win rate and P&amp;L-trade count on the right.</p></div>';
+  }
+  rows=rows.filter(r=>r.dec>0).sort((a,b)=>b.wr-a.wr||b.dec-a.dec).slice(0,7);
+  if(!rows.length) return fcardEmpty('ICT Concept Edge','Not enough decided trades per concept yet.');
+  const body=rows.map(r=>'<div class="mbar-row"><span class="mbar-name" title="'+r.name+'">'+r.name+'</span>'+
+    '<div class="mbar-track"><div class="mbar-fill" data-w="'+r.wr+'%" style="background:'+wrColor(r.wr)+'"></div></div>'+
+    '<span class="mbar-val" style="color:'+wrColor(r.wr)+'">'+r.wr+'%</span>'+
+    '<span class="mbar-n">'+r.w+'/'+r.dec+'</span></div>').join('');
+  return '<div class="fcard"><div class="fcard-title">ICT Concept Edge</div>'+body+
+    '<p class="fcard-note">Ranked by win rate — add P&amp;L on your trades to weight this by money.</p></div>';
 }
 
 function perfTimelineHTML(data){
@@ -1874,10 +2016,12 @@ async function renderStats(){
   const wins=trades.filter(t=>t.result==='Win').length, losses=trades.filter(t=>t.result==='Loss').length, bes=trades.filter(t=>t.result==='Breakeven').length, total=trades.length;
   const dec=wins+losses, wr=dec?Math.round(wins/dec*100):0;
   const rb=trades.filter(t=>t.rulebased==='yes').length, rbP=total?Math.round(rb/total*100):0;
-  const ds=disciplineScore(trades), stt=computeFaithStats(trades);
+  const ds=disciplineScore(trades), dStreak=disciplineStreak(trades);
   const ntCount=ntDays.length;
-  const instRows=['MNQ','MES'].map(ins=>{const a=trades.filter(t=>t.instrument===ins);const w=a.filter(t=>t.result==='Win').length,l=a.filter(t=>t.result==='Loss').length;return{name:ins,w,l,wr:(w+l)?Math.round(w/(w+l)*100):0,dec:w+l};}).filter(r=>r.dec>0);
-  const biasRows=['Bullish','Bearish','Neutral'].map(b=>{const a=trades.filter(t=>t.htfbias===b);const w=a.filter(t=>t.result==='Win').length,l=a.filter(t=>t.result==='Loss').length;return{name:b,w,l,wr:(w+l)?Math.round(w/(w+l)*100):0,dec:w+l};}).filter(r=>r.dec>0);
+  const planSet=trades.filter(t=>t.toPlan);
+  const planP=planSet.length?Math.round(planSet.filter(t=>t.toPlan==='Yes').length/planSet.length*100):null;
+  const calm=trades.filter(t=>t.emotion&&(t.emotion.indexOf('Calm')>=0||t.emotion.indexOf('Neutral')>=0)).length;
+  const emoP=total?Math.round(calm/total*100):0;
 
   const hasPnl=trades.some(t=>t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='');
   const pnlTrades=trades.filter(t=>t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='');
@@ -1913,23 +2057,23 @@ async function renderStats(){
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Win</div><div class="g-val" style="color:'+(winPnls.length?'var(--green)':'var(--muted)')+'">'+(winPnls.length?'$'+Math.round(avgWin).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(winPnls.length?winPnls.length+' Wins mit P&L':'keine P&L-Daten')+'</div></div>':'')+
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Loss</div><div class="g-val" style="color:'+(lossPnls.length?'var(--red)':'var(--muted)')+'">'+(lossPnls.length?'$'+Math.round(avgLoss).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(lossPnls.length?lossPnls.length+' Losses mit P&L':'keine P&L-Daten')+'</div></div>':'')+
       '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val count" data-to="'+rbP+'" data-suffix="%" style="color:'+(rbP>=70?'var(--green)':'var(--amber)')+'">0</div><div class="g-sub">discipline</div></div>'+
-      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+stt.streak+'" style="color:var(--amber)">0</div><div class="g-sub">rule-based in a row</div></div>'+
+      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+dStreak.count+'" style="color:'+(dStreak.count>0?'var(--amber)':'var(--muted)')+'">0</div><div class="g-sub">'+(dStreak.stale?'reset · '+dStreak.gap+' days idle':dStreak.count>0?'rule-based · resets after '+STREAK_GAP_DAYS+' quiet days':'follow your plan to start')+'</div></div>'+
       '<div class="gcard"><div class="g-label">\uD83D\uDEAB No-Trade Days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
     '</div>'+
+    disciplineStripHTML(ds,total,rbP,planP,emoP)+
     '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
     '<div class="grid-2col">'+
-      '<div class="fcard"><div class="fcard-title">Discipline Score</div><div class="ring-wrap">'+ringSVG(ds)+'<div class="ring-center"><div class="ring-score count" data-to="'+ds+'" style="color:'+(ds>=75?'var(--green)':ds>=50?'var(--amber)':'var(--red)')+'">0</div><div class="ring-cap">/ 100</div></div></div><p style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">60% rules \u00B7 20% win rate \u00B7 20% emotional control</p></div>'+
-      barBlock('Performance by Instrument',instRows)+
+      disciplineGapBlock(trades,hasPnl)+
+      conceptEdgeBlock(trades,hasPnl)+
     '</div>'+
-    '<div class="grid-2col">'+barBlock('Performance by HTF Bias',biasRows)+'<div class="fcard"><div class="fcard-title">Performance Timeline</div><div class="pt-row">'+perfTimelineHTML(data)+'</div></div></div>';
+    '<div class="fcard"><div class="fcard-title">Performance Timeline</div><div class="pt-row">'+perfTimelineHTML(data)+'</div></div>';
 
   // animations
   el.querySelectorAll('.count').forEach(c=>animateCount(c,+c.dataset.to,1100,c.dataset.suffix||''));
   const pl=el.querySelector('.perf-line'); if(pl){ const len=pl.getTotalLength(); pl.style.strokeDasharray=len; pl.style.strokeDashoffset=len; pl.style.transition='stroke-dashoffset 1.4s cubic-bezier(.3,.8,.2,1)'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ pl.style.strokeDashoffset='0'; })); }
   const pa=el.querySelector('.perf-area'); if(pa) requestAnimationFrame(()=>requestAnimationFrame(()=>{ pa.style.opacity='1'; }));
   el.querySelectorAll('.donut-seg').forEach(sg=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ sg.style.strokeDasharray=sg.dataset.len+' '+sg.dataset.gap; })));
-  const rp=el.querySelector('.ring-prog'); if(rp) requestAnimationFrame(()=>requestAnimationFrame(()=>{ rp.style.strokeDashoffset=rp.dataset.target; }));
-  el.querySelectorAll('.sbar-fill').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
+  el.querySelectorAll('.sbar-fill,.mbar-fill,.disc-meter>i').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
 }
 
 function wrColor(wr){ return wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)'; }
@@ -1953,23 +2097,39 @@ async function renderReview(){
   let setupHtml='';
   if(setupArr.length){ setupArr.forEach(s=>{ const low=s.dec<3?' low-data':''; setupHtml+=`<div class="rank-row${low}"><span class="rank-name">${s.name}${s.dec<3?'<span class="hint-pill">few</span>':''}</span><div class="rank-bar"><div class="rank-bar-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="rank-wr" style="color:${wrColor(s.wr)}">${s.wr}%</span><span class="rank-n">${s.w}/${s.dec}</span></div>`; }); }
   else setupHtml='<p style="color:var(--muted);font-size:13px">No setups tagged yet.</p>';
-  const comboStats={};
-  data.forEach(t=>{ if(!t.setup||!t.setup.length)return; const key=[...t.setup].sort().join(' + '); if(!comboStats[key])comboStats[key]={w:0,l:0,total:0}; comboStats[key].total++; if(t.result==='Win')comboStats[key].w++; else if(t.result==='Loss')comboStats[key].l++; });
-  const comboArr=Object.entries(comboStats).map(([name,s])=>{const dec=s.w+s.l;return{name,...s,dec,wr:dec>0?Math.round((s.w/dec)*100):0};}).filter(s=>s.dec>=2).sort((a,b)=>b.wr-a.wr||b.dec-a.dec).slice(0,6);
-  let comboHtml='';
-  if(comboArr.length){ comboArr.forEach(s=>{ comboHtml+=`<div class="rank-row"><span class="rank-name" style="font-size:12px">${s.name}</span><span class="rank-wr" style="color:${wrColor(s.wr)}">${s.wr}%</span><span class="rank-n">${s.w}/${s.dec}</span></div>`; }); }
-  else comboHtml='<p style="color:var(--muted);font-size:13px">Need at least 2 trades with the same exact setup combo. Keep logging!</p>';
+  // Emotion -> Ergebnis: bisher nur als Textzeile in den Faith-Insights, hier als
+  // quantifizierte Tabelle -- passt in die Muster-Ansicht und zum Disziplin-Fokus
+  // der Cockpit-Aenderungen.
+  const EMO_ORDER=['😌 Calm','😶 Neutral','😤 Impatient','😰 Anxious','🤩 Overconfident','😓 FOMO','😩 Revenge'];
+  const emoStats={};
+  data.forEach(t=>{
+    if(!t.emotion)return;
+    const e=emoStats[t.emotion]||(emoStats[t.emotion]={w:0,l:0,n:0,pnl:0,hp:0});
+    e.n++;
+    if(t.result==='Win')e.w++; else if(t.result==='Loss')e.l++;
+    if(t.pnl!==undefined&&t.pnl!==null&&t.pnl!==''){ e.pnl+=pnlOf(t); e.hp++; }
+  });
+  const emoArr=Object.entries(emoStats).map(([name,e])=>({name,...e,dec:e.w+e.l,wr:(e.w+e.l)?Math.round(e.w/(e.w+e.l)*100):0,avg:e.hp?e.pnl/e.hp:null}))
+    .sort((a,b)=>{ const ia=EMO_ORDER.indexOf(a.name), ib=EMO_ORDER.indexOf(b.name); return (ia<0?99:ia)-(ib<0?99:ib); });
+  let emoHtml;
+  if(emoArr.length){
+    emoHtml=emoArr.map(e=>{
+      const m=e.avg===null?'':' <span style="color:'+(e.avg>=0?'var(--green)':'var(--red)')+';font-weight:600;font-size:12px">'+money(e.avg)+'/t</span>';
+      return `<div class="rank-row${e.dec<3?' low-data':''}"><span class="rank-name">${e.name}${m}${e.dec<3?'<span class="hint-pill">few</span>':''}</span><div class="rank-bar"><div class="rank-bar-fill" style="width:${e.dec?e.wr:0}%;background:${e.dec?wrColor(e.wr):'var(--surface3)'}"></div></div><span class="rank-wr" style="color:${e.dec?wrColor(e.wr):'var(--muted)'}">${e.dec?e.wr+'%':'–'}</span><span class="rank-n">${e.n}×</span></div>`;
+    }).join('');
+  } else emoHtml='<p style="color:var(--muted);font-size:13px">No emotions tagged on your trades yet.</p>';
+  const bestEmo=emoArr.filter(e=>e.dec>=2).sort((a,b)=>b.wr-a.wr)[0];
   const bestTrades=data.filter(t=>t.result==='Win'&&t.rulebased==='yes').slice(0,5);
   let bestHtml='';
   if(bestTrades.length){ bestHtml=bestTrades.map(t=>`<div class="trade-item" onclick="switchTab('list');setTimeout(()=>openDetail(${t.id}),100)"><div class="trade-head"><div class="trade-name"><span class="instr ${t.instrument}">${t.instrument}</span>${t.direction}<span style="color:var(--muted);font-weight:400"> · ${t.date}</span></div><span class="badge win">Win</span></div><div class="trade-meta">${t.setup&&t.setup.length?`<span>${t.setup.slice(0,3).join(', ')}</span>`:''}</div></div>`).join(''); }
   else bestHtml='<p style="color:var(--muted);font-size:13px">No rule-based wins yet. Those are the trades to repeat!</p>';
-  const topSetup=setupArr[0], topCombo=comboArr[0];
+  const topSetup=setupArr[0];
   const rhHtml='<div class="review-highlights">'+
     '<div class="rh-card"><div class="rh-lab">Best weekday</div><div class="rh-val" style="color:var(--green)">'+(bestDay||'\u2013')+'</div><div class="rh-sub">'+(bestDay?'net '+(bestScore>0?'+':'')+bestScore:'not enough data')+'</div></div>'+
     '<div class="rh-card"><div class="rh-lab">Best setup</div><div class="rh-val" style="color:'+(topSetup?wrColor(topSetup.wr):'var(--muted)')+'">'+(topSetup?topSetup.name:'\u2013')+'</div><div class="rh-sub">'+(topSetup?topSetup.wr+'% \u00b7 '+topSetup.w+'/'+topSetup.dec:'log more setups')+'</div></div>'+
-    '<div class="rh-card"><div class="rh-lab">Best combo</div><div class="rh-val" style="color:'+(topCombo?wrColor(topCombo.wr):'var(--muted)')+';font-size:14px">'+(topCombo?topCombo.name:'\u2013')+'</div><div class="rh-sub">'+(topCombo?topCombo.wr+'% \u00b7 '+topCombo.w+'/'+topCombo.dec:'need 2+ matching setups')+'</div></div>'+
+    '<div class="rh-card"><div class="rh-lab">Best mindset</div><div class="rh-val" style="color:'+(bestEmo?wrColor(bestEmo.wr):'var(--muted)')+';font-size:15px">'+(bestEmo?bestEmo.name:'\u2013')+'</div><div class="rh-sub">'+(bestEmo?bestEmo.wr+'% \u00b7 '+bestEmo.w+'/'+bestEmo.dec:'tag how you felt')+'</div></div>'+
   '</div>';
-  el.innerHTML=rhHtml+`<div class="card"><div class="card-title">Win rate by weekday</div>${dayHtml}${bestDay?`<p style="font-size:12px;color:var(--muted);margin-top:14px">📈 Strongest day so far: <span style="color:var(--green);font-weight:600">${bestDay}</span> (net ${bestScore>0?'+':''}${bestScore})</p>`:''}</div><div class="card"><div class="card-title">Setup performance — best concepts</div>${setupHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Sorted by win rate. Faded = fewer than 3 decided trades (not reliable yet).</p></div><div class="card"><div class="card-title">Best setup combinations</div>${comboHtml}</div><div class="card"><div class="card-title">Your best trades — repeat these</div>${bestHtml}</div>`;
+  el.innerHTML=rhHtml+`<div class="card"><div class="card-title">Win rate by weekday</div>${dayHtml}${bestDay?`<p style="font-size:12px;color:var(--muted);margin-top:14px">📈 Strongest day so far: <span style="color:var(--green);font-weight:600">${bestDay}</span> (net ${bestScore>0?'+':''}${bestScore})</p>`:''}</div><div class="card"><div class="card-title">Setup performance — best concepts</div>${setupHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Sorted by win rate. Faded = fewer than 3 decided trades (not reliable yet).</p></div><div class="card"><div class="card-title">Emotional state — results</div>${emoHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Win rate and average P&L per feeling you logged. Faded = fewer than 3 decided trades.</p></div><div class="card"><div class="card-title">Your best trades — repeat these</div>${bestHtml}</div>`;
 }
 
 async function exportJSON(){ const data=await loadTrades(); const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='trades-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showToast('Exported ✓'); }
@@ -2646,12 +2806,12 @@ async function deleteAccount(){
 }
 
 /* ===== Intro-Animation =====
-   Einmalige Startsequenz beim App-Start: laufender Kerzenchart -> Zoom in den Chart
-   hinein -> Logo -> und aus demselben Schwung heraus waechst der Startbildschirm auf.
-   Vollstaendig gekapselt: ruehrt Tab-, Kachel- und Auth-Logik nicht an, laeuft ueber
-   allem und entfernt sich danach aus dem DOM.
+   Startsequenz bei jedem App-Start / Reload: laufender Kerzenchart -> Zoom in den
+   Chart hinein -> Logo -> und aus demselben Schwung heraus waechst der Startbildschirm
+   auf. Vollstaendig gekapselt: ruehrt Tab-, Kachel- und Auth-Logik nicht an, laeuft
+   ueber allem und entfernt sich danach aus dem DOM.
    Abschalten (spaetere Settings-Option): localStorage 'tj_intro_off' = '1'. */
-const INTRO_OFF_KEY='tj_intro_off', INTRO_SEEN_KEY='tj_intro_seen';
+const INTRO_OFF_KEY='tj_intro_off';
 const INTRO_BUILD_MS=1500;                       // Aufbau des Kerzencharts
 const INTRO_ZOOM_MS=INTRO_BUILD_MS+280;          // fertiger Chart steht kurz, dann Zoom
 const INTRO_LOGO_MS=INTRO_ZOOM_MS+400, INTRO_REVEAL_MS=INTRO_LOGO_MS+620;
@@ -2661,7 +2821,7 @@ let _introTimers=[], _introRaf=null, _introSkipFn=null;
 let _introRevealed=false, _introDone=false, _introWaitStart=0;
 let _introOX=70, _introOY=50;   // Zoom-Ziel in Prozent -- Position der letzten Kerze
 
-function introEnabled(){ try{ return localStorage.getItem(INTRO_OFF_KEY)!=='1'&&localStorage.getItem(INTRO_SEEN_KEY)!=='1'; }catch(e){ return true; } }
+function introEnabled(){ try{ return localStorage.getItem(INTRO_OFF_KEY)!=='1'; }catch(e){ return true; } }
 function _introAt(ms,fn){ _introTimers.push(setTimeout(fn,ms)); }
 function _introStop(){
   _introTimers.forEach(clearTimeout); _introTimers=[];
@@ -2738,7 +2898,6 @@ function revealIntro(fast){
     }
   }
   _introRevealed=true;
-  try{ localStorage.setItem(INTRO_SEEN_KEY,'1'); }catch(e){}
   _introUnbind(); _introStop();
 
   const dur=fast?INTRO_BURST_FAST_MS:INTRO_BURST_MS;
