@@ -221,6 +221,14 @@
 
   .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
   .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .cal-week-row{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:20px;align-items:start;margin-bottom:20px}
+  .fcard.nomb{margin-bottom:0}
+  .week-list{display:flex;flex-direction:column}
+  .week-item{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+  .week-item:last-child{border-bottom:none}
+  .week-dt{font-size:12px;color:var(--muted);width:44px;flex-shrink:0}
+  .week-num{font-size:14px;font-weight:700;flex:1;text-align:right}
+  .week-wl{font-size:11px;color:var(--muted);width:52px;text-align:right;flex-shrink:0}
   .perf-svg{width:100%;height:200px;display:block}
   .perf-area{transition:opacity 1.2s ease .3s}
   .donut-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:8px 0}
@@ -291,6 +299,7 @@
   .pt-sub{font-size:11px;color:var(--muted);margin-top:2px}
   #sec-stats .page-head{position:relative;z-index:2}
   @media (max-width:760px){.kpi-row{grid-template-columns:1fr 1fr}.grid-2col{grid-template-columns:1fr}}
+  @media (max-width:900px){.cal-week-row{grid-template-columns:1fr}}
 
   /* ===== TRADE WIZARD ===== */
   .wz-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:8px}
@@ -1131,10 +1140,10 @@ const TABS=[
   {id:'list',  icon:'\uD83D\uDCCB', name:'All trades', desc:'Jeder Eintrag mit Screenshot, Tags und Notizen'},
   {id:'stats', icon:'\uD83D\uDCCA', name:'Stats',      desc:'Cockpit und Muster \u2014 Kurve, Kalender, Setups, Review'},
   {id:'faith', icon:'\u271D\uFE0F', name:'Faith',      desc:'Verse und Gedanken passend zum Handelstag'},
-  {id:'bible', icon:'\uD83D\uDCD6', name:'Bible',      desc:'Die ganze Bibel \u2014 Buch f\u00FCr Buch, Kapitel f\u00FCr Kapitel'},
   {id:'learn', icon:'\uD83D\uDCDA', name:'Learn',      desc:'Eigene Notizen und Lektionen aus dem Chart'}
 ];
-const SPLASH_PICKS=['log','list','stats','faith','bible','learn'];
+// Bible ist kein eigener Dock-Eintrag mehr \u2014 erreichbar \u00FCber die Karte im Faith-Tab.
+const SPLASH_PICKS=['log','list','stats','faith','learn'];
 
 // Zahnrad (lucide "settings")
 const GEAR_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
@@ -1833,15 +1842,13 @@ function weeklyPnlHTML(trades){
   });
   const rows=Object.values(wk).sort((a,b)=>b.start-a.start).slice(0,12);
   if(!rows.length) return '<p style="color:var(--muted);font-size:13px">Noch keine Trades im Zeitraum.</p>';
-  const max=Math.max(1,...rows.map(r=>Math.abs(r.pnl)));
-  return rows.map(r=>{
+  return '<div class="week-list">'+rows.map(r=>{
     const lbl=r.start.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit'});
     const col=r.pnl>0?'var(--green)':r.pnl<0?'var(--red)':'var(--muted)';
-    const wpct=Math.round(Math.abs(r.pnl)/max*100);
-    return '<div class="bar-row"><span class="bar-label">KW '+lbl+'</span>'+
-      '<div class="bar-track"><div class="bar-fill" style="width:'+wpct+'%;background:'+col+'"></div></div>'+
-      '<span class="bar-val" style="color:'+col+'">'+(r.hp?money(r.pnl):'–')+' · '+r.w+'W '+r.l+'L</span></div>';
-  }).join('');
+    return '<div class="week-item"><span class="week-dt">'+lbl+'</span>'+
+      '<span class="week-num" style="color:'+col+'">'+(r.hp?money(r.pnl):'–')+'</span>'+
+      '<span class="week-wl">'+r.w+'W '+r.l+'L</span></div>';
+  }).join('')+'</div>';
 }
 
 let calY=null, calM=null;
@@ -2075,8 +2082,10 @@ async function renderStats(){
       '<div class="gcard"><div class="g-label">\uD83D\uDEAB No-Trade Days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
     '</div>'+
     disciplineStripHTML(ds,total,rbP,planP,emoP)+
-    '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
-    '<div class="fcard"><div class="fcard-title">Weekly P&amp;L</div>'+weeklyPnlHTML(trades)+'</div>'+
+    '<div class="cal-week-row">'+
+      '<div class="fcard nomb"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
+      '<div class="fcard nomb"><div class="fcard-title">Weekly P&amp;L</div>'+weeklyPnlHTML(trades)+'</div>'+
+    '</div>'+
     '<div class="grid-2col">'+
       disciplineGapBlock(trades,hasPnl)+
       conceptEdgeBlock(trades,hasPnl)+
