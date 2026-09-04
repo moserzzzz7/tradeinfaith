@@ -462,6 +462,8 @@
   .sp-discipline-meter{height:6px;margin-top:10px;background:var(--surface2);border-radius:999px;overflow:hidden}
   .sp-discipline-meter i{display:block;width:0;height:100%;border-radius:inherit;transition:width var(--sp-fill,1400ms) var(--ease-out) .25s}
   .sp-discipline-sub{margin-top:7px;font-size:11.5px;color:var(--muted)}
+  .sp-word{max-width:720px;margin:15px auto 0;font-size:12.5px;line-height:1.7;color:var(--muted);animation:spCard .3s var(--ease-out) .28s backwards}
+  .sp-word em{font-style:italic}
   .sp-skip{margin-top:30px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:8px 12px;border-radius:8px;animation:spIn .3s var(--ease-out) .26s backwards;transition:color .15s}
   .sp-skip:hover{color:var(--text)}
   .sp-hint{font-size:10.5px;color:var(--muted);opacity:.5;margin-top:4px}
@@ -477,32 +479,13 @@
   .rchip.active{background:var(--accent);border-color:var(--accent);color:#fff}
   .rchip:disabled{cursor:default}
   .rchip:disabled:hover{color:var(--muted);border-color:var(--border)}
-  /* bible */
-  .bible-crumb{font-size:12px;color:var(--muted);margin-bottom:14px}
-  .bible-crumb span{cursor:pointer;transition:color .15s}
-  .bible-crumb span:hover{color:var(--text)}
-  .bible-group-label{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);opacity:.85;margin:22px 0 10px}
-  .bible-group-label:first-child{margin-top:0}
-  .bible-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:8px}
-  .bb-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 15px;cursor:pointer;transition:all .15s}
-  .bb-card:hover{border-color:var(--accent-border);background:var(--surface2);transform:translateY(-1px)}
-  .bb-name{font-size:13px;font-weight:600}
-  .bb-meta{font-size:11px;color:var(--muted);margin-top:3px}
-  .bb-disabled{opacity:.35;cursor:default}
-  .bb-disabled:hover{transform:none;background:var(--surface);border-color:var(--border)}
-  .bb-progress{height:3px;background:var(--surface3);border-radius:2px;margin-top:9px;overflow:hidden}
-  .bb-progress-fill{height:100%;background:var(--green);border-radius:2px}
-  .bible-chapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px}
-  .bc-chip{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 0;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
-  .bc-chip:hover{border-color:var(--accent-border);color:var(--accent);background:var(--surface2)}
-  .bc-chip.bc-done{background:var(--green-bg);border-color:rgba(52,211,153,.4);color:var(--green)}
-  .bible-done-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--muted);font-size:11.5px;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer;font-family:inherit;transition:all .15s}
-  .bible-done-btn:hover{border-color:var(--accent-border);color:var(--text)}
-  .bible-done-btn.done{background:var(--green-bg);border-color:rgba(52,211,153,.4);color:var(--green)}
-  .bible-read{font-size:15.5px;line-height:1.95}
-  .bv{display:flex;gap:11px;margin-bottom:11px}
-  .bv-num{color:var(--accent);font-size:11px;font-weight:700;min-width:20px;text-align:right;flex-shrink:0;padding-top:4px;opacity:.7}
-  .bv-text{flex:1}
+  /* Scripture, wo Zahlen stehen. Bewusst ohne eigene Karte und ohne Bewegung --
+     die eine gewaehlte Animation bleibt der Reveal im Faith-Tab. Die Randlinie
+     traegt die Zuordnung, damit der Vers nicht wie ein weiterer Datenblock liest. */
+  .scrip{border-left:2px solid var(--accent-border);padding-left:15px}
+  .scrip-why{font-size:12px;color:var(--muted);margin-bottom:11px}
+  .scrip-text{font-size:14.5px;line-height:1.75;font-style:italic;max-width:64ch}
+  .scrip-ref{font-size:11.5px;color:var(--muted);margin-top:7px;font-style:normal}
   .stats-hero{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:16px}
   .hero-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px 26px;box-shadow:var(--shadow-card);position:relative;overflow:hidden}
   .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -586,7 +569,7 @@
     <h1 class="intro-title">TradeInFaith</h1>
     <p class="intro-sub">ICT / Smart Money</p>
   </div>
-  <div class="intro-skip">Tippen zum &Uuml;berspringen</div>
+  <div class="intro-skip">Tap to skip</div>
 </div>
 
 <div id="auth-loading" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;">
@@ -600,12 +583,12 @@
       <div style="font-size:13px;color:var(--muted);margin-top:4px;">Discipline over profit</div>
     </div>
     <div id="auth-error" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
-    <label style="font-size:12px;color:var(--muted);">E-Mail</label>
+    <label style="font-size:12px;color:var(--muted);">Email</label>
     <input id="auth-email" type="email" autocomplete="username" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
-    <label style="font-size:12px;color:var(--muted);">Passwort</label>
+    <label style="font-size:12px;color:var(--muted);">Password</label>
     <input id="auth-password" type="password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
-    <button id="auth-signin-btn" onclick="handleSignIn()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Anmelden</button>
-    <button id="auth-signup-btn" onclick="openSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Konto erstellen</button>
+    <button id="auth-signin-btn" onclick="handleSignIn()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Sign in</button>
+    <button id="auth-signup-btn" onclick="openSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Create account</button>
     <div id="auth-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
   </div>
 </div>
@@ -613,28 +596,28 @@
 <div id="signup-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
   <div style="width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:32px 28px;margin:24px 0;">
     <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:22px;font-weight:600;color:var(--text);">✝ Konto erstellen</div>
+      <div style="font-size:22px;font-weight:600;color:var(--text);">✝ Create account</div>
       <div style="font-size:13px;color:var(--muted);margin-top:4px;">TradeInFaith</div>
     </div>
     <div id="signup-error" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
       <div>
-        <label style="font-size:12px;color:var(--muted);">Vorname</label>
+        <label style="font-size:12px;color:var(--muted);">First name</label>
         <input id="signup-firstname" type="text" autocomplete="given-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
       </div>
       <div>
-        <label style="font-size:12px;color:var(--muted);">Nachname</label>
+        <label style="font-size:12px;color:var(--muted);">Last name</label>
         <input id="signup-lastname" type="text" autocomplete="family-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
       </div>
     </div>
     <label style="font-size:12px;color:var(--muted);">Username / Nickname</label>
     <input id="signup-username" type="text" autocomplete="nickname" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
-    <label style="font-size:12px;color:var(--muted);">E-Mail</label>
+    <label style="font-size:12px;color:var(--muted);">Email</label>
     <input id="signup-email" type="email" autocomplete="username" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
-    <label style="font-size:12px;color:var(--muted);">Passwort</label>
+    <label style="font-size:12px;color:var(--muted);">Password</label>
     <input id="signup-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
-    <button id="signup-submit-btn" onclick="handleSignUp()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Konto erstellen</button>
-    <button onclick="closeSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">← Zurück zum Login</button>
+    <button id="signup-submit-btn" onclick="handleSignUp()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Create account</button>
+    <button onclick="closeSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">← Back to sign in</button>
     <div id="signup-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
   </div>
 </div>
@@ -644,11 +627,12 @@
   <div id="splash-inner">
     <div class="sp-eyebrow">&#10013; Discipline over profit</div>
     <h1 class="sp-title">TradeInFaith</h1>
-    <p class="sp-sub">ICT / Smart Money &middot; Wo willst du starten?</p>
+    <p class="sp-sub">ICT / Smart Money &middot; Where do you want to start?</p>
     <div id="sp-cards"></div>
     <div id="sp-discipline" class="sp-discipline" aria-live="polite"></div>
-    <button class="sp-skip" onclick="closeSplash()">Einfach reingehen &rarr;</button>
-    <div class="sp-hint">Esc zum &Uuml;berspringen</div>
+    <div id="sp-word" class="sp-word"></div>
+    <button class="sp-skip" onclick="closeSplash()">Just head in &rarr;</button>
+    <div class="sp-hint">Esc to skip</div>
   </div>
 </div>
 <div class="app">
@@ -657,9 +641,9 @@
       <div class="logo-text"><span class="logo-dot"></span> TradeInFaith</div>
       <div class="logo-sub" id="trade-count">&ndash;</div>
     </div>
-    <nav id="dock" aria-label="Bereiche"></nav>
+    <nav id="dock" aria-label="Sections"></nav>
     <div id="dock-right">
-      <button class="dock-btn" title="Abmelden" onclick="handleSignOut()">
+      <button class="dock-btn" title="Sign out" onclick="handleSignOut()">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
@@ -678,8 +662,8 @@
       </div>
 
       <div id="trade-wizard">
-        <div class="draft-note"><span id="trade-draft-status">Entwurf wird automatisch gespeichert · Screenshots ausgenommen</span><button type="button" onclick="discardTradeDraft()">Entwurf verwerfen</button></div>
-        <div id="edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">Trade bearbeiten</span><button type="button" onclick="cancelEdit()">Bearbeitung abbrechen</button></div>
+        <div class="draft-note"><span id="trade-draft-status">Draft saved automatically · screenshots excluded</span><button type="button" onclick="discardTradeDraft()">Discard draft</button></div>
+        <div id="edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">Editing trade</span><button type="button" onclick="cancelEdit()">Cancel editing</button></div>
         <div class="wz-progress">
           <div class="wz-step active" onclick="goStep(1)"><div class="wz-num">1</div><div class="wz-name">Plan</div></div>
           <div class="wz-step" onclick="goStep(2)"><div class="wz-num">2</div><div class="wz-name">Setup</div></div>
@@ -833,7 +817,7 @@
       </div><!-- /trade-wizard -->
 
       <div id="notrade-form" style="display:none">
-        <div id="nt-edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">No-Trade-Tag bearbeiten</span><button type="button" onclick="cancelEditNoTrade()">Bearbeitung abbrechen</button></div>
+        <div id="nt-edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">Editing no-trade day</span><button type="button" onclick="cancelEditNoTrade()">Cancel editing</button></div>
         <div class="card">
           <div class="card-title">The Day</div>
           <div class="subgrid" style="margin-bottom:16px">
@@ -882,7 +866,7 @@
       <div class="list-view" id="list-view">
         <div class="page-head"><div class="page-title">All trades</div><div class="page-desc" id="list-desc"></div></div>
         <div class="filter-bar" id="list-filters">
-          <button class="fchip active" data-f="all" onclick="setListFilter('all')">Alle</button>
+          <button class="fchip active" data-f="all" onclick="setListFilter('all')">All</button>
           <button class="fchip" data-f="win" onclick="setListFilter('win')">Wins</button>
           <button class="fchip" data-f="loss" onclick="setListFilter('loss')">Losses</button>
           <button class="fchip" data-f="be" onclick="setListFilter('be')">Breakeven</button>
@@ -899,12 +883,12 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <div class="range-chips" id="stats-subnav">
             <button class="rchip active" data-view="cockpit" onclick="setStatsSubView('cockpit')">📊 Cockpit</button>
-            <button class="rchip" data-view="review" onclick="setStatsSubView('review')">🔍 Muster</button>
+            <button class="rchip" data-view="review" onclick="setStatsSubView('review')">🔍 Patterns</button>
           </div>
           <div class="range-chips" id="range-chips">
-            <button class="rchip" data-range="30" onclick="setStatsRange(30)">30T</button>
-            <button class="rchip" data-range="90" onclick="setStatsRange(90)">90T</button>
-            <button class="rchip active" data-range="0" onclick="setStatsRange(0)">Alle</button>
+            <button class="rchip" data-range="30" onclick="setStatsRange(30)">30d</button>
+            <button class="rchip" data-range="90" onclick="setStatsRange(90)">90d</button>
+            <button class="rchip active" data-range="0" onclick="setStatsRange(0)">All</button>
           </div>
         </div>
       </div>
@@ -914,9 +898,6 @@
 
     <div id="sec-faith" class="section">
       <div class="faith-wrap" id="faith-el"></div>
-    </div>
-    <div id="sec-bible" class="section">
-      <div class="faith-wrap" id="bible-el" style="animation:none"></div>
     </div>
     <div id="sec-learn" class="section">
       <div class="page-head"><div class="page-title">Learn</div><div class="page-desc">Document what you learn — concepts, mistakes, setups, mindset.</div></div>
@@ -954,7 +935,7 @@
       <!-- MY NOTES -->
       <div id="lp-notes" class="lp" style="display:none">
         <div id="learn-list-view">
-          <input type="text" class="learn-search" id="learn-search" placeholder="Notizen durchsuchen..." oninput="renderLearnList()">
+          <input type="text" class="learn-search" id="learn-search" placeholder="Search notes..." oninput="renderLearnList()">
           <div id="learn-entries"></div>
         </div>
         <div id="learn-detail-view" style="display:none">
@@ -966,78 +947,78 @@
     </div>
 
     <div id="sec-settings" class="section">
-      <button class="back-btn" onclick="closeSettings()">← Zurück</button>
-      <div class="page-head"><div class="page-title">Einstellungen</div><div class="page-desc">Theme, Konto und Daten verwalten.</div></div>
+      <button class="back-btn" onclick="closeSettings()">← Back</button>
+      <div class="page-head"><div class="page-title">Settings</div><div class="page-desc">Manage your theme, account and data.</div></div>
 
       <div class="card">
-        <div class="card-title">Erscheinungsbild</div>
+        <div class="card-title">Appearance</div>
         <div class="theme-grid">
           <div class="theme-card" id="theme-card-dark" onclick="setTheme('dark')">
             <div class="theme-swatch"><span style="background:#0a0a0c"></span><span style="background:#151518"></span><span style="background:#5b7cfa"></span></div>
-            <div class="theme-name">Dunkel</div>
-            <div class="theme-desc">Mattes Anthrazit, reduzierte Farben</div>
+            <div class="theme-name">Dark</div>
+            <div class="theme-desc">Matte charcoal, restrained color</div>
           </div>
           <div class="theme-card" id="theme-card-light" onclick="setTheme('light')">
             <div class="theme-swatch"><span style="background:#f7f6f3"></span><span style="background:#ffffff"></span><span style="background:#3454d1"></span></div>
-            <div class="theme-name">Hell</div>
-            <div class="theme-desc">Weissraum, schlicht und seriös</div>
+            <div class="theme-name">Light</div>
+            <div class="theme-desc">White space, plain and serious</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Profil</div>
-        <div class="field" style="margin-bottom:14px"><label>Name</label><input type="text" id="set-name" placeholder="Dein Name"></div>
-        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="changeDisplayName()">Name speichern</button></div>
+        <div class="card-title">Profile</div>
+        <div class="field" style="margin-bottom:14px"><label>Name</label><input type="text" id="set-name" placeholder="Your name"></div>
+        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="changeDisplayName()">Save name</button></div>
       </div>
 
       <div class="card">
-        <div class="card-title">E-Mail</div>
-        <div class="field" style="margin-bottom:14px"><label>Aktuelle E-Mail</label><input type="email" id="set-email" placeholder="name@example.com"></div>
-        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="changeEmail()">E-Mail ändern</button></div>
-        <div class="field-help">Je nach Supabase-Konfiguration erhältst du eine Bestätigungs-Mail an die alte und/oder neue Adresse.</div>
+        <div class="card-title">Email</div>
+        <div class="field" style="margin-bottom:14px"><label>Current email</label><input type="email" id="set-email" placeholder="name@example.com"></div>
+        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="changeEmail()">Change email</button></div>
+        <div class="field-help">Depending on your Supabase settings, a confirmation mail goes to the old address, the new one, or both.</div>
       </div>
 
       <div class="card">
-        <div class="card-title">Passwort</div>
+        <div class="card-title">Password</div>
         <div class="subgrid" style="margin-bottom:14px">
-          <div class="field"><label>Neues Passwort</label><input type="password" id="set-pw1" placeholder="Mind. 6 Zeichen"></div>
-          <div class="field"><label>Passwort bestätigen</label><input type="password" id="set-pw2" placeholder="Wiederholen"></div>
+          <div class="field"><label>New password</label><input type="password" id="set-pw1" placeholder="At least 6 characters"></div>
+          <div class="field"><label>Confirm password</label><input type="password" id="set-pw2" placeholder="Repeat"></div>
         </div>
-        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="changePassword()">Passwort ändern</button></div>
+        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="changePassword()">Change password</button></div>
       </div>
 
       <div class="card">
-        <div class="card-title">Daten</div>
+        <div class="card-title">Data</div>
         <div class="subgrid">
           <div class="field">
-            <label>Importieren</label>
-            <div class="field-help">Trades aus einer zuvor exportierten Backup-Datei wiederherstellen.</div>
-            <button class="btn" onclick="document.getElementById('imp').click()">Importieren</button>
+            <label>Import</label>
+            <div class="field-help">Restore trades from a backup file you exported earlier.</div>
+            <button class="btn" onclick="document.getElementById('imp').click()">Import</button>
             <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(this)">
           </div>
           <div class="field">
-            <label>Exportieren (JSON)</label>
-            <div class="field-help">Alle Trades inkl. Screenshots als Backup-Datei herunterladen.</div>
-            <button class="btn btn-primary" onclick="exportJSON()">Exportieren</button>
+            <label>Export (JSON)</label>
+            <div class="field-help">Download every trade, screenshots included, as a backup file.</div>
+            <button class="btn btn-primary" onclick="exportJSON()">Export</button>
           </div>
         </div>
       </div>
 
       <div class="card" style="border-color:rgba(248,113,113,.3)">
-        <div class="card-title" style="color:var(--red)">Konto löschen</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Löscht dein Konto sowie alle Trades, Learn-Notizen und den Bibel-Fortschritt unwiderruflich. Das kann nicht rückgängig gemacht werden.</p>
+        <div class="card-title" style="color:var(--red)">Delete account</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Permanently deletes your account along with every trade and learn note. This cannot be undone.</p>
         <div id="delete-confirm-box" style="display:none;margin-bottom:14px">
-          <div class="field"><label>Tippe LÖSCHEN zur Bestätigung</label><input type="text" id="delete-confirm-input" placeholder="LÖSCHEN"></div>
+          <div class="field"><label>Type DELETE to confirm</label><input type="text" id="delete-confirm-input" placeholder="DELETE"></div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="delete-btn" id="delete-account-btn" onclick="onDeleteAccountClick()">🗑 Konto endgültig löschen</button>
-          <button class="btn" id="delete-cancel-btn" style="display:none" onclick="cancelDeleteAccount()">Abbrechen</button>
+          <button class="delete-btn" id="delete-account-btn" onclick="onDeleteAccountClick()">🗑 Delete account permanently</button>
+          <button class="btn" id="delete-cancel-btn" style="display:none" onclick="cancelDeleteAccount()">Cancel</button>
         </div>
       </div>
 
       <div class="btn-row" style="justify-content:flex-start">
-        <button class="btn" onclick="handleSignOut()">Abmelden</button>
+        <button class="btn" onclick="handleSignOut()">Sign out</button>
       </div>
     </div>
   </main>
@@ -1073,7 +1054,7 @@ async function setTheme(theme){
   _settingsCache={..._settingsCache,theme};
   if(!currentUser) return;
   try{ await sb.from('journal_data').update({settings:_settingsCache,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }
-  catch(e){ console.error('Theme-Sync fehlgeschlagen',e); }
+  catch(e){ console.error('Theme sync failed',e); }
 }
 
 function showAuthError(msg){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.display='block'; }
@@ -1085,7 +1066,7 @@ async function handleSignIn(){
   hideAuthError();
   const email=document.getElementById('auth-email').value.trim();
   const password=document.getElementById('auth-password').value;
-  if(!email||!password){ showAuthError('E-Mail und Passwort eingeben.'); return; }
+  if(!email||!password){ showAuthError('Enter your email and password.'); return; }
   const {error}=await sb.auth.signInWithPassword({email,password});
   if(error){ showAuthError(error.message); return; }
 }
@@ -1110,13 +1091,13 @@ async function handleSignUp(){
   const username=document.getElementById('signup-username').value.trim();
   const email=document.getElementById('signup-email').value.trim();
   const password=document.getElementById('signup-password').value;
-  if(!firstName||!lastName||!username||!email||!password){ showSignupError('Bitte alle Felder ausfüllen.'); return; }
-  if(password.length<6){ showSignupError('Passwort muss mind. 6 Zeichen haben.'); return; }
+  if(!firstName||!lastName||!username||!email||!password){ showSignupError('Please fill in every field.'); return; }
+  if(password.length<6){ showSignupError('Password must be at least 6 characters.'); return; }
   const {error}=await sb.auth.signUp({email,password,options:{data:{
     first_name:firstName, last_name:lastName, username, display_name:(firstName+' '+lastName).trim()
   }}});
   if(error){ showSignupError(error.message); return; }
-  document.getElementById('signup-hint').textContent='Konto erstellt. Falls Bestätigung nötig ist, prüfe dein E-Mail-Postfach — sonst bist du jetzt angemeldet.';
+  document.getElementById('signup-hint').textContent='Account created. If confirmation is required, check your inbox — otherwise you are signed in already.';
 }
 async function handleSignOut(){
   await sb.auth.signOut();
@@ -1139,8 +1120,8 @@ async function saveTrades(data){
   if(_cache===null)return false;
   try{
     const {error}=await sb.from('journal_data').update({trades:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
-    if(error){ console.error('Sync fehlgeschlagen',error); return false; }
-  }catch(error){ console.error('Sync fehlgeschlagen',error); return false; }
+    if(error){ console.error('Sync failed',error); return false; }
+  }catch(error){ console.error('Sync failed',error); return false; }
   _cache=data; updateStatus(); showSaved(); return true;
 }
 function showSaved(){ const el=document.getElementById('save-ind'); el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
@@ -1152,13 +1133,12 @@ function openLightbox(src){ document.getElementById('img-lightbox-img').src=src;
 function closeLightbox(){ document.getElementById('img-lightbox').classList.remove('open'); document.getElementById('img-lightbox-img').src=''; }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLightbox(); });
 const TABS=[
-  {id:'log',   icon:'\u270F\uFE0F', name:'New trade', desc:'Trade sauber durchdenken, Schritt f\u00FCr Schritt erfassen'},
-  {id:'list',  icon:'\uD83D\uDCCB', name:'All trades', desc:'Jeder Eintrag mit Screenshot, Tags und Notizen'},
-  {id:'stats', icon:'\uD83D\uDCCA', name:'Stats',      desc:'Cockpit und Muster \u2014 Kurve, Kalender, Setups, Review'},
-  {id:'faith', icon:'\u271D\uFE0F', name:'Faith',      desc:'Verse und Gedanken passend zum Handelstag'},
-  {id:'learn', icon:'\uD83D\uDCDA', name:'Learn',      desc:'Eigene Notizen und Lektionen aus dem Chart'}
+  {id:'log',   icon:'\u270F\uFE0F', name:'New trade', desc:'Think a trade through and log it step by step'},
+  {id:'list',  icon:'\uD83D\uDCCB', name:'All trades', desc:'Every entry with screenshot, tags and notes'},
+  {id:'stats', icon:'\uD83D\uDCCA', name:'Stats',      desc:'Cockpit and patterns \u2014 curve, calendar, setups, review'},
+  {id:'faith', icon:'\u271D\uFE0F', name:'Faith',      desc:'Scripture that answers the day you traded'},
+  {id:'learn', icon:'\uD83D\uDCDA', name:'Learn',      desc:'Your own notes and lessons from the chart'}
 ];
-// Bible ist kein eigener Dock-Eintrag mehr \u2014 erreichbar \u00FCber die Karte im Faith-Tab.
 const SPLASH_PICKS=['log','list','stats','faith','learn'];
 
 // Zahnrad (lucide "settings")
@@ -1171,7 +1151,7 @@ function buildDock(){
   d.innerHTML=TABS.map(t=>'<div class="dock-item" role="button" tabindex="0" data-tab="'+t.id+'" title="'+t.name+'">'+
     '<span class="dock-ico">'+t.icon+'</span><span class="dock-label">'+t.name+'</span><span class="dock-dot"></span></div>').join('')
     +'<div class="dock-sep"></div>'
-    +'<div class="dock-item" role="button" tabindex="0" id="dock-settings" title="Einstellungen">'
+    +'<div class="dock-item" role="button" tabindex="0" id="dock-settings" title="Settings">'
     +'<span class="dock-ico">'+GEAR_SVG+'</span><span class="dock-label">Settings</span><span class="dock-dot"></span></div>';
   d.querySelectorAll('.dock-item[data-tab]').forEach(el=>{
     el.addEventListener('click',()=>switchTab(el.dataset.tab));
@@ -1240,6 +1220,7 @@ function buildSplash(){
   // Login, ist das Intro laengst durch und er darf sofort loslaufen.
   _spShown=_introRevealed||_introDone;
   renderSplashDiscipline();
+  renderSplashWord();
   startSplashCanvas();
   document.addEventListener('keydown',_spEsc);
 }
@@ -1254,9 +1235,9 @@ function renderSplashDiscipline(){
   const has=!loading&&trades.length>0;
   const score=has?disciplineScore(trades):0;
   const color=!has?'var(--muted)':score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
-  const sub=loading?'Journal wird geladen &hellip;'
-    :has?'Basierend auf allen '+trades.length+' Trade'+(trades.length!==1?'s':'')+'.'
-    :'Log deinen ersten Trade, um deinen Score zu sehen.';
+  const sub=loading?'Loading your journal &hellip;'
+    :has?'Across all '+trades.length+' trade'+(trades.length!==1?'s':'')+'.'
+    :'Log your first trade to see your score.';
   el.innerHTML='<div class="sp-discipline-top"><div class="sp-discipline-label">Discipline Score</div>'+
     '<div class="sp-discipline-score" style="color:'+color+'">'+(has?(score/10).toFixed(1):'&ndash;')+'<small> / 10</small></div></div>'+
     '<div class="sp-discipline-meter"><i data-w="'+score+'%" style="--sp-fill:'+(SP_BUILD_MS/2)+'ms;background:'+color+'"></i></div>'+
@@ -1268,6 +1249,14 @@ function renderSplashDiscipline(){
 // sichtbar ist -- sonst spielt die Fuellung hinter dem Intro ab und er steht beim
 // Erscheinen schon voll da. Doppeltes rAF, damit der Startwert einen Frame lang
 // gerendert wurde und der Uebergang greift (gleiches Muster wie die Stats-Balken).
+// Das Wort des Tages steht unter dem Score: die Zahl sagt, wie du gehandelt
+// hast, der Vers, woran das haengt. Derselbe Vers wie im Faith-Tab.
+function renderSplashWord(){
+  const el=document.getElementById('sp-word'); if(!el)return;
+  const v=verseOfDay();
+  el.innerHTML='<em>“'+v.text+'”</em> &nbsp;— '+v.ref;
+}
+
 function fillSplashDiscipline(){
   const b=document.querySelector('#sp-discipline .sp-discipline-meter>i');
   if(!b||!b.dataset.w)return;
@@ -1423,7 +1412,6 @@ function switchTab(t,force){
     else if(t==='list'){closeDetail();renderList();}
     else if(t==='stats')setStatsSubView(statsSubView);
     else if(t==='faith')renderFaith();
-    else if(t==='bible')renderBible();
     else if(t==='learn')renderLearnList();
   },force);
 }
@@ -1437,7 +1425,6 @@ function refreshActiveTab(){
   else if(t==='list')renderList();
   else if(t==='stats')setStatsSubView(statsSubView);
   else if(t==='faith')renderFaith();
-  else if(t==='bible')renderBible();
   else if(t==='learn')renderLearnList();
 }
 
@@ -1466,7 +1453,7 @@ function setScreenshotPreview(src){
   const p=document.getElementById('img-prev');
   p.src=src; p.style.display='block';
   const hint=document.getElementById('screenshot-hint');
-  if(hint)hint.innerHTML='✅ Screenshot geladen &nbsp;<button onclick="clearScreenshot()" style="background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);padding:3px 9px;border-radius:6px;font-size:11px;cursor:pointer">✕ Remove</button>';
+  if(hint)hint.innerHTML='✅ Screenshot loaded &nbsp;<button onclick="clearScreenshot()" style="background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);padding:3px 9px;border-radius:6px;font-size:11px;cursor:pointer">✕ Remove</button>';
 }
 
 function loadImgFile(f){
@@ -1489,13 +1476,13 @@ async function autoGrabClipboard(){
       if(imgType){
         const blob=await item.getType(imgType);
         loadImgFile(new File([blob],'screenshot.png',{type:imgType}));
-        showToast('Screenshot aus Zwischenablage geladen ✓');
+        showToast('Screenshot loaded from clipboard ✓');
         return;
       }
     }
-    showToast('Kein Bild in der Zwischenablage gefunden');
+    showToast('No image found on the clipboard');
   }catch(e){
-    showToast('Zwischenablage-Zugriff verweigert — nutze Ctrl+V');
+    showToast('Clipboard access denied — use Ctrl+V instead');
   }
 }
 
@@ -1506,7 +1493,7 @@ document.addEventListener('paste', function(e){
   for(let i=0;i<items.length;i++){
     if(items[i].type.startsWith('image/')){
       const file=items[i].getAsFile();
-      if(file){ loadImgFile(file); showToast('Screenshot eingefügt ✓'); }
+      if(file){ loadImgFile(file); showToast('Screenshot pasted ✓'); }
       break;
     }
   }
@@ -1555,7 +1542,7 @@ async function saveNoTrade(){
   };
   if(editingNoTradeId!==null){
     const idx=data.findIndex(x=>x.id===editingNoTradeId);
-    if(idx<0){ showToast('Eintrag nicht mehr vorhanden — Bearbeitung abgebrochen'); finishEditNoTrade(); return; }
+    if(idx<0){ showToast('Entry no longer exists — editing cancelled'); finishEditNoTrade(); return; }
     // Select-Werte des Originals, die keiner aktuellen Option entsprechen
     // (Altdaten/Import), nicht mit '' überschreiben.
     const patch={...t};
@@ -1565,13 +1552,13 @@ async function saveNoTrade(){
     });
     if(ntForm['nt-feel']===undefined && data[idx].emotion && !ntOptionExists('nt-feel',data[idx].emotion)) delete patch.emotion;
     data[idx]={...data[idx],...patch};
-    if(!await saveTrades(data)){ showToast('Speichern fehlgeschlagen'); return; }
+    if(!await saveTrades(data)){ showToast('Save failed'); return; }
     finishEditNoTrade();
-    showToast('No-Trade-Tag aktualisiert ✓');
+    showToast('No-trade day updated ✓');
     return;
   }
   data.unshift(t);
-  if(!await saveTrades(data)){ showToast('Speichern fehlgeschlagen'); return; }
+  if(!await saveTrades(data)){ showToast('Save failed'); return; }
   ntForm={};
   document.querySelectorAll('#notrade-form input,#notrade-form textarea').forEach(el=>el.value='');
   document.querySelectorAll('#notrade-form .opt,#notrade-form .tag').forEach(b=>b.classList.remove('sel'));
@@ -1600,8 +1587,8 @@ function saveTradeDraftNow(){
   try{
     const draft=collectTradeDraft();
     localStorage.setItem(key,JSON.stringify(draft));
-    draftStatus('Entwurf gespeichert · '+new Date(draft.savedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · Screenshots ausgenommen');
-  }catch(e){ draftStatus('Entwurf konnte lokal nicht gespeichert werden'); }
+    draftStatus('Draft saved · '+new Date(draft.savedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' · screenshots excluded');
+  }catch(e){ draftStatus('Draft could not be saved locally'); }
 }
 function scheduleTradeDraft(){
   if(_tradeDraftSuspended||currentMode!=='trade')return;
@@ -1611,7 +1598,7 @@ function scheduleTradeDraft(){
 function clearTradeDraft(){
   clearTimeout(_tradeDraftTimer); _tradeDraftTimer=null;
   const key=tradeDraftKey(); if(key){ try{ localStorage.removeItem(key); }catch(e){} }
-  draftStatus('Entwurf wird automatisch gespeichert · Screenshots ausgenommen');
+  draftStatus('Draft saved automatically · screenshots excluded');
 }
 function initTradeDraft(){
   if(_tradeDraftBound)return; _tradeDraftBound=true;
@@ -1629,8 +1616,8 @@ function restoreTradeDraft(){
   _tradeDraftSuspended=true; clearTimeout(_tradeDraftTimer); _tradeDraftTimer=null;
   try{
     applyTradeDraft(draft);
-    draftStatus('Entwurf wiederhergestellt · '+new Date(draft.savedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · Screenshot erneut auswählen');
-  }catch(e){ console.error('Entwurf konnte nicht wiederhergestellt werden',e); draftStatus('Entwurf konnte nicht wiederhergestellt werden · Daten bleiben lokal erhalten'); }
+    draftStatus('Draft restored · '+new Date(draft.savedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' · pick the screenshot again');
+  }catch(e){ console.error('Draft could not be restored',e); draftStatus('Draft could not be restored · your data is still stored locally'); }
   finally{ _tradeDraftSuspended=false; }
 }
 // Schreibt einen Draft-/Trade-Snapshot zurück in den Wizard. Wird sowohl vom
@@ -1660,9 +1647,9 @@ function applyTradeDraft(draft){
 }
 function discardTradeDraft(){
   if(editingTradeId!==null)return;
-  if(!confirm('Entwurf wirklich verwerfen? Alle Eingaben außer bereits gespeicherten Trades gehen verloren.'))return;
+  if(!confirm('Discard this draft? Everything you typed is lost, except trades you already saved.'))return;
   _tradeDraftSuspended=true;
-  try{ clearTradeDraft(); clearForm(); goStep(1,true); showToast('Entwurf verworfen'); }
+  try{ clearTradeDraft(); clearForm(); goStep(1,true); showToast('Draft discarded'); }
   finally{ _tradeDraftSuspended=false; }
 }
 
@@ -1736,7 +1723,7 @@ function enterEditUI(t){
   const b=document.getElementById('edit-banner'); if(b)b.style.display='flex';
   const lab=document.querySelector('#edit-banner .edit-banner-label');
   if(lab)lab.textContent='Trade vom '+(t.date||'?')+' bearbeiten';
-  const btn=document.querySelector('#wz-5 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Änderungen speichern';
+  const btn=document.querySelector('#wz-5 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Save changes';
   // Entwurf-Hinweis (mit "Entwurf verwerfen") ergibt beim Bearbeiten keinen Sinn
   const dn=document.querySelector('#trade-wizard .draft-note'); if(dn)dn.style.display='none';
 }
@@ -1765,7 +1752,7 @@ function cancelEdit(){ if(editingTradeId===null)return; finishEdit(); showToast(
 
 async function editTrade(id){
   const t=(await loadTrades()).find(x=>x.id===id);
-  if(!t){ showToast('Trade nicht gefunden'); return; }
+  if(!t){ showToast('Trade not found'); return; }
   if(t.isNoTrade){ editNoTrade(t); return; }
   if(editingTradeId===null) _preEditSnapshot={draft:collectTradeDraft(),screenshot:getImg()};
   _tradeDraftSuspended=true;
@@ -1783,7 +1770,7 @@ async function editTrade(id){
   enterEditUI(t);
   closeDetail();
   goStep(1,true);
-  showToast(recovered?'Nicht gespeicherte Änderungen wiederhergestellt · Screenshot ggf. neu wählen':'Bearbeitungsmodus · im letzten Schritt speichern');
+  showToast(recovered?'Unsaved changes restored · you may need to pick the screenshot again':'Editing · save on the last step');
 }
 
 function ntFormReset(){
@@ -1840,8 +1827,8 @@ function editNoTrade(t){
   document.querySelectorAll('#nt-reasons .tag').forEach(b=>b.classList.toggle('sel',reasons.indexOf(b.textContent)>=0));
   const banner=document.getElementById('nt-edit-banner'); if(banner)banner.style.display='flex';
   const lab=document.querySelector('#nt-edit-banner .edit-banner-label');
-  if(lab)lab.textContent='No-Trade-Tag vom '+(t.date||'?')+' bearbeiten';
-  const sb=document.querySelector('#notrade-form .btn-row .btn-primary'); if(sb)sb.textContent='✓ Änderungen speichern';
+  if(lab)lab.textContent='Editing no-trade day of '+(t.date||'?');
+  const sb=document.querySelector('#notrade-form .btn-row .btn-primary'); if(sb)sb.textContent='✓ Save changes';
   closeDetail();
   showToast('Bearbeitungsmodus');
 }
@@ -1892,7 +1879,7 @@ async function saveTrade(){
     };
     if(editingTradeId!==null){
       const idx=data.findIndex(x=>x.id===editingTradeId);
-      if(idx<0){ showToast('Trade nicht mehr vorhanden — Bearbeitung abgebrochen'); finishEdit(); return; }
+      if(idx<0){ showToast('Trade no longer exists — editing cancelled'); finishEdit(); return; }
       // Altdaten-Felder ohne Eingabefeld im aktuellen Wizard nicht überschreiben.
       // Sobald wieder ein Feld existiert, greift der Schutz für diesen Key nicht mehr.
       const patch={...t};
@@ -1912,13 +1899,13 @@ async function saveTrade(){
       data[idx]={...data[idx],...patch};
       if(!await saveTrades(data)){
         try{ const k=tradeEditRecoveryKey(); if(k)localStorage.setItem(k,JSON.stringify({id:editingTradeId,draft:collectTradeDraft(),shotCleared:getImg()===''})); }catch(e){}
-        showToast('Speichern fehlgeschlagen — Änderungen bleiben im Formular'); return;
+        showToast('Save failed — your changes stay in the form'); return;
       }
       finishEdit();
-      showToast('Trade aktualisiert ✓');
+      showToast('Trade updated ✓');
     } else {
       data.unshift(t);
-      if(!await saveTrades(data)){ saveTradeDraftNow(); showToast('Speichern fehlgeschlagen · Entwurf bleibt erhalten'); return; }
+      if(!await saveTrades(data)){ saveTradeDraftNow(); showToast('Save failed · the draft is kept'); return; }
       _tradeDraftSuspended=true;
       try{ clearTradeDraft(); clearForm(); goStep(1,true); }
       finally{ _tradeDraftSuspended=false; }
@@ -1992,7 +1979,7 @@ function renderNoTradeDetail(t){
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div>'+
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span class="nt-badge" style="font-size:15px">🚫 No Trade</span><span class="badge nt">Discipline Day</span></div>'+
     '<div style="color:var(--muted);font-size:13px">'+t.date+' · '+t.instrument+'</div></div>'+
-    '<div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Bearbeiten</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
+    '<div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Edit</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
     (t.bias||t.seen||(t.noTradeReasons&&t.noTradeReasons.length)?
       '<div class="card"><div class="card-title">Market Read</div><div class="dl">'+
       rows('Bias',t.bias)+rows('Seen but skipped',t.seen)+
@@ -2024,13 +2011,16 @@ async function openDetail(id){
   const execBadge = (t.executionScore!==undefined&&t.executionScore!==null&&t.executionScore!=='')?'<span class="badge" style="background:rgba(52,211,153,.12);color:var(--green)">Exec '+t.executionScore+'</span>':'';
   const pnlBadge = (t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='')?'<span class="badge" style="background:'+(t.pnl>=0?'rgba(52,211,153,.15);color:var(--green)':'rgba(248,113,113,.15);color:var(--red)')+'">'+(t.pnl>=0?'+':'')+'$'+t.pnl.toFixed(2)+'</span>':'';
   document.getElementById('detail-el').innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+t.instrument+'" style="font-size:13px;padding:4px 12px">'+t.instrument+'</span><span style="font-size:21px;font-weight:600">'+t.direction+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Bearbeiten</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+t.instrument+'" style="font-size:13px;padding:4px 12px">'+t.instrument+'</span><span style="font-size:21px;font-weight:600">'+t.direction+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Edit</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
     (t.screenshot?'<img src="'+t.screenshot+'" class="shot-thumb" onclick="openLightbox(\''+t.screenshot+'\')">':'')+
     (planRows?'<div class="card"><div class="card-title">Plan & Bias</div><div class="dl">'+planRows+'</div></div>':'')+
     (setupRows?'<div class="card"><div class="card-title">Setup & Quality</div><div class="dl">'+setupRows+'</div></div>':'')+
     (execRows?'<div class="card"><div class="card-title">Execution & Context</div><div class="dl">'+execRows+'</div></div>':'')+
     (psyRows?'<div class="card"><div class="card-title">Psychology</div><div class="dl">'+psyRows+'</div></div>':'')+
-    (revRows?'<div class="card"><div class="card-title">Review & Lesson</div><div class="dl">'+revRows+'</div></div>':'');
+    (revRows?'<div class="card"><div class="card-title">Review & Lesson</div><div class="dl">'+revRows+'</div></div>':'')+
+    // Ganz zum Schluss: erst die Zahlen und die Lektion lesen, dann das Wort dazu.
+    '<div class="card"><div class="card-title">'+({win:'After this win',loss:'After this loss',be:'After this breakeven'}[rcCat(t.result)]||'For this trade')+'</div>'+
+      scripHTML(tradeScripture(t))+'</div>';
   document.getElementById('list-view').classList.add('hidden'); document.getElementById('detail-view').classList.add('open'); document.querySelector('.main-wrap').scrollTop=0;
 }
 function closeDetail(){ document.getElementById('detail-view').classList.remove('open'); document.getElementById('list-view').classList.remove('hidden'); }
@@ -2082,14 +2072,14 @@ function setStatsSubView(v){
   document.querySelectorAll('#stats-subnav .rchip').forEach(c=>c.classList.toggle('active',c.dataset.view===v));
   document.getElementById('range-chips').style.display = v==='cockpit' ? 'flex' : 'none';
   document.getElementById('stats-title').textContent = v==='cockpit' ? 'Performance Cockpit' : 'Review';
-  document.getElementById('stats-sub').textContent = v==='cockpit' ? '' : 'Wo du Geld verdienst — und wo nicht.';
+  document.getElementById('stats-sub').textContent = v==='cockpit' ? '' : 'Where you make money — and where you do not.';
   document.getElementById('stats-el').style.display = v==='cockpit' ? '' : 'none';
   document.getElementById('review-el').style.display = v==='review' ? '' : 'none';
   if(v==='cockpit') renderStats(); else renderReview();
 }
 function inRange(t){ if(!statsRange)return true; const d=new Date(t.date); if(isNaN(d))return true; return (Date.now()-d.getTime())/864e5<=statsRange; }
 function pnlOf(t){ return (t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='')?Number(t.pnl):0; }
-function money(v){ return (v<0?'-':'+')+'$'+Math.abs(Math.round(v)).toLocaleString('de-CH'); }
+function money(v){ return (v<0?'-':'+')+'$'+Math.abs(Math.round(v)).toLocaleString('en-US'); }
 
 function pnlCurveSVG(data){
   const arr=[...data].reverse(); let cum=0; const pts=[{i:0,v:0}];
@@ -2170,11 +2160,11 @@ function calendarHTML(trades,y,m){
       }
     }
     const wcls=weekHas?(weekPnl>0?'cal-pos':weekPnl<0?'cal-neg':'cal-zero'):'cal-zero';
-    cells+='<div class="cal-cell cal-week '+wcls+'"><span class="cal-week-lab">Woche</span><span class="cal-pnl">'+(weekHas?fmtCompact(weekPnl):'–')+'</span></div>';
+    cells+='<div class="cal-cell cal-week '+wcls+'"><span class="cal-week-lab">Week</span><span class="cal-pnl">'+(weekHas?fmtCompact(weekPnl):'–')+'</span></div>';
   }
   const totalCol=monthTotal>=0?'var(--green)':'var(--red)';
   return '<div class="cal-nav"><button onclick="changeCalMonth(-1)">← Prev</button><span class="cal-month-label">'+monthLabel+'</span><button onclick="changeCalMonth(1)">Next →</button></div>'+
-    '<div class="cal-weekdays">'+wdLabels.map(w=>'<span>'+w+'</span>').join('')+'<span>Woche</span></div>'+
+    '<div class="cal-weekdays">'+wdLabels.map(w=>'<span>'+w+'</span>').join('')+'<span>Week</span></div>'+
     '<div class="cal-grid">'+cells+'</div>'+
     '<div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--muted)"><span>'+tradedDays+' trading day'+(tradedDays!==1?'s':'')+' · '+monthTrades+' trade'+(monthTrades!==1?'s':'')+'</span><span>Month P&L: <span style="color:'+totalCol+';font-weight:700">'+(monthTotal>=0?'+':'-')+'$'+Math.abs(Math.round(monthTotal))+'</span></span></div>';
 }
@@ -2234,7 +2224,7 @@ function disciplineGapBlock(trades,hasPnl){
   if(hasPnl && rb && dev && rb.avg!==null && dev.avg!==null && dev.wp>0){
     const delta=rb.avg-dev.avg;
     note=delta>0
-      ? 'Following your rules is worth about $'+Math.round(delta).toLocaleString('de-CH')+' per trade · the '+dev.wp+' measured deviation'+(dev.wp!==1?'s':'')+' cost about $'+Math.round(delta*dev.wp).toLocaleString('de-CH')+'.'
+      ? 'Following your rules is worth about $'+Math.round(delta).toLocaleString('en-US')+' per trade · the '+dev.wp+' measured deviation'+(dev.wp!==1?'s':'')+' cost about $'+Math.round(delta*dev.wp).toLocaleString('en-US')+'.'
       : 'No P&L penalty for deviating in this sample yet — the broken habit is still the risk.';
   } else if(rb && rb.dec>0 && dev && dev.dec>0){
     note='Rule-based win rate '+rb.wr+'% vs '+dev.wr+'% when you deviated.';
@@ -2324,8 +2314,8 @@ async function renderStats(){
   const data=all.filter(inRange);
   const trades=data.filter(t=>!t.isNoTrade), ntDays=data.filter(t=>t.isNoTrade);
   const sub=document.getElementById('stats-sub');
-  if(sub) sub.textContent=(statsRange?('Letzte '+statsRange+' Tage'):'Alle Trades')+' \u00B7 '+trades.length+' Trade'+(trades.length!==1?'s':'');
-  if(!trades.length){ el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">\uD83D\uDCC5</div><p>Keine Trades in diesem Zeitraum.</p></div>'; return; }
+  if(sub) sub.textContent=(statsRange?('Last '+statsRange+' days'):'All trades')+' \u00B7 '+trades.length+' Trade'+(trades.length!==1?'s':'');
+  if(!trades.length){ el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">\uD83D\uDCC5</div><p>No trades in this range.</p></div>'; return; }
 
   const wins=trades.filter(t=>t.result==='Win').length, losses=trades.filter(t=>t.result==='Loss').length, bes=trades.filter(t=>t.result==='Breakeven').length, total=trades.length;
   const dec=wins+losses, wr=dec?Math.round(wins/dec*100):0;
@@ -2359,7 +2349,7 @@ async function renderStats(){
           (hasPnl?'<div class="hero-pill" style="color:'+heroCol+';background:'+(totalPnl>=0?'var(--green-bg)':'var(--red-bg)')+'">\u00D8 '+money(avgTrade)+' / Trade</div>':'')+
         '</div>'+
         '<div class="hero-curve">'+pc.svg+'</div>'+
-        '<div class="hero-foot"><span>'+(hasPnl?'Kumuliert \u00FCber '+pnlTrades.length+' Trade'+(pnlTrades.length!==1?'s':'')+' mit P&L':'Wins \u2212 Losses kumuliert')+'</span><span>'+wins+'W \u00B7 '+losses+'L \u00B7 '+bes+'BE</span></div>'+
+        '<div class="hero-foot"><span>'+(hasPnl?'Cumulative over '+pnlTrades.length+' trade'+(pnlTrades.length!==1?'s':'')+' with P&L':'Wins \u2212 losses, cumulative')+'</span><span>'+wins+'W \u00B7 '+losses+'L \u00B7 '+bes+'BE</span></div>'+
       '</div>'+
       '<div class="hero-card donut-card">'+
         '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">Win rate</div></div></div>'+
@@ -2368,13 +2358,19 @@ async function renderStats(){
     '</div>'+
     '<div class="kpi-row">'+
       '<div class="gcard"><div class="g-label">Total trades</div><div class="g-val accent">'+total+'</div><div class="g-sub">in selected period</div></div>'+
-      (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Win</div><div class="g-val" style="color:'+(winPnls.length?'var(--green)':'var(--muted)')+'">'+(winPnls.length?'$'+Math.round(avgWin).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(winPnls.length?winPnls.length+' Wins mit P&L':'keine P&L-Daten')+'</div></div>':'')+
-      (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Loss</div><div class="g-val" style="color:'+(lossPnls.length?'var(--red)':'var(--muted)')+'">'+(lossPnls.length?'$'+Math.round(avgLoss).toLocaleString('de-CH'):'\u2013')+'</div><div class="g-sub">'+(lossPnls.length?lossPnls.length+' Losses mit P&L':'keine P&L-Daten')+'</div></div>':'')+
+      (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Win</div><div class="g-val" style="color:'+(winPnls.length?'var(--green)':'var(--muted)')+'">'+(winPnls.length?'$'+Math.round(avgWin).toLocaleString('en-US'):'\u2013')+'</div><div class="g-sub">'+(winPnls.length?winPnls.length+' wins with P&L':'no P&L data')+'</div></div>':'')+
+      (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Loss</div><div class="g-val" style="color:'+(lossPnls.length?'var(--red)':'var(--muted)')+'">'+(lossPnls.length?'$'+Math.round(avgLoss).toLocaleString('en-US'):'\u2013')+'</div><div class="g-sub">'+(lossPnls.length?lossPnls.length+' losses with P&L':'no P&L data')+'</div></div>':'')+
       '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val count" data-to="'+rbP+'" data-suffix="%" style="color:'+(rbP>=70?'var(--green)':'var(--amber)')+'">0</div><div class="g-sub">discipline</div></div>'+
       '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+dStreak.count+'" style="color:'+(dStreak.count>0?'var(--amber)':'var(--muted)')+'">0</div><div class="g-sub">'+(dStreak.stale?'reset · '+dStreak.gap+' days idle':dStreak.count>0?'rule-based · resets after '+STREAK_GAP_DAYS+' quiet days':'follow your plan to start')+'</div></div>'+
       '<div class="gcard"><div class="g-label">\uD83D\uDEAB No-Trade Days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
     '</div>'+
     disciplineStripHTML(ds,total,rbP,planP,emoP)+
+    // Direkt unter der Disziplin-Leiste, weil der Vers auf genau diese Zahlen
+    // antwortet -- nicht als frommer Zusatz irgendwo am Seitenende.
+    (function(){
+      const sc=statsScripture({ds:ds,rbP:rbP,wr:wr,run:lossRun(trades),nt:ntCount,streak:dStreak.count,total:total});
+      return '<div class="fcard"><div class="fcard-title">✝ Word over your numbers</div>'+scripHTML(sc.item,sc.why)+'</div>';
+    })()+
     '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
     '<div class="grid-2col">'+
       disciplineGapBlock(trades,hasPnl)+
@@ -2449,97 +2445,6 @@ async function renderReview(){
 async function exportJSON(){ const data=await loadTrades(); const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='trades-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showToast('Exported ✓'); }
 function importJSON(input){ const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=async e=>{ try{ const d=JSON.parse(e.target.result); if(Array.isArray(d)){ if(!await saveTrades(d)){showToast('Import failed');return;} showToast('Imported '+d.length+' trades ✓'); renderList(); } else alert('Wrong format'); }catch(err){ alert('Could not read file.'); } }; r.readAsText(f); input.value=''; }
 
-
-// ── BIBLE ──────────────────────────────────────────────────────────────────
-let bibleData=null, bibleProgress={}, bibleView='books', bibleBookId=null, bibleChapterNum=1;
-
-async function renderBible(){
-  const el=document.getElementById('bible-el');
-  if(!bibleData){
-    el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">📖</div><p>Lade Bibeltext …</p></div>';
-    try{
-      const res=await fetch('bible_de.json');
-      if(!res.ok) throw new Error('http '+res.status);
-      bibleData=await res.json();
-      // bibleProgress wird bereits beim Login in loadJournalRow() befüllt
-    }catch(e){
-      el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">⚠️</div><p>Konnte <code>bible_de.json</code> nicht laden.<br>Liegt die Datei im selben Ordner wie <code>index.html</code>?</p></div>';
-      return;
-    }
-  }
-  drawBible();
-}
-
-function isChapterDone(bookId,num){ return (bibleProgress[bookId]||[]).includes(num); }
-function toggleChapterDone(bookId,num){
-  const arr=bibleProgress[bookId]=bibleProgress[bookId]||[];
-  const i=arr.indexOf(num);
-  if(i>=0) arr.splice(i,1); else arr.push(num);
-  saveBibleProgress();
-  drawBible();
-}
-async function saveBibleProgress(){
-  if(!currentUser) return;
-  try{ await sb.from('journal_data').update({bible_progress:bibleProgress,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }catch(e){ console.error('Bible-Sync fehlgeschlagen',e); }
-}
-
-function drawBible(){
-  const el=document.getElementById('bible-el');
-  if(bibleView==='chapters') el.innerHTML=bibleChaptersHTML(bibleBookId);
-  else if(bibleView==='read') el.innerHTML=bibleReadHTML(bibleBookId,bibleChapterNum);
-  else el.innerHTML=bibleBooksHTML();
-}
-
-function bibleBooksHTML(){
-  const card=b=>{
-    if(!b.available) return '<div class="bb-card bb-disabled"><div class="bb-name">'+b.name+'</div><div class="bb-meta">folgt bald</div></div>';
-    const done=(bibleProgress[b.id]||[]).length, total=b.chapters.length, pct=total?Math.round(done/total*100):0;
-    return '<div class="bb-card" onclick="openBibleBook(\''+b.id+'\')" role="button" tabindex="0">'+
-      '<div class="bb-name">'+b.name+(done>=total?' ✓':'')+'</div>'+
-      '<div class="bb-meta">'+total+' Kapitel'+(done?' · '+done+' gelesen':'')+'</div>'+
-      (done?'<div class="bb-progress"><div class="bb-progress-fill" style="width:'+pct+'%"></div></div>':'')+
-    '</div>';
-  };
-  const group=(list,label)=>'<div class="bible-group-label">'+label+'</div><div class="bible-grid">'+list.map(card).join('')+'</div>';
-  const at=bibleData.books.filter(b=>b.testament==='AT'), nt=bibleData.books.filter(b=>b.testament==='NT');
-  const totalChaps=bibleData.books.filter(b=>b.available).reduce((s,b)=>s+b.chapters.length,0);
-  const totalDone=Object.values(bibleProgress).reduce((s,a)=>s+a.length,0);
-  return '<div class="page-head"><div class="page-title">Bible</div><div class="page-desc">'+bibleData.translation+' — in Originalreihenfolge.'+
-      (totalDone?' &nbsp;·&nbsp; '+totalDone+' / '+totalChaps+' Kapitel gelesen':'')+'</div></div>'+
-    group(at,'Altes Testament')+group(nt,'Neues Testament');
-}
-
-function bibleChaptersHTML(bookId){
-  const b=bibleData.books.find(x=>x.id===bookId), n=b.chapters.length;
-  const doneArr=bibleProgress[bookId]||[];
-  let chips=''; for(let i=1;i<=n;i++) chips+='<div class="bc-chip'+(doneArr.includes(i)?' bc-done':'')+'" onclick="openBibleChapter(\''+bookId+'\','+i+')">'+i+'</div>';
-  return '<div class="bible-crumb"><span onclick="bibleBackToBooks()">← Bücher</span></div>'+
-    '<div class="page-head"><div class="page-title">'+b.name+'</div><div class="page-desc">'+n+' Kapitel'+(doneArr.length?' — '+doneArr.length+' gelesen ('+Math.round(doneArr.length/n*100)+'%)':' — wähle ein Kapitel')+'</div></div>'+
-    '<div class="bible-chapgrid">'+chips+'</div>';
-}
-
-function bibleReadHTML(bookId,chapNum){
-  const b=bibleData.books.find(x=>x.id===bookId), chap=b.chapters[chapNum-1];
-  const verses=chap.map(v=>'<div class="bv"><span class="bv-num">'+v[0]+'</span><span class="bv-text">'+v[1]+'</span></div>').join('');
-  const hasPrev=chapNum>1, hasNext=chapNum<b.chapters.length, done=isChapterDone(bookId,chapNum);
-  return '<div class="bible-crumb"><span onclick="bibleBackToBooks()">← Bücher</span> &nbsp;·&nbsp; <span onclick="openBibleBook(\''+bookId+'\')">'+b.name+'</span></div>'+
-    '<div class="page-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">'+
-      '<div><div class="page-title">'+b.name+' '+chapNum+'</div></div>'+
-      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
-        '<button class="bible-done-btn'+(done?' done':'')+'" onclick="toggleChapterDone(\''+bookId+'\','+chapNum+')">'+(done?'✓ Gelesen':'Als gelesen markieren')+'</button>'+
-        '<div class="range-chips">'+
-          '<button class="rchip"'+(hasPrev?' onclick="openBibleChapter(\''+bookId+'\','+(chapNum-1)+')"':' disabled style="opacity:.3"')+'>← Kapitel</button>'+
-          '<button class="rchip" onclick="openBibleBook(\''+bookId+'\')">Übersicht</button>'+
-          '<button class="rchip"'+(hasNext?' onclick="openBibleChapter(\''+bookId+'\','+(chapNum+1)+')"':' disabled style="opacity:.3"')+'>Kapitel →</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="bible-read card">'+verses+'</div>';
-}
-
-function openBibleBook(id){ bibleBookId=id; bibleView='chapters'; drawBible(); document.querySelector('.main-wrap').scrollTop=0; }
-function openBibleChapter(id,num){ bibleBookId=id; bibleChapterNum=num; bibleView='read'; drawBible(); document.querySelector('.main-wrap').scrollTop=0; }
-function bibleBackToBooks(){ bibleView='books'; drawBible(); document.querySelector('.main-wrap').scrollTop=0; }
 
 // ── FAITH ──────────────────────────────────────────────────────────────────
 const VERSES = {
@@ -2736,6 +2641,58 @@ function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function shuffle(a){ return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]); }
 function weekStartMonday(d){ const day=(d.getDay()+6)%7; const m=new Date(d); m.setDate(d.getDate()-day); m.setHours(0,0,0,0); return m; }
 
+// Ein Wort pro Kalendertag, ueberall dasselbe: Startbildschirm und Faith-Tab
+// zeigen denselben Vers, damit der Tag ein Wort hat statt bei jedem Tabwechsel
+// ein neues auszuwuerfeln.
+function verseOfDay(){
+  const d=new Date(), key=d.getFullYear()*372+d.getMonth()*31+d.getDate();
+  return VERSES.daily[key%VERSES.daily.length];
+}
+
+// Einheitlicher Scripture-Block. Bewusst ohne eigene Karte -- er sitzt in dem
+// Block, auf den er sich bezieht, statt als weiterer Kasten danebenzustehen.
+function scripHTML(item,why){
+  return '<div class="scrip">'+
+    (why?'<div class="scrip-why">'+why+'</div>':'')+
+    '<div class="scrip-text">“'+item.text+'”</div>'+
+    '<div class="scrip-ref">'+(item.isQuote?'✦ ':'— ')+item.ref+'</div></div>';
+}
+
+// Verluste am Stueck, von neu nach alt. Bricht beim ersten entschiedenen
+// Nicht-Verlust ab; No-Trade-Tage unterbrechen die Serie nicht.
+function lossRun(trades){
+  let n=0;
+  for(const t of trades){
+    if(t.result==='Loss'){ n++; continue; }
+    if(t.result==='Win'||t.result==='Breakeven') break;
+  }
+  return n;
+}
+
+// Der Vers im Cockpit kommt aus den Zahlen, nicht aus dem Zufall: die erste
+// zutreffende Regel gewinnt, damit das draengendste Thema das Wort bekommt.
+// Der Vers selbst haengt am Zahlenstand, sonst wechselt er bei jedem Tabwechsel
+// und verliert genau das Gewicht, das ihn hierher gehoeren laesst.
+function statsScripture(s){
+  const rules=[
+    [s.ds<50,              'be',    'Discipline sits at '+(s.ds/10).toFixed(1)+' of 10. Rules first, results after.'],
+    [s.run>=3,             'loss',  s.run+' losses in a row. The streak is not the verdict on you.'],
+    [s.rbP>=80&&s.wr>=55,  'win',   s.rbP+'% rule-based at a '+s.wr+'% win rate. Hold it with an open hand.'],
+    [s.nt>=3,              'be',    s.nt+' days you chose to stay out. Sitting still is a decision too.'],
+    [s.streak>=5,          'win',   s.streak+' rule-based trades in a row. Keep the credit where it belongs.'],
+    [true,                 'daily', 'Nothing is shouting in your numbers today.']
+  ];
+  const hit=rules.find(r=>r[0]), pool=VERSES[hit[1]]||VERSES.daily;
+  return {why:hit[2], item:pool[Math.abs(s.total*31+s.ds*7+s.run)%pool.length]};
+}
+
+// Vers zum einzelnen Trade, an dessen id festgemacht: derselbe Trade traegt
+// beim Wiederaufmachen dasselbe Wort.
+function tradeScripture(t){
+  const pool=VERSES[rcCat(t.result)]||VERSES.daily;
+  return pool[Math.abs(Math.round(t.id||0))%pool.length];
+}
+
 function computeFaithStats(data){
   const wins=data.filter(t=>t.result==='Win').length, losses=data.filter(t=>t.result==='Loss').length, dec=wins+losses;
   const wr=dec>0?Math.round(wins/dec*100):0;
@@ -2790,8 +2747,8 @@ function nextVerse(){
   revealInto('faith-verse',item);
   const btn=document.getElementById('verse-btn'); if(!btn) return;
   const left=faith.max-faith.reveals;
-  if(left<=0){ btn.disabled=true; btn.innerHTML='🙏 Genug für heute — vertrau dem Prozess'; }
-  else { btn.innerHTML='🔄 Weiteres Wort <span class="left-pill">'+left+' übrig</span>'; }
+  if(left<=0){ btn.disabled=true; btn.innerHTML='🙏 Enough for today — trust the process'; }
+  else { btn.innerHTML='🔄 One more word <span class="left-pill">'+left+' left</span>'; }
 }
 
 function setGlow(cat){
@@ -2867,7 +2824,7 @@ async function renderFaith(){
   const data=await loadTrades();
   document.body.classList.add('faith-active');
   if(!data.length){
-    el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">✝️</div><p>Nimm zuerst einen Trade auf — danach erwacht diese Seite mit dem passenden Wort für dein Ergebnis.</p></div>';
+    el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">✝️</div><p>Log a trade first — then this page wakes up with the word that answers your result.</p></div>';
     setGlow('daily'); startParts(); return;
   }
   const tradeData=data.filter(t=>!t.isNoTrade), ntData=data.filter(t=>t.isNoTrade);
@@ -2877,12 +2834,6 @@ async function renderFaith(){
   faith.pool=shuffle(vpool.concat(qpool)); faith.reveals=0; faith.max=3; faith.cat=cat;
   const titleMap={win:'After a Win',loss:'After a Loss',be:'After a Breakeven',daily:'Word for Today'};
   const msgMap={win:'Give God the glory — stay humble.',loss:'A loss is not the end. He is still good.',be:'Trust His timing. Patience is a position.',daily:'A word for today — log your result for more.'};
-
-  const chaptersRead=Object.values(bibleProgress||{}).reduce((s,a)=>s+((a&&a.length)||0),0);
-  const bibleTotal=bibleData?bibleData.books.filter(b=>b.available).reduce((s,b)=>s+b.chapters.length,0):0;
-  const bibleLine=chaptersRead>0
-    ?chaptersRead+' Kapitel gelesen'+(bibleTotal?' · '+Math.round(chaptersRead/bibleTotal*100)+'%':'')
-    :'Noch kein Kapitel als gelesen markiert.';
 
   el.innerHTML=
     '<div class="hero">'+
@@ -2901,11 +2852,8 @@ async function renderFaith(){
     '</div>'+
     '<div class="fcard"><div class="fcard-title">✓ '+titleMap[cat]+' — '+msgMap[cat]+'</div><div id="faith-verse"></div><button class="verse-btn" id="verse-btn" onclick="nextVerse()"></button></div>'+
     '<div class="fcard"><div class="fcard-title">⟶ Trade Reflection</div><div class="timeline" id="faith-timeline">'+timelineHtml(latest)+'</div></div>'+
-    '<div class="fcard"><div class="fcard-title">📖 Bibel</div>'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">'+
-        '<span style="color:var(--muted);font-size:14px">'+bibleLine+'</span>'+
-        '<button class="btn btn-primary" onclick="switchTab(\'bible\')">Bibel öffnen</button>'+
-      '</div>'+
+    '<div class="fcard"><div class="fcard-title">✝ Today’s Anchor</div>'+
+      scripHTML(verseOfDay(),'The same verse all day, on your start screen and here.')+
     '</div>'+
     '<div class="insight-card"><div class="insight-head"><span class="insight-badge">✦</span><span class="insight-title">Faith Insights — from your journal</span></div>'+
       faithInsights(data).map(t=>'<div class="insight-item"><span class="insight-dot">◆</span><span>'+t+'</span></div>').join('')+
@@ -2924,7 +2872,7 @@ function saveLearn(d){ localStorage.setItem(LEARN_KEY, JSON.stringify(d)); saveL
 
 async function saveLearnToCloud(data){
   if(!currentUser) return;
-  try{ await sb.from('journal_data').update({learn:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }catch(e){ console.error('Learn-Sync fehlgeschlagen',e); }
+  try{ await sb.from('journal_data').update({learn:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }catch(e){ console.error('Learn sync failed',e); }
 }
 
 async function initLearn(){
@@ -3019,11 +2967,10 @@ function deleteLearnEntry(id){
 }
 
 async function loadJournalRow(){
-  const {data,error}=await sb.from('journal_data').select('trades,learn,bible_progress,settings').eq('user_id',currentUser.id).single();
-  if(error){ console.error('Konnte Journal nicht laden',error); return; }
+  const {data,error}=await sb.from('journal_data').select('trades,learn,settings').eq('user_id',currentUser.id).single();
+  if(error){ console.error('Could not load journal',error); return; }
   _cache=data.trades||[];
   localStorage.setItem(LEARN_KEY, JSON.stringify(data.learn||[]));
-  bibleProgress=data.bible_progress||{};
   _settingsCache=data.settings||{};
   applyTheme(_settingsCache.theme||'light');
 }
@@ -3049,7 +2996,7 @@ async function startApp(){
   hideAuthLoading();
   // Daten im Hintergrund nachladen und nachtragen
   try{ await _journalLoadPromise; }
-  catch(e){ console.error('Konnte Journal nicht laden',e); }
+  catch(e){ console.error('Could not load journal',e); }
   finally{ _journalLoadPromise=null; }
   updateStatus();
   renderSplashDiscipline();
@@ -3080,26 +3027,26 @@ function renderSettings(){
 
 async function changeDisplayName(){
   const name=document.getElementById('set-name').value.trim();
-  if(!name){ showToast('Bitte einen Namen eingeben'); return; }
+  if(!name){ showToast('Please enter a name'); return; }
   const {error}=await sb.auth.updateUser({data:{display_name:name}});
-  if(error){ showToast('Fehler: '+error.message); return; }
-  showToast('Name gespeichert ✓');
+  if(error){ showToast('Error: '+error.message); return; }
+  showToast('Name saved ✓');
 }
 async function changeEmail(){
   const email=document.getElementById('set-email').value.trim();
-  if(!email){ showToast('Bitte eine E-Mail eingeben'); return; }
+  if(!email){ showToast('Please enter an email address'); return; }
   const {error}=await sb.auth.updateUser({email});
-  if(error){ showToast('Fehler: '+error.message); return; }
-  showToast('Bestätigungs-Mail verschickt ✓');
+  if(error){ showToast('Error: '+error.message); return; }
+  showToast('Confirmation mail sent ✓');
 }
 async function changePassword(){
   const p1=document.getElementById('set-pw1').value, p2=document.getElementById('set-pw2').value;
-  if(!p1||p1.length<6){ showToast('Passwort muss mind. 6 Zeichen haben'); return; }
-  if(p1!==p2){ showToast('Passwörter stimmen nicht überein'); return; }
+  if(!p1||p1.length<6){ showToast('Password must be at least 6 characters'); return; }
+  if(p1!==p2){ showToast('Passwords do not match'); return; }
   const {error}=await sb.auth.updateUser({password:p1});
-  if(error){ showToast('Fehler: '+error.message); return; }
+  if(error){ showToast('Error: '+error.message); return; }
   document.getElementById('set-pw1').value=''; document.getElementById('set-pw2').value='';
-  showToast('Passwort geändert ✓');
+  showToast('Password changed ✓');
 }
 
 function onDeleteAccountClick(){
@@ -3107,29 +3054,29 @@ function onDeleteAccountClick(){
   if(box.style.display==='none'){
     box.style.display='block';
     document.getElementById('delete-cancel-btn').style.display='';
-    document.getElementById('delete-account-btn').textContent='Bestätigen & endgültig löschen';
+    document.getElementById('delete-account-btn').textContent='Confirm & delete permanently';
     return;
   }
   const val=document.getElementById('delete-confirm-input').value.trim();
-  if(val!=='LÖSCHEN'){ showToast('Bitte "LÖSCHEN" eingeben zur Bestätigung'); return; }
+  if(val!=='DELETE'){ showToast('Type "DELETE" to confirm'); return; }
   deleteAccount();
 }
 function cancelDeleteAccount(){
   const box=document.getElementById('delete-confirm-box'); if(!box)return;
   box.style.display='none';
   document.getElementById('delete-cancel-btn').style.display='none';
-  document.getElementById('delete-account-btn').textContent='🗑 Konto endgültig löschen';
+  document.getElementById('delete-account-btn').textContent='🗑 Delete account permanently';
   document.getElementById('delete-confirm-input').value='';
 }
 async function deleteAccount(){
   const btn=document.getElementById('delete-account-btn'); btn.disabled=true;
   try{
     const {error}=await sb.rpc('delete_own_account');
-    if(error){ showToast('Löschen fehlgeschlagen: '+error.message); btn.disabled=false; return; }
+    if(error){ showToast('Delete failed: '+error.message); btn.disabled=false; return; }
     currentUser=null; _cache=null;
     await sb.auth.signOut();
     location.reload();
-  }catch(e){ showToast('Löschen fehlgeschlagen'); btn.disabled=false; }
+  }catch(e){ showToast('Delete failed'); btn.disabled=false; }
 }
 
 /* ===== Intro-Animation =====
