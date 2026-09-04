@@ -460,14 +460,13 @@
   .sp-discipline-score{font-size:20px;font-weight:700;letter-spacing:-.4px}
   .sp-discipline-score small{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0}
   .sp-discipline-meter{height:6px;margin-top:10px;background:var(--surface2);border-radius:999px;overflow:hidden}
-  .sp-discipline-meter i{display:block;width:var(--fill,0);height:100%;border-radius:inherit;animation:spFill .3s var(--ease-out) .25s backwards}
+  .sp-discipline-meter i{display:block;width:0;height:100%;border-radius:inherit;transition:width var(--sp-fill,1400ms) var(--ease-out) .25s}
   .sp-discipline-sub{margin-top:7px;font-size:11.5px;color:var(--muted)}
   .sp-skip{margin-top:30px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:8px 12px;border-radius:8px;animation:spIn .3s var(--ease-out) .26s backwards;transition:color .15s}
   .sp-skip:hover{color:var(--text)}
   .sp-hint{font-size:10.5px;color:var(--muted);opacity:.5;margin-top:4px}
   @keyframes spIn{from{opacity:0}to{opacity:1}}
   @keyframes spCard{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-  @keyframes spFill{from{width:0}}
   @media (max-width:820px){#dock-logo,#dock-right{flex:0 0 auto;min-width:0}#dockwrap{flex-wrap:wrap;justify-content:center;gap:10px}}
   @media (max-width:520px){.sp-card{flex-basis:100%;max-width:none}.dock-item{width:38px}.dock-ico{font-size:18px}}
 
@@ -1236,6 +1235,10 @@ function buildSplash(){
     el.addEventListener('click',()=>closeSplash(el.dataset.tab,el));
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();closeSplash(el.dataset.tab,el);} });
   });
+  // Beim Intro-Pfad liegt der Startbildschirm noch hinter dem Logo-Overlay -- der
+  // Balken wartet dann auf restartSplashBuild(). Kommt der Splash direkt nach dem
+  // Login, ist das Intro laengst durch und er darf sofort loslaufen.
+  _spShown=_introRevealed||_introDone;
   renderSplashDiscipline();
   startSplashCanvas();
   document.addEventListener('keydown',_spEsc);
@@ -1256,13 +1259,28 @@ function renderSplashDiscipline(){
     :'Log deinen ersten Trade, um deinen Score zu sehen.';
   el.innerHTML='<div class="sp-discipline-top"><div class="sp-discipline-label">Discipline Score</div>'+
     '<div class="sp-discipline-score" style="color:'+color+'">'+(has?(score/10).toFixed(1):'&ndash;')+'<small> / 10</small></div></div>'+
-    '<div class="sp-discipline-meter"><i style="--fill:'+score+'%;background:'+color+'"></i></div>'+
+    '<div class="sp-discipline-meter"><i data-w="'+score+'%" style="--sp-fill:'+(SP_BUILD_MS/2)+'ms;background:'+color+'"></i></div>'+
     '<div class="sp-discipline-sub">'+sub+'</div>';
+  if(_spShown) fillSplashDiscipline();
+}
+
+// Der Balken faengt bei 0 an und laeuft erst los, wenn der Startbildschirm wirklich
+// sichtbar ist -- sonst spielt die Fuellung hinter dem Intro ab und er steht beim
+// Erscheinen schon voll da. Doppeltes rAF, damit der Startwert einen Frame lang
+// gerendert wurde und der Uebergang greift (gleiches Muster wie die Stats-Balken).
+function fillSplashDiscipline(){
+  const b=document.querySelector('#sp-discipline .sp-discipline-meter>i');
+  if(!b||!b.dataset.w)return;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; }));
 }
 
 function _spEsc(e){ if(e.key==='Escape')closeSplash(); }
 
-let _spRaf=null, _spRestart=null;
+let _spRaf=null, _spRestart=null, _spShown=false;
+// Aufbauzeit des Hintergrund-Charts, von links bis die Breite steht. Der Discipline-
+// Balken laedt sich in der halben Zeit auf: er ist fertig, waehrend der Chart noch
+// weiterwaechst, statt gleichzeitig mit ihm anzukommen.
+const SP_BUILD_MS=2800;
 function startSplashCanvas(){
   const cv=document.getElementById('splash-canvas'); if(!cv)return;
   const ctx=cv.getContext('2d');
@@ -1308,7 +1326,7 @@ function startSplashCanvas(){
   // Der Startzeitpunkt wird beim Reveal neu gesetzt (restartSplashBuild) --
   // startSplashCanvas laeuft schon beim Boot, der Startbildschirm ist aber erst rund
   // 2.8s spaeter zu sehen; ohne das waere der Chart beim Erscheinen laengst voll.
-  const NMAX=Math.ceil(window.innerWidth/SLOT)+3, SP_BUILD_MS=2800;
+  const NMAX=Math.ceil(window.innerWidth/SLOT)+3;
   let off=0, t0=performance.now();
   _spRestart=()=>{ candles=[]; price=HI; phase=-Math.PI/2; off=0; t0=performance.now(); };
 
@@ -1338,7 +1356,7 @@ function startSplashCanvas(){
 function stopSplashCanvas(){ if(_spRaf){cancelAnimationFrame(_spRaf); _spRaf=null;} }
 // Setzt den Aufbau des Hintergrund-Charts zurueck auf leer, damit er erst dann
 // waechst, wenn der Startbildschirm tatsaechlich sichtbar wird.
-function restartSplashBuild(){ if(_spRestart)_spRestart(); }
+function restartSplashBuild(){ if(_spRestart)_spRestart(); _spShown=true; fillSplashDiscipline(); }
 
 function closeSplash(tab,fromEl){
   const sp=document.getElementById('splash'); if(!sp||sp.classList.contains('gone'))return;
