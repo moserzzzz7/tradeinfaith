@@ -294,6 +294,9 @@
   .pt-step.done .pt-icon{background:var(--green-bg);border-color:rgba(52,211,153,.4)}
   .pt-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text)}
   .pt-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .pt-prog{height:4px;max-width:70px;margin:7px auto 0;background:var(--surface2);border-radius:999px;overflow:hidden}
+  .pt-prog i{display:block;width:0;height:100%;border-radius:inherit;background:var(--accent);transition:width .9s cubic-bezier(.3,.8,.2,1)}
+  .pt-step.done .pt-prog i{background:var(--green)}
   #sec-stats .page-head{position:relative;z-index:2}
   @media (max-width:760px){.kpi-row{grid-template-columns:1fr 1fr}.grid-2col{grid-template-columns:1fr}}
 
@@ -451,11 +454,20 @@
   .sp-card-ico{font-size:20px;line-height:1}
   .sp-card-name{font-size:14px;font-weight:600;margin-top:9px}
   .sp-card-desc{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .sp-discipline{max-width:720px;margin:16px auto 0;padding:14px 18px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;text-align:left;animation:spCard .3s var(--ease-out) .25s backwards}
+  .sp-discipline-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .sp-discipline-label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .sp-discipline-score{font-size:20px;font-weight:700;letter-spacing:-.4px}
+  .sp-discipline-score small{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0}
+  .sp-discipline-meter{height:6px;margin-top:10px;background:var(--surface2);border-radius:999px;overflow:hidden}
+  .sp-discipline-meter i{display:block;width:var(--fill,0);height:100%;border-radius:inherit;animation:spFill .3s var(--ease-out) .25s backwards}
+  .sp-discipline-sub{margin-top:7px;font-size:11.5px;color:var(--muted)}
   .sp-skip{margin-top:30px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:8px 12px;border-radius:8px;animation:spIn .3s var(--ease-out) .26s backwards;transition:color .15s}
   .sp-skip:hover{color:var(--text)}
   .sp-hint{font-size:10.5px;color:var(--muted);opacity:.5;margin-top:4px}
   @keyframes spIn{from{opacity:0}to{opacity:1}}
   @keyframes spCard{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  @keyframes spFill{from{width:0}}
   @media (max-width:820px){#dock-logo,#dock-right{flex:0 0 auto;min-width:0}#dockwrap{flex-wrap:wrap;justify-content:center;gap:10px}}
   @media (max-width:520px){.sp-card{flex-basis:100%;max-width:none}.dock-item{width:38px}.dock-ico{font-size:18px}}
 
@@ -635,6 +647,7 @@
     <h1 class="sp-title">TradeInFaith</h1>
     <p class="sp-sub">ICT / Smart Money &middot; Wo willst du starten?</p>
     <div id="sp-cards"></div>
+    <div id="sp-discipline" class="sp-discipline" aria-live="polite"></div>
     <button class="sp-skip" onclick="closeSplash()">Einfach reingehen &rarr;</button>
     <div class="sp-hint">Esc zum &Uuml;berspringen</div>
   </div>
@@ -1223,9 +1236,30 @@ function buildSplash(){
     el.addEventListener('click',()=>closeSplash(el.dataset.tab,el));
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();closeSplash(el.dataset.tab,el);} });
   });
+  renderSplashDiscipline();
   startSplashCanvas();
   document.addEventListener('keydown',_spEsc);
 }
+
+function renderSplashDiscipline(){
+  const el=document.getElementById('sp-discipline');
+  if(!el)return;
+  // Solange das Journal laedt, bleibt der Score neutral -- sonst blitzt beim
+  // Wiederkommen kurz der "erster Trade"-Text auf, bevor der echte Wert nachrutscht.
+  const loading=_cache===null;
+  const trades=(_cache||[]).filter(t=>!t.isNoTrade);
+  const has=!loading&&trades.length>0;
+  const score=has?disciplineScore(trades):0;
+  const color=!has?'var(--muted)':score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+  const sub=loading?'Journal wird geladen &hellip;'
+    :has?'Basierend auf allen '+trades.length+' Trade'+(trades.length!==1?'s':'')+'.'
+    :'Log deinen ersten Trade, um deinen Score zu sehen.';
+  el.innerHTML='<div class="sp-discipline-top"><div class="sp-discipline-label">Discipline Score</div>'+
+    '<div class="sp-discipline-score" style="color:'+color+'">'+(has?(score/10).toFixed(1):'&ndash;')+'<small> / 10</small></div></div>'+
+    '<div class="sp-discipline-meter"><i style="--fill:'+score+'%;background:'+color+'"></i></div>'+
+    '<div class="sp-discipline-sub">'+sub+'</div>';
+}
+
 function _spEsc(e){ if(e.key==='Escape')closeSplash(); }
 
 let _spRaf=null, _spRestart=null;
@@ -2244,16 +2278,24 @@ function conceptEdgeBlock(trades,hasPnl){
 }
 
 function perfTimelineHTML(data){
-  const total=data.length, rb=data.filter(t=>t.rulebased==='yes').length, rbP=total?Math.round(rb/total*100):0;
-  const first=total?[...data].reverse()[0].date:'—';
-  const lvl=total<5?'Starter':total<20?'Developing':rbP>=70?'Disciplined':'Consistent';
+  // Consistency zaehlt jeden Journal-Eintrag, auch No-Trade-Tage -- es geht um die
+  // Gewohnheit zu journalisieren, nicht um die Menge der Trades. Regeltreue dagegen
+  // nur ueber echte Trades, sonst weicht der Wert von der "Rule-based"-Kachel ab.
+  const logged=data.length, trades=data.filter(t=>!t.isNoTrade);
+  const rb=trades.filter(t=>t.rulebased==='yes').length;
+  const rbP=trades.length?Math.round(rb/trades.length*100):0;
+  const first=logged?[...data].reverse()[0].date:'—';
+  const lvl=logged<5?'Starter':logged<20?'Developing':rbP>=70?'Disciplined':'Consistent';
   const steps=[
-    {icon:'🟢',label:'First Trade',done:total>=1,sub:first},
-    {icon:'📊',label:'Consistency',done:total>=10,sub:total>=10?'10+ trades':total+'/10'},
+    {icon:'🟢',label:'First Trade',done:logged>=1,sub:first},
+    {icon:'📊',label:'Consistency',done:logged>=10,sub:logged>=10?'10+ logged':logged+'/10',prog:Math.min(100,logged*10)},
     {icon:'⚖️',label:'Rule Following',done:rbP>=70,sub:rbP+'% rule-based'},
     {icon:'🏆',label:'Current Level',done:true,sub:lvl}
   ];
-  return steps.map(s=>'<div class="pt-step '+(s.done?'done':'')+'"><div class="pt-icon">'+s.icon+'</div><div class="pt-label">'+s.label+'</div><div class="pt-sub">'+s.sub+'</div></div>').join('');
+  return steps.map(s=>'<div class="pt-step '+(s.done?'done':'')+'"><div class="pt-icon">'+s.icon+'</div>'+
+    '<div class="pt-label">'+s.label+'</div><div class="pt-sub">'+s.sub+'</div>'+
+    (s.prog===undefined?'':'<div class="pt-prog"><i data-w="'+s.prog+'%"></i></div>')+
+    '</div>').join('');
 }
 
 async function renderStats(){
@@ -2327,7 +2369,7 @@ async function renderStats(){
   const pl=el.querySelector('.perf-line'); if(pl){ const len=pl.getTotalLength(); pl.style.strokeDasharray=len; pl.style.strokeDashoffset=len; pl.style.transition='stroke-dashoffset 1.4s cubic-bezier(.3,.8,.2,1)'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ pl.style.strokeDashoffset='0'; })); }
   const pa=el.querySelector('.perf-area'); if(pa) requestAnimationFrame(()=>requestAnimationFrame(()=>{ pa.style.opacity='1'; }));
   el.querySelectorAll('.donut-seg').forEach(sg=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ sg.style.strokeDasharray=sg.dataset.len+' '+sg.dataset.gap; })));
-  el.querySelectorAll('.sbar-fill,.mbar-fill,.disc-meter>i').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
+  el.querySelectorAll('.sbar-fill,.mbar-fill,.disc-meter>i,.pt-prog>i').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
 }
 
 function wrColor(wr){ return wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)'; }
@@ -2992,6 +3034,7 @@ async function startApp(){
   catch(e){ console.error('Konnte Journal nicht laden',e); }
   finally{ _journalLoadPromise=null; }
   updateStatus();
+  renderSplashDiscipline();
   refreshActiveTab();
 }
 

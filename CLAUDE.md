@@ -1,23 +1,3 @@
-\## Review durch Codex am Ende
-
-Wenn eine Aufgabe abgeschlossen ist, führe selbständig ein finales Review
-
-mit Codex durch, ohne Rückfrage — Modell Sol mit hohem Reasoning-Effort
-
-für maximale Prüftiefe:
-
-
-
-codex exec -m gpt-5.6-sol -c model\_reasoning\_effort="high" "Review the git diff for bugs, security issues, and code quality"
-
-
-
-Nutze das erst NACH Abschluss der eigentlichen Änderungen, nicht während
-
-der Arbeit. Bei mehreren Teilaufgaben: erst am Ende der gesamten Aufgabe,
-
-nicht nach jedem einzelnen Schritt.
-
 \## Design-Regeln (kein AI-Slop)
 
 Vermeide diese Standard-Muster, die typisch für generierten Code sind:
