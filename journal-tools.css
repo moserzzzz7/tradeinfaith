@@ -1,0 +1,31 @@
+.journal-intro{max-width:72ch;color:var(--muted);margin:8px 0 18px}
+#trade-wizard{max-width:940px}
+#trade-wizard .card-title{text-transform:none;letter-spacing:0;font-size:17px;color:var(--text);opacity:1}
+#trade-wizard .field label{text-transform:none;letter-spacing:0;font-size:13px}
+.journal-fields{display:grid;gap:14px}
+.journal-check{display:grid;grid-template-columns:minmax(0,1fr) 160px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.journal-check label{line-height:1.45}
+.journal-details{border-top:1px solid var(--border);padding-top:12px;margin-top:16px}
+.journal-details summary{cursor:pointer;color:var(--accent);padding:8px 0;font-weight:600}
+.journal-details[open]>summary{margin-bottom:12px}
+.journal-score{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:14px 0 6px}
+.journal-score strong{font-size:22px}
+.journal-notice{padding:14px 16px;border-left:3px solid var(--accent);background:var(--accent-bg);margin:12px 0 18px;font-size:13px;line-height:1.6;max-width:90ch}
+.journal-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.journal-rule{padding:16px 0;border-bottom:1px solid var(--border)}
+.journal-rule p{white-space:pre-wrap;max-width:75ch;margin:6px 0}
+.journal-rule span{font-size:13px;color:var(--muted)}
+.journal-summary{display:grid;grid-template-columns:minmax(100px,1fr) 3fr;gap:8px 14px;margin:14px 0}
+.journal-summary dt{color:var(--muted)}
+.journal-summary dd{white-space:pre-wrap;overflow-wrap:anywhere}
+.journal-table{overflow-x:auto;margin:14px 0}
+.journal-table table{border-collapse:collapse;width:100%;font-size:13px}
+.journal-table th,.journal-table td{text-align:left;padding:10px;border-bottom:1px solid var(--border)}
+.journal-table td{white-space:nowrap}
+#detail-el pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:13px}
+.wz-step{background:none;border:0;color:inherit;font:inherit;cursor:pointer}
+#trade-wizard .wz-name{text-transform:none;letter-spacing:0}
+#trade-wizard .wz-panel.active{animation:none}
+#trade-wizard .wz-step:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+#trade-wizard [hidden]{display:none!important}
+@media(max-width:560px){.journal-check{grid-template-columns:1fr;gap:6px}.journal-check select{width:100%}.journal-summary{grid-template-columns:1fr}.journal-summary dd{margin-bottom:8px}.journal-score strong{font-size:18px}}

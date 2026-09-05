@@ -557,6 +557,8 @@
   .screen-in{animation:screenIn .5s cubic-bezier(.2,.7,.3,1) both}
   @keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 </style>
+<link rel="stylesheet" href="journal-tools.css">
+<script src="journal-tools.js"></script>
 </head>
 <body>
 <span class="corner-cross tl">✝</span><span class="corner-cross tr">✝</span><span class="corner-cross bl">✝</span><span class="corner-cross br">✝</span>
@@ -653,7 +655,7 @@
   <main class="main">
 
     <div id="sec-log" class="section active">
-      <div class="page-head"><div class="page-title">New Entry</div><div class="page-desc">A process built to make you think — not just log. No money, only execution & discipline.</div></div>
+      <div class="page-head"><div class="page-title">New Entry</div><div class="page-desc">Wenige Angaben. Klare Entscheidungen. Eine überprüfbare Erkenntnis.</div></div>
       <div class="recent-strip" id="recent-strip"></div>
 
       <div class="mode-toggle">
@@ -664,41 +666,34 @@
       <div id="trade-wizard">
         <div class="draft-note"><span id="trade-draft-status">Draft saved automatically · screenshots excluded</span><button type="button" onclick="discardTradeDraft()">Discard draft</button></div>
         <div id="edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">Editing trade</span><button type="button" onclick="cancelEdit()">Cancel editing</button></div>
-        <div class="wz-progress">
-          <div class="wz-step active" onclick="goStep(1)"><div class="wz-num">1</div><div class="wz-name">Plan</div></div>
-          <div class="wz-step" onclick="goStep(2)"><div class="wz-num">2</div><div class="wz-name">Setup</div></div>
-          <div class="wz-step" onclick="goStep(3)"><div class="wz-num">3</div><div class="wz-name">Execution</div></div>
-          <div class="wz-step" onclick="goStep(4)"><div class="wz-num">4</div><div class="wz-name">Psychology</div></div>
-          <div class="wz-step" onclick="goStep(5)"><div class="wz-num">5</div><div class="wz-name">Review</div></div>
+
+        <div class="wz-progress" aria-label="Trade erfassen">
+          <button type="button" class="wz-step active" onclick="goStep(1)"><span class="wz-num">1</span><span class="wz-name">Plan</span></button><button type="button" class="wz-step" onclick="goStep(2)"><span class="wz-num">2</span><span class="wz-name">Abschluss</span></button><button type="button" class="wz-step" onclick="goStep(3)"><span class="wz-num">3</span><span class="wz-name">Erkenntnis</span></button>
         </div>
         <div class="wz-track"><div class="wz-fill" id="wz-fill"></div></div>
-
-      <!-- STEP 1: PLAN & BIAS -->
-      <div class="wz-panel active" id="wz-1">
-        <div class="card">
-          <div class="card-title">The Trade</div>
-          <div class="subgrid" style="margin-bottom:16px">
-            <div class="field"><label>Date</label><input type="date" id="f-date"></div>
-            <div class="field"><label>Instrument</label><div class="seg" data-field="instrument"><button class="opt sel" data-v="MNQ" onclick="choice('instrument',this)">MNQ</button><button class="opt" data-v="MES" onclick="choice('instrument',this)">MES</button></div></div>
+        <div class="wz-panel active" id="wz-1">
+          <p class="journal-intro">Vor dem Entry: Modell, Plan und Grenzen festlegen. Details nur ergänzen, wenn sie eine Entscheidung erklären.</p>
+          <details class="journal-details"><summary>Meine Wochenregel vor dem Entry lesen</summary><div id="j-rules" class="journal-actions"></div><p id="j-current-rule"></p><input id="j-rule-id" type="hidden"></details>
+          <div class="card journal-fields">
+            <div class="subgrid"><div class="field"><label for="f-date">Datum</label><input id="f-date" type="date"  placeholder=""></div><div class="journal-check"><label for="j-mode">Umgebung</label><select id="j-mode"><option value="">Bitte wählen</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option></select></div></div>
+            <div class="subgrid"><div class="field"><label>Instrument</label><div class="seg" data-field="instrument" role="group" aria-label="Instrument"><button type="button" class="opt sel" data-v="MNQ" onclick="choice('instrument',this);Journal.update()">MNQ</button><button type="button" class="opt" data-v="MES" onclick="choice('instrument',this);Journal.update()">MES</button></div></div><div class="field"><label>Richtung</label><div class="seg" data-field="direction" role="group" aria-label="Richtung"><button type="button" class="opt sel" data-v="Long" onclick="choice('direction',this);Journal.update()">Long</button><button type="button" class="opt" data-v="Short" onclick="choice('direction',this);Journal.update()">Short</button></div></div></div>
+            <div class="field"><label for="j-model">Mein Modell / Version</label><input id="j-model" type="text"  placeholder="z. B. HTF + Sweep + IFVG/CISD · v1"></div>
+            <button class="btn" type="button" onclick="Journal.reuseModel()">Letztes Modell mit Management-Regel übernehmen</button>
+            <div class="field"><label>HTF Bias</label><div class="seg" data-field="htfbias" role="group" aria-label="HTF Bias"><button type="button" class="opt" data-v="Bullish" onclick="choice('htfbias',this);Journal.update()">Bullish</button><button type="button" class="opt" data-v="Bearish" onclick="choice('htfbias',this);Journal.update()">Bearish</button><button type="button" class="opt" data-v="Neutral" onclick="choice('htfbias',this);Journal.update()">Neutral</button></div></div>
+            <div class="field"><label for="f-exp">Mein Wenn-dann-Plan · ein Satz</label><textarea id="f-exp" rows="2" placeholder="Wenn [Level / Bedingung], dann Entry erst nach [Trigger] in [Zone]; Ziel [Level]."></textarea></div>
+            <div class="subgrid"><div class="field"><label for="j-invalidation">Kein Trade / Idee ungültig, wenn …</label><input id="j-invalidation" type="text"  placeholder="Konkretes Level oder fehlende Bedingung"></div><div class="field"><label for="j-management">Exit / Breakeven nur, wenn …</label><input id="j-management" type="text"  placeholder="Mein vorher festgelegter Management-Auslöser"></div></div>
+            <details class="journal-details"><summary>Bias-Begründung, Gegenargument und News</summary><div class="journal-fields"><div class="field"><label for="f-bwhy">Bias — warum?</label><textarea id="f-bwhy" rows="2" placeholder="HTF + Zone + Ziel; dagegen spricht …"></textarea></div><div class="field"><label for="f-levels">Wichtige Levels</label><input id="f-levels" type="text"  placeholder=""></div><div class="field"><label for="f-scen2">Alternativszenario</label><textarea id="f-scen2" rows="2" placeholder=""></textarea></div><div class="field"><label for="f-ext">News / Zeitfenster</label><textarea id="f-ext" rows="2" placeholder="Ereignis, Uhrzeit mit Zeitzone und meine Sperrzeit"></textarea></div></div></details>
           </div>
-          <div class="field"><label>Direction</label><div class="seg" data-field="direction"><button class="opt sel" data-v="Long" onclick="choice('direction',this)">📈 Long</button><button class="opt" data-v="Short" onclick="choice('direction',this)">📉 Short</button></div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Bias &amp; Plan for the day</div>
-          <div class="field" style="margin-bottom:16px"><label>HTF Bias</label><div class="seg" data-field="htfbias"><button class="opt" data-v="Bullish" onclick="choice('htfbias',this)">Bullish</button><button class="opt" data-v="Bearish" onclick="choice('htfbias',this)">Bearish</button><button class="opt" data-v="Neutral" onclick="choice('htfbias',this)">Neutral</button></div></div>
-          <div class="field" style="margin-bottom:16px"><label>Bias — why?</label><textarea id="f-bwhy" placeholder="Daily FVG, unswept liquidity, weekly OB, SMT between MNQ & ES..."></textarea></div>
-          <div class="field"><label>Expectations for the day</label><textarea id="f-exp" placeholder="What do you expect from today's session? If price sweeps PDL and shifts structure, I long the discount FVG..."></textarea></div>
-        </div>
-
-        <div class="wz-nav"><span></span><button class="btn btn-primary" onclick="nextStep()">Next: Setup →</button></div>
-      </div>
-
-      <!-- STEP 2: SETUP & QUALITY -->
-      <div class="wz-panel" id="wz-2">
-        <div class="card">
-          <div class="card-title">PD Arrays / Concepts</div>
-          <div id="setup-tags">
+          <div class="card">
+            <h3 class="card-title">Setup Quality · nach meinem Playbook</h3>
+            <p class="field-help">Bewerte, was beim Entry vorliegt. Definiere Pflichtkriterien und optionale Extras einmal in Learn.</p>
+            <div class="journal-check"><label for="j-context">HTF-Kontext, Ziel und Gegenargument geklärt</label><select id="j-context"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option></select></div>
+            <div class="journal-check"><label for="j-trigger">Pflichtbestätigung meines Modells beim Entry vorhanden</label><select id="j-trigger"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option></select></div>
+            <div class="journal-check"><label for="j-conditions">Entry-Zone, Risiko, Zeitfenster und News-Regeln erfüllt</label><select id="j-conditions"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option></select></div>
+            <div class="journal-check"><label for="j-extras">Vorab definierte Zusatzmerkmale</label><select id="j-extras"><option value="">Bitte wählen</option><option value="all">Alle vorhanden</option><option value="some">Optionales fehlt</option><option value="limited">Erlaubte Einschränkung</option></select></div>
+            <div class="journal-score"><span>Setup</span><strong id="j-grade">Noch nicht bewertet</strong></div><p class="field-help" id="j-grade-help"></p>
+            <div class="field"><label for="j-grade-reason">Nur bei Einschränkung: Was fehlt?</label><input id="j-grade-reason" type="text"  placeholder="Sonst reichen die Kriterien oben."></div>
+            <details class="journal-details"><summary>ICT-Tags und Chart-Beleg</summary><div class="journal-fields">          <div id="setup-tags">
             <div class="tag-group"><div class="tag-group-label">Liquidity</div><div class="tag-wrap">
               <button class="tag" onclick="toggleTag(this)">Liquidity Sweep</button><button class="tag" onclick="toggleTag(this)">Stop Hunt</button><button class="tag" onclick="toggleTag(this)">Judas Swing</button>
             </div></div>
@@ -716,104 +711,59 @@
               <button class="tag" onclick="toggleTag(this)">SMT Divergence</button><button class="tag" onclick="toggleTag(this)">OTE</button><button class="tag" onclick="toggleTag(this)">Silver Bullet</button>
             </div></div>
           </div>
-          <div class="field" style="margin-top:6px"><label>Confirmations</label><textarea id="f-conf" placeholder="What confirmed it? Displacement, M1 FVG, reaction at level, CISD..."></textarea></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Setup Quality</div>
-          <div class="field" style="margin-bottom:16px"><label>Grade this setup</label><div class="seg grade" data-field="grade"><button class="opt" data-v="A+" onclick="choice('grade',this)">A+</button><button class="opt" data-v="A" onclick="choice('grade',this)">A</button><button class="opt" data-v="B" onclick="choice('grade',this)">B</button></div><div class="field-help">A+ = textbook, everything aligned. B = acceptable but compromised.</div></div>
-          <div class="field" style="margin-bottom:16px"><label>Contracts</label><input type="number" id="f-contracts" min="0" step="1" placeholder="e.g. 2"></div>
-          <div class="subgrid" style="margin-bottom:16px">
-            <div class="field"><label>Matches your playbook?</label><div class="seg yn" data-field="matchesPlaybook"><button class="opt" data-v="Yes" onclick="choice('matchesPlaybook',this)">Yes</button><button class="opt" data-v="No" onclick="choice('matchesPlaybook',this)">No</button></div></div>
-            <div class="field"><label>Would a pro take this?</label><div class="seg yn" data-field="proWouldTake"><button class="opt" data-v="Yes" onclick="choice('proWouldTake',this)">Yes</button><button class="opt" data-v="Unsure" onclick="choice('proWouldTake',this)">Unsure</button><button class="opt" data-v="No" onclick="choice('proWouldTake',this)">No</button></div></div>
+<div class="field"><label for="f-conf">Bestätigung — optional präzisieren</label><textarea id="f-conf" rows="2" placeholder="Level, Timeframe, Kerzenschluss. Was war VOR dem Entry vorhanden?"></textarea></div></div></details>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between"><span class="card-title" style="margin:0">Setup Quality</span><span class="score-big" id="setq-label" style="font-size:18px;color:var(--muted)">—</span></div>
-          <div class="score-meter"><div class="score-fill" id="setq-fill"></div></div>
-        </div>
-
-        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next: Execution →</button></div>
-      </div>
-
-      <!-- STEP 3: EXECUTION & CONTEXT -->
-      <div class="wz-panel" id="wz-3">
-        <div class="card">
-          <div class="card-title">Execution Quality</div>
-          <div class="field" style="margin-bottom:14px"><label>Executed exactly to plan?</label><div class="seg" data-field="toPlan"><button class="opt" data-v="Yes" onclick="choice('toPlan',this)">Yes</button><button class="opt" data-v="Partial" onclick="choice('toPlan',this)">Partial</button><button class="opt" data-v="No" onclick="choice('toPlan',this)">No</button></div></div>
-          <div class="subgrid" style="margin-bottom:14px">
-            <div class="field"><label>Did you chase the entry?</label><div class="seg yn" data-field="chased"><button class="opt" data-v="No" onclick="choice('chased',this)">No</button><button class="opt" data-v="Yes" onclick="choice('chased',this)">Yes</button></div></div>
-            <div class="field"><label>Enough patience?</label><div class="seg yn" data-field="patience"><button class="opt" data-v="Yes" onclick="choice('patience',this)">Yes</button><button class="opt" data-v="No" onclick="choice('patience',this)">No</button></div></div>
+          <div class="card journal-fields">
+            <h3 class="card-title">Risiko vorher festhalten</h3>
+            <div class="subgrid"><div class="field"><label for="j-risk">Ursprüngliches Geldrisiko ($)</label><input id="j-risk" type="number" step="0.01" placeholder="Für realisiertes R"></div><div class="field"><label for="f-contracts">Contracts</label><input id="f-contracts" type="number" step="0.01" placeholder="Anzahl"></div></div>
+            <details class="journal-details"><summary>Entry, Stop und Ziel für geplantes R:R</summary><div class="journal-fields"><div class="field"><label for="f-entry">Geplanter Entry</label><input id="f-entry" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-sl">Ursprünglicher Stop loss</label><input id="f-sl" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-tp">Take profit</label><input id="f-tp" type="number" step="0.01" placeholder=""></div><div class="journal-score"><span>Geplantes R:R</span><strong id="rr-label">—</strong></div><p id="rr-detail" class="field-help"></p></div></details>
+            <button class="btn" type="button" id="j-freeze" onclick="Journal.freezePlan()">Diesen Plan festhalten</button><p id="j-plan-status" class="field-help" aria-live="polite"></p>
           </div>
-          <div class="subgrid" style="margin-bottom:14px">
-            <div class="field"><label>Confirmation actually present?</label><div class="seg yn" data-field="confirmation"><button class="opt" data-v="Yes" onclick="choice('confirmation',this)">Yes</button><button class="opt" data-v="No" onclick="choice('confirmation',this)">No</button></div></div>
-            <div class="field"><label>Followed your rules?</label><div class="seg" data-field="rulebased"><button class="opt" data-v="yes" onclick="choice('rulebased',this)">Yes</button><button class="opt" data-v="partial" onclick="choice('rulebased',this)">Partial</button><button class="opt" data-v="no" onclick="choice('rulebased',this)">No</button></div></div>
+          <div class="wz-nav"><button class="btn" onclick="saveTradeDraftNow()">Entwurf sichern</button><button class="btn btn-primary" onclick="nextStep()">Weiter zum Abschluss</button></div>
+        </div>
+        <div class="wz-panel" id="wz-2">
+          <p class="journal-intro">Nach dem Exit: Ergebnis und drei Entscheidungen. Gewinne ändern deine Ausführungsbewertung nicht.</p>
+          <div class="card journal-fields">
+            <div class="field"><label>Ergebnis</label><div class="seg" data-field="result" role="group" aria-label="Ergebnis"><button type="button" class="opt" data-v="Win" onclick="choice('result',this);Journal.update()">Win</button><button type="button" class="opt" data-v="Loss" onclick="choice('result',this);Journal.update()">Loss</button><button type="button" class="opt" data-v="Breakeven" onclick="choice('result',this);Journal.update()">Breakeven</button></div></div>
+            <div class="field"><label for="f-pnl">Netto-P&L ($) · nach Gebühren</label><input id="f-pnl" type="number" step="0.01" placeholder="z. B. 240 oder −150"></div>
+            <div class="journal-check"><label for="j-exec-entry">Entry nach meinen vollständigen Regeln?</label><select id="j-exec-entry"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="Partial">Teilweise</option><option value="No">Nein</option></select></div>
+            <div class="journal-check"><label for="j-exec-risk">Stop und Positionsgröße innerhalb meines Risikoplans?</label><select id="j-exec-risk"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="Partial">Teilweise</option><option value="No">Nein</option></select></div>
+            <div class="journal-check"><label for="j-exec-exit">Management / Exit wie vorher festgelegt?</label><select id="j-exec-exit"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="Partial">Teilweise</option><option value="No">Nein</option></select></div>
+            <div class="journal-score"><span>Execution Score</span><strong id="j-score">—</strong></div><p id="j-score-help" class="field-help"></p>
           </div>
-          <div class="field" style="margin-bottom:16px"><label>Overall execution (1–5)</label><div class="rate" data-field="execQuality"><button class="dot" onclick="rate('execQuality',this)">1</button><button class="dot" onclick="rate('execQuality',this)">2</button><button class="dot" onclick="rate('execQuality',this)">3</button><button class="dot" onclick="rate('execQuality',this)">4</button><button class="dot" onclick="rate('execQuality',this)">5</button></div></div>
-          <div style="display:flex;align-items:center;justify-content:space-between"><span class="card-title" style="margin:0">Execution Score</span><span class="score-big" id="exec-num" style="color:var(--muted)">0</span></div>
-          <div class="score-meter"><div class="score-fill" id="exec-fill"></div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Market Context</div>
-          <div class="field"><label>External factors / News</label><textarea id="f-ext" placeholder="CPI, FOMC, NFP, unusual volatility, holiday session..."></textarea></div>
-        </div>
-
-        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next: Psychology →</button></div>
-      </div>
-
-      <!-- STEP 4: PSYCHOLOGY -->
-      <div class="wz-panel" id="wz-4">
-        <div class="card">
-          <div class="card-title">Before the Trade</div>
-          <div class="field" style="margin-bottom:14px"><label>Focus</label><div class="rate" data-field="preFocus"><button class="dot" onclick="rate('preFocus',this)">1</button><button class="dot" onclick="rate('preFocus',this)">2</button><button class="dot" onclick="rate('preFocus',this)">3</button><button class="dot" onclick="rate('preFocus',this)">4</button><button class="dot" onclick="rate('preFocus',this)">5</button></div></div>
-          <div class="field" style="margin-bottom:14px"><label>Patience</label><div class="rate" data-field="prePatience"><button class="dot" onclick="rate('prePatience',this)">1</button><button class="dot" onclick="rate('prePatience',this)">2</button><button class="dot" onclick="rate('prePatience',this)">3</button><button class="dot" onclick="rate('prePatience',this)">4</button><button class="dot" onclick="rate('prePatience',this)">5</button></div></div>
-          <div class="field"><label>Energy level</label><div class="rate" data-field="preEnergy"><button class="dot" onclick="rate('preEnergy',this)">1</button><button class="dot" onclick="rate('preEnergy',this)">2</button><button class="dot" onclick="rate('preEnergy',this)">3</button><button class="dot" onclick="rate('preEnergy',this)">4</button><button class="dot" onclick="rate('preEnergy',this)">5</button></div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">During & After</div>
-          <div class="subgrid" style="margin-bottom:14px">
-            <div class="field"><label>Did doubts appear?</label><div class="seg yn" data-field="doubts"><button class="opt" data-v="No" onclick="choice('doubts',this)">No</button><button class="opt" data-v="Yes" onclick="choice('doubts',this)">Yes</button></div></div>
-            <div class="field"><label>Deviated from plan?</label><div class="seg yn" data-field="deviated"><button class="opt" data-v="No" onclick="choice('deviated',this)">No</button><button class="opt" data-v="Yes" onclick="choice('deviated',this)">Yes</button></div></div>
-          </div>
-          <div class="field" style="margin-bottom:14px"><label>Satisfied with execution (regardless of result)?</label><div class="seg yn" data-field="satisfied"><button class="opt" data-v="Yes" onclick="choice('satisfied',this)">Yes</button><button class="opt" data-v="No" onclick="choice('satisfied',this)">No</button></div></div>
-          <div class="field" style="margin-bottom:14px"><label>How did you feel?</label><div class="emo-wrap">
+          <div class="card journal-fields">
+            <h3 class="card-title">Psychology · was hat meine Entscheidung beeinflusst?</h3>
+            <div class="journal-check"><label for="j-pressure">Stärkster Einfluss</label><select id="j-pressure"><option value="">Bitte wählen</option><option value="none">Kein spürbarer Druck</option><option value="fomo">FOMO / etwas verpasst</option><option value="funded">Funded / Payout</option><option value="fear">Verlustangst</option><option value="revenge">Verlust aufholen</option><option value="other">Anderer Einfluss</option></select></div>
+            <div id="j-pressure-detail" class="journal-fields" hidden><div class="field"><label for="j-psych-trigger">Auslöser · wenige Worte</label><input id="j-psych-trigger" type="text"  placeholder="z. B. erste Gegenkerze; Gedanke: Account verlieren"></div><div class="field"><label for="j-action">Meine tatsächliche Handlung</label><input id="j-action" type="text"  placeholder="z. B. Stop unverändert gelassen / vorzeitig geschlossen"></div></div>
+            <details class="journal-details"><summary>Weitere Mindset-Notiz / Emotion</summary><div class="journal-fields"><div class="emo-wrap">
             <button class="emo" onclick="toggleEmo(this)">😊 Good</button><button class="emo" onclick="toggleEmo(this)">😌 Calm</button><button class="emo" onclick="toggleEmo(this)">🧘 Patient</button><button class="emo" onclick="toggleEmo(this)">🎯 Focused</button><button class="emo" onclick="toggleEmo(this)">💪 Disciplined</button><button class="emo" onclick="toggleEmo(this)">😶 Neutral</button><button class="emo" onclick="toggleEmo(this)">😤 Impatient</button><button class="emo" onclick="toggleEmo(this)">😰 Anxious</button><button class="emo" onclick="toggleEmo(this)">🤩 Overconfident</button><button class="emo" onclick="toggleEmo(this)">😓 FOMO</button><button class="emo" onclick="toggleEmo(this)">😩 Revenge</button>
-          </div></div>
-          <div class="field"><label>Mindset notes</label><textarea id="f-mind" placeholder="Anything about your state that influenced decisions?"></textarea></div>
-        </div>
-
-        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next: Review →</button></div>
-      </div>
-
-      <!-- STEP 5: RESULT & REVIEW -->
-      <div class="wz-panel" id="wz-5">
-        <div class="card">
-          <div class="card-title">Result</div>
-          <div class="field" style="margin-bottom:16px"><label>Outcome</label><div class="seg" data-field="result"><button class="opt" data-v="Win" onclick="choice('result',this)">Win</button><button class="opt" data-v="Loss" onclick="choice('result',this)">Loss</button><button class="opt" data-v="Breakeven" onclick="choice('result',this)">Breakeven</button></div></div>
-          <div class="field"><label>P&L ($)</label><input type="number" id="f-pnl" step="0.01" placeholder="e.g. 240 or -150"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Deep Review — one lesson per trade</div>
-          <div class="field" style="margin-bottom:14px"><label>Biggest factor on the outcome</label><textarea id="f-factor" placeholder="What mattered most? The sweep, the patience, the news, the entry timing..."></textarea></div>
-          <div class="subgrid" style="margin-bottom:14px">
-            <div class="field"><label>✅ Rule you followed best</label><textarea id="f-bestrule" placeholder="Waited for confirmation / respected invalidation..."></textarea></div>
-            <div class="field"><label>❌ Most expensive mistake</label><textarea id="f-mistake" placeholder="Entered before the sweep / moved my stop..."></textarea></div>
+          </div><div class="field"><label for="f-mind">Mindset notes</label><textarea id="f-mind" rows="2" placeholder="Gedanke → Handlungsdrang → tatsächliche Handlung."></textarea></div></div></details>
           </div>
-          <div class="field"><label>💡 Key lesson & adjustment for next time</label><textarea id="f-lesson" placeholder="The single thing you take away from this trade — and what you'll do differently."></textarea></div>
+          <details id="j-legacy" class="journal-details" hidden><summary>Frühere Bewertungen prüfen</summary><p id="j-legacy-note" class="field-help"></p><div class="journal-fields"><div class="field"><label>Bisherige Setup-Note</label><div class="seg" data-field="grade" role="group" aria-label="Bisherige Setup-Note"><button type="button" class="opt" data-v="A+" onclick="choice('grade',this);Journal.update()">A+</button><button type="button" class="opt" data-v="A" onclick="choice('grade',this);Journal.update()">A</button><button type="button" class="opt" data-v="B" onclick="choice('grade',this);Journal.update()">B</button><button type="button" class="opt" data-v="Invalid" onclick="choice('grade',this);Journal.update()">Nicht im Playbook</button></div></div><div class="field"><label>Matches playbook?</label><div class="seg" data-field="matchesPlaybook" role="group" aria-label="Matches playbook?"><button type="button" class="opt" data-v="Yes" onclick="choice('matchesPlaybook',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('matchesPlaybook',this);Journal.update()">Nein</button></div></div><div class="field"><label>Would a pro take this?</label><div class="seg" data-field="proWouldTake" role="group" aria-label="Would a pro take this?"><button type="button" class="opt" data-v="Yes" onclick="choice('proWouldTake',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('proWouldTake',this);Journal.update()">Nein</button><button type="button" class="opt" data-v="Unsure" onclick="choice('proWouldTake',this);Journal.update()">Unsicher</button></div></div><div class="field"><label>To plan?</label><div class="seg" data-field="toPlan" role="group" aria-label="To plan?"><button type="button" class="opt" data-v="Yes" onclick="choice('toPlan',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="Partial" onclick="choice('toPlan',this);Journal.update()">Teilweise</button><button type="button" class="opt" data-v="No" onclick="choice('toPlan',this);Journal.update()">Nein</button></div></div><div class="field"><label>Entry gechased?</label><div class="seg" data-field="chased" role="group" aria-label="Entry gechased?"><button type="button" class="opt" data-v="Yes" onclick="choice('chased',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('chased',this);Journal.update()">Nein</button></div></div><div class="field"><label>Geduldig?</label><div class="seg" data-field="patience" role="group" aria-label="Geduldig?"><button type="button" class="opt" data-v="Yes" onclick="choice('patience',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('patience',this);Journal.update()">Nein</button></div></div><div class="field"><label>Confirmation present?</label><div class="seg" data-field="confirmation" role="group" aria-label="Confirmation present?"><button type="button" class="opt" data-v="Yes" onclick="choice('confirmation',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('confirmation',this);Journal.update()">Nein</button></div></div><div class="field"><label>Followed rules?</label><div class="seg" data-field="rulebased" role="group" aria-label="Followed rules?"><button type="button" class="opt" data-v="yes" onclick="choice('rulebased',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="partial" onclick="choice('rulebased',this);Journal.update()">Teilweise</button><button type="button" class="opt" data-v="no" onclick="choice('rulebased',this);Journal.update()">Nein</button></div></div><div class="field"><label>Bisherige Execution 1–5</label><div class="rate" data-field="execQuality"><button type="button" class="dot" onclick="rate('execQuality',this)">1</button><button type="button" class="dot" onclick="rate('execQuality',this)">2</button><button type="button" class="dot" onclick="rate('execQuality',this)">3</button><button type="button" class="dot" onclick="rate('execQuality',this)">4</button><button type="button" class="dot" onclick="rate('execQuality',this)">5</button></div></div><div class="field"><label>Focus</label><div class="rate" data-field="preFocus"><button type="button" class="dot" onclick="rate('preFocus',this)">1</button><button type="button" class="dot" onclick="rate('preFocus',this)">2</button><button type="button" class="dot" onclick="rate('preFocus',this)">3</button><button type="button" class="dot" onclick="rate('preFocus',this)">4</button><button type="button" class="dot" onclick="rate('preFocus',this)">5</button></div></div><div class="field"><label>Patience</label><div class="rate" data-field="prePatience"><button type="button" class="dot" onclick="rate('prePatience',this)">1</button><button type="button" class="dot" onclick="rate('prePatience',this)">2</button><button type="button" class="dot" onclick="rate('prePatience',this)">3</button><button type="button" class="dot" onclick="rate('prePatience',this)">4</button><button type="button" class="dot" onclick="rate('prePatience',this)">5</button></div></div><div class="field"><label>Energy</label><div class="rate" data-field="preEnergy"><button type="button" class="dot" onclick="rate('preEnergy',this)">1</button><button type="button" class="dot" onclick="rate('preEnergy',this)">2</button><button type="button" class="dot" onclick="rate('preEnergy',this)">3</button><button type="button" class="dot" onclick="rate('preEnergy',this)">4</button><button type="button" class="dot" onclick="rate('preEnergy',this)">5</button></div></div><div class="field"><label>Doubts?</label><div class="seg" data-field="doubts" role="group" aria-label="Doubts?"><button type="button" class="opt" data-v="Yes" onclick="choice('doubts',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('doubts',this);Journal.update()">Nein</button></div></div><div class="field"><label>Deviated?</label><div class="seg" data-field="deviated" role="group" aria-label="Deviated?"><button type="button" class="opt" data-v="Yes" onclick="choice('deviated',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('deviated',this);Journal.update()">Nein</button></div></div><div class="field"><label>Satisfied?</label><div class="seg" data-field="satisfied" role="group" aria-label="Satisfied?"><button type="button" class="opt" data-v="Yes" onclick="choice('satisfied',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('satisfied',this);Journal.update()">Nein</button></div></div></div><span id="exec-num" hidden></span><span id="exec-fill" hidden></span><span id="setq-label" hidden></span><span id="setq-fill" hidden></span></details>
+          <div class="wz-nav"><button class="btn" onclick="prevStep()">Zurück</button><button class="btn btn-primary" onclick="nextStep()">Eine Erkenntnis festhalten</button></div>
         </div>
-
-        <div class="card">
-          <div class="card-title">Screenshot</div>
-          <div class="upload-zone" id="screenshot-zone" onclick="document.getElementById('f-img').click()" style="position:relative">
+        <div class="wz-panel" id="wz-3">
+          <div class="card journal-fields">
+            <h3 class="card-title">Eine Erkenntnis genügt</h3>
+            <div class="journal-check"><label for="j-focus">Was nehme ich mit?</label><select id="j-focus"><option value="">Bitte wählen</option><option value="repeat">Sauber ausgeführt</option><option value="chase">Entry hinterhergelaufen</option><option value="early">Zu früh eingestiegen</option><option value="risk">Risiko verändert</option><option value="exit">Ungeplanter Exit / BE</option><option value="pressure">Funded- / Payout-Druck</option><option value="context">HTF / ES übersehen</option><option value="other">Andere Beobachtung</option></select></div>
+            <button class="btn" type="button" onclick="Journal.suggestLesson()">Passenden Satz als Ausgangspunkt einsetzen</button>
+            <div class="field"><label for="f-lesson">Beim nächsten passenden Anlass …</label><textarea id="f-lesson" rows="2" placeholder="Wenn [Auslöser], dann [prüfbare Handlung]. Eine bewährte Regel darf gleich bleiben."></textarea></div>
+            <p class="field-help">Den Vorschlag an dein Playbook anpassen. Aus einem Gewinn oder Verlust entsteht noch keine neue Strategieregel.</p>
+            <button id="j-to-learn" class="btn" type="button" onclick="Journal.toLearn()">Als Wochenregel in Learn vormerken</button>
+            <details class="journal-details"><summary>Deep Review · nur falls noch etwas erklärt werden muss</summary><div class="journal-fields"><div class="field"><label for="f-factor">Größter beobachteter Faktor</label><textarea id="f-factor" rows="2" placeholder="Was ist belegt? Was ist nur meine Vermutung?"></textarea></div><div class="field"><label for="f-bestrule">Gut eingehaltene Regel</label><textarea id="f-bestrule" rows="2" placeholder="Welche konkrete Entscheidung wiederholen?"></textarea></div><div class="field"><label for="f-mistake">Wichtigste Abweichung</label><textarea id="f-mistake" rows="2" placeholder="Kein erkennbarer Regelverstoß ist eine gültige Antwort."></textarea></div></div></details>
+          </div>
+          <div class="card"><h3 class="card-title">Meine Wochenregel prüfen</h3><p class="field-help">Im Plan eine Wochenregel auswählen; hier nur die Umsetzung bewerten.</p>
+            <div class="journal-check"><label for="j-rule-check">Diese Regel bei diesem Trade eingehalten?</label><select id="j-rule-check"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option><option value="NA">Nicht passend</option></select></div>
+          </div>
+          <details class="journal-details"><summary>Screenshot anhängen · optional</summary>          <div class="upload-zone" id="screenshot-zone" onclick="document.getElementById('f-img').click()" style="position:relative">
             <div id="screenshot-hint">📸 Click to upload · or <kbd style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit">Ctrl+V</kbd> to paste · or <button onclick="event.stopPropagation();autoGrabClipboard()" style="background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">⚡ Auto-load last screenshot</button></div>
           </div>
           <input type="file" id="f-img" accept="image/*" style="display:none" onchange="handleImg(this)">
           <img id="img-prev" class="img-preview">
+</details>
+          <p class="journal-notice" id="j-save-check" aria-live="polite"></p>
+          <div class="wz-nav"><button class="btn" onclick="prevStep()">Zurück</button><button class="btn btn-primary" onclick="saveTrade()">Trade speichern</button></div>
         </div>
-
-        <div class="wz-nav"><button class="btn" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="saveTrade()">✓ Save Trade</button></div>
-      </div>
       </div><!-- /trade-wizard -->
 
       <div id="notrade-form" style="display:none">
@@ -831,6 +781,8 @@
           <div class="field" style="margin-bottom:16px"><label>What did you see but NOT trade?</label><textarea id="nt-seen" placeholder="Describe any setups or moves you observed..."></textarea></div>
           <div class="field"><label>Why did you stay out?</label><div class="tag-wrap" id="nt-reasons" style="margin-top:4px">
             <button class="tag" onclick="toggleTag(this)">No A+ setup</button>
+            <button class="tag" onclick="toggleTag(this)">Limit not filled</button>
+            <button class="tag" onclick="toggleTag(this)">Entry zone missed</button>
             <button class="tag" onclick="toggleTag(this)">No playbook match</button>
             <button class="tag" onclick="toggleTag(this)">Waited for sweep</button>
             <button class="tag" onclick="toggleTag(this)">News / Events</button>
@@ -889,6 +841,7 @@
             <button class="rchip" data-range="30" onclick="setStatsRange(30)">30d</button>
             <button class="rchip" data-range="90" onclick="setStatsRange(90)">90d</button>
             <button class="rchip active" data-range="0" onclick="setStatsRange(0)">All</button>
+            <select id="stats-mode" aria-label="Umgebung filtern" onchange="setStatsRange(statsRange)" style="width:auto"><option value="">Alle Umgebungen</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option><option value="Unknown">Nicht erfasst</option></select>
           </div>
         </div>
       </div>
@@ -902,6 +855,9 @@
     <div id="sec-learn" class="section">
       <div class="page-head"><div class="page-title">Learn</div><div class="page-desc">Document what you learn — concepts, mistakes, setups, mindset.</div></div>
 
+      <div id="j-learn-progress" class="card"></div>
+      <button type="button" class="btn" onclick="Journal.playbookTemplate()">ICT-Playbook-Vorlage ausfüllen</button>
+      <div class="journal-notice">Wöchentlich: eine wiederkehrende Abweichung und Gegenbeispiele prüfen. Eine Regel testen; nach zehn passenden Trades die Umsetzung auswerten. Das ist kein Profitabilitätsnachweis.</div>
       <div class="learn-tabs">
         <button class="ltab active" id="lt-new" onclick="learnTab('new')">✏️ New entry</button>
         <button class="ltab" id="lt-notes" onclick="learnTab('notes')">📖 My notes</button>
@@ -1239,7 +1195,7 @@ function renderSplashDiscipline(){
     :has?'Across all '+trades.length+' trade'+(trades.length!==1?'s':'')+'.'
     :'Log your first trade to see your score.';
   el.innerHTML='<div class="sp-discipline-top"><div class="sp-discipline-label">Discipline Score</div>'+
-    '<div class="sp-discipline-score" style="color:'+color+'">'+(has?(score/10).toFixed(1):'&ndash;')+'<small> / 10</small></div></div>'+
+    '<div class="sp-discipline-score" style="color:'+color+'">'+(has?(score===null?'—':(score/10).toFixed(1)):'&ndash;')+'<small> / 10</small></div></div>'+
     '<div class="sp-discipline-meter"><i data-w="'+score+'%" style="--sp-fill:'+(SP_BUILD_MS/2)+'ms;background:'+color+'"></i></div>'+
     '<div class="sp-discipline-sub">'+sub+'</div>';
   if(_spShown) fillSplashDiscipline();
@@ -1568,7 +1524,7 @@ async function saveNoTrade(){
 }
 
 let form={instrument:'MNQ',direction:'Long'};
-let curStep=1; const STEPS=5;
+let curStep=1; const STEPS=3;
 const TRADE_DRAFT_VERSION=2;
 let _tradeDraftTimer=null, _tradeDraftSuspended=false, _tradeDraftRestored=false, _tradeDraftBound=false;
 function tradeDraftKey(){ return currentUser?'tj_trade_draft_'+currentUser.id:null; }
@@ -1579,7 +1535,7 @@ function collectTradeDraft(){
   const fields={};
   document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard textarea,#trade-wizard select').forEach(el=>{ if(el.id)fields[el.id]=el.value; });
   const setupButtons=[...document.querySelectorAll('#setup-tags button')];
-  return {v:TRADE_DRAFT_VERSION,savedAt:Date.now(),step:curStep,form:{...form},fields,selectedSetupIndexes:setupButtons.map((button,index)=>button.classList.contains('sel')?index:-1).filter(index=>index>=0),emotion:getEmo()};
+  return {v:TRADE_DRAFT_VERSION,savedAt:Date.now(),layout:3,step:curStep,form:{...form},fields,selectedSetupIndexes:setupButtons.map((button,index)=>button.classList.contains('sel')?index:-1).filter(index=>index>=0),emotion:getEmo()};
 }
 function saveTradeDraftNow(){
   if(_tradeDraftSuspended)return;
@@ -1624,6 +1580,7 @@ function restoreTradeDraft(){
 // Entwurf-Restore als auch vom Bearbeiten gespeicherter Trades genutzt.
 function applyTradeDraft(draft){
   clearForm();
+  if (draft.v===2 && draft.layout!==3 && draft.step>1) draft={...draft,step:draft.step===5?3:draft.step===4||draft.step===3?2:1};
   Object.entries(draft.fields||{}).forEach(([id,value])=>{ const el=document.getElementById(id); if(el&&el.type!=='file')el.value=value; });
   Object.entries(draft.form||{}).forEach(([field,value])=>{
     const seg=[...document.querySelectorAll('#trade-wizard .seg')].find(el=>el.dataset.field===field);
@@ -1642,7 +1599,7 @@ function applyTradeDraft(draft){
     else toggleTag(button);
   });
   if(draft.emotion){ const emotion=[...document.querySelectorAll('#trade-wizard .emo')].find(el=>el.textContent===draft.emotion); if(emotion)toggleEmo(emotion); }
-  updateExec(); updateSetupQ();
+  updateExec(); updateSetupQ(); updateRR(); Journal.update(); Journal.renderRules();
   goStep(Math.max(1,Math.min(STEPS,Number(draft.step)||1)),true);
 }
 function discardTradeDraft(){
@@ -1681,6 +1638,7 @@ function tradeToDraft(t){
     'f-date':t.date||'', 'f-bwhy':t.biasWhy||'', 'f-exp':t.expectations||'',
     'f-levels':t.keyLevels||'', 'f-scen2':t.scenarioAlt||'',
     'f-conf':t.confirmations||'', 'f-contracts':str(t.contracts),
+    'f-entry':str(t.entry), 'f-sl':str(t.stopLoss), 'f-tp':str(t.takeProfit),
     'f-ext':t.externalFactors||t.news||'', 'f-mind':t.mindset||'', 'f-pnl':str(t.pnl),
     'f-factor':t.biggestFactor||t.why||'', 'f-bestrule':t.bestRule||'',
     'f-mistake':t.worstMistake||'', 'f-lesson':t.lesson||t.better||''
@@ -1716,20 +1674,24 @@ function tradeToDraft(t){
       if(b)sel.push(setupButtons.indexOf(b));
     }
   });
-  return {v:TRADE_DRAFT_VERSION,step:1,form:wForm,fields,selectedSetupIndexes:sel,emotion:t.emotion||''};
+  Object.assign(fields,Journal.restoreFields(t));
+  wForm.journalPlanSnapshot=t.journal?.planSnapshot||null;
+  wForm.journalSetupAssessed=t.journal?.setupAssessed||false;
+  wForm.journalExecutionAssessed=t.journal?.executionAssessed||false;
+  return {v:TRADE_DRAFT_VERSION,layout:3,step:1,form:wForm,fields,selectedSetupIndexes:sel,emotion:t.emotion||''};
 }
 
 function enterEditUI(t){
   const b=document.getElementById('edit-banner'); if(b)b.style.display='flex';
   const lab=document.querySelector('#edit-banner .edit-banner-label');
   if(lab)lab.textContent='Trade vom '+(t.date||'?')+' bearbeiten';
-  const btn=document.querySelector('#wz-5 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Save changes';
+  const btn=document.querySelector('#wz-3 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Save changes';
   // Entwurf-Hinweis (mit "Entwurf verwerfen") ergibt beim Bearbeiten keinen Sinn
   const dn=document.querySelector('#trade-wizard .draft-note'); if(dn)dn.style.display='none';
 }
 function exitEditUI(){
   const b=document.getElementById('edit-banner'); if(b)b.style.display='none';
-  const btn=document.querySelector('#wz-5 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Save Trade';
+  const btn=document.querySelector('#wz-3 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Save Trade';
   const dn=document.querySelector('#trade-wizard .draft-note'); if(dn)dn.style.display='';
 }
 function _restoreWizardBaseline(){
@@ -1833,31 +1795,79 @@ function editNoTrade(t){
   showToast('Bearbeitungsmodus');
 }
 
-function goStep(n,skipDraft){ if(n<1||n>STEPS)return; curStep=n; document.querySelectorAll('.wz-panel').forEach(p=>p.classList.remove('active')); const pan=document.getElementById('wz-'+n); if(pan)pan.classList.add('active'); document.querySelectorAll('.wz-step').forEach((el,i)=>{ el.classList.toggle('active',i+1===n); el.classList.toggle('done',i+1<n); }); const f=document.getElementById('wz-fill'); if(f)f.style.width=((n-1)/(STEPS-1)*100)+'%'; const mw=document.querySelector('.main-wrap'); if(mw)mw.scrollTop=0; if(!skipDraft)scheduleTradeDraft(); }
+function goStep(n,skipDraft){ if(n<1||n>STEPS)return; curStep=n; document.querySelectorAll('.wz-panel').forEach(p=>p.classList.remove('active')); const pan=document.getElementById('wz-'+n); if(pan)pan.classList.add('active'); document.querySelectorAll('.wz-step').forEach((el,i)=>{ el.classList.toggle('active',i+1===n); el.classList.toggle('done',i+1<n); el.setAttribute('aria-current',i+1===n?'step':'false'); }); const f=document.getElementById('wz-fill'); if(f)f.style.width=((n-1)/(STEPS-1)*100)+'%'; const mw=document.querySelector('.main-wrap'); if(mw){mw.scrollTop=0; if(n>1)mw.scrollTop=document.getElementById('trade-wizard').getBoundingClientRect().top-mw.getBoundingClientRect().top-8;} if(!skipDraft)scheduleTradeDraft(); Journal.update(); if(n===1||n===3)Journal.renderRules(); }
 function nextStep(){ goStep(curStep+1); }
 function prevStep(){ goStep(curStep-1); }
-function choice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); form[field]=btn.dataset.v; if(field==='toPlan'||field==='chased'||field==='patience'||field==='confirmation')updateExec(); if(field==='grade'||field==='matchesPlaybook'||field==='proWouldTake')updateSetupQ(); scheduleTradeDraft(); }
+function choice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); form[field]=btn.dataset.v; if(field==='toPlan'||field==='chased'||field==='patience'||field==='confirmation')updateExec(); if(field==='grade'||field==='matchesPlaybook'||field==='proWouldTake')updateSetupQ(); if(field==='direction'||field==='instrument')updateRR(); scheduleTradeDraft(); }
 function rate(field,btn){ const grp=btn.parentElement; const dots=[...grp.querySelectorAll('.dot')]; const idx=dots.indexOf(btn); dots.forEach((d,i)=>d.classList.toggle('on',i<=idx)); form[field]=idx+1; if(field==='execQuality')updateExec(); scheduleTradeDraft(); }
 function execScoreCalc(){ let s=0; s+=form.toPlan==='Yes'?30:form.toPlan==='Partial'?15:0; s+=form.chased==='No'?20:0; s+=form.patience==='Yes'?20:0; s+=form.confirmation==='Yes'?15:0; s+=form.execQuality?Math.round(form.execQuality/5*15):0; return Math.min(100,s); }
 function updateExec(){ const sc=execScoreCalc(); const col=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)'; const f=document.getElementById('exec-fill'),n=document.getElementById('exec-num'); if(f){f.style.width=sc+'%';f.style.background=col;} if(n){n.textContent=sc;n.style.color=col;} }
+// Punktwert je Kontrakt und Indexpunkt -- Micro-Futures: MNQ 2 $, MES 5 $.
+// Nur fuer die Anzeige des geplanten Risikos in Dollar; der R:R-Wert selbst
+// haengt nicht daran und bleibt richtig, falls die Werte mal nicht stimmen.
+const POINT_VALUE={MNQ:2,MES:5};
+function rrNum(id){ const el=document.getElementById(id); if(!el||el.value==='')return null; const n=parseFloat(el.value); return isNaN(n)?null:n; }
+function rrPts(p){ return String(+p.toFixed(2)); }
+
+// Eine Rechnung fuer Anzeige UND gespeicherten Wert. Getrennt gerechnet laufen die
+// beiden auseinander -- dann warnt die Oberflaeche vor vertauschtem Stop, waehrend
+// im Trade trotzdem ein sauber aussehendes 1:3 landet und die Auswertung vergiftet.
+// Geprueft wird gegen die Richtung: beim Long liegt der Stop unter dem Einstieg und
+// das Ziel darueber, beim Short umgekehrt.
+function rrCalc(){
+  const e=rrNum('f-entry'), sl=rrNum('f-sl'), tp=rrNum('f-tp'), dir=form.direction||'Long';
+  if(e===null||sl===null) return {state:'incomplete'};
+  const risk=Math.abs(e-sl);
+  if(!risk) return {state:'no-risk'};
+  if((dir==='Long'&&sl>e)||(dir==='Short'&&sl<e)) return {state:'stop-side',dir:dir,risk:risk};
+  if(tp===null) return {state:'no-target',risk:risk};
+  if((dir==='Long'&&tp<e)||(dir==='Short'&&tp>e)) return {state:'target-side',dir:dir,risk:risk};
+  const reward=Math.abs(tp-e);
+  return {state:'ok',risk:risk,reward:reward,rr:reward/risk};
+}
+
+function updateRR(){
+  const lab=document.getElementById('rr-label'), det=document.getElementById('rr-detail');
+  if(!lab||!det)return;
+  const set=(text,color,note)=>{ lab.textContent=text; lab.style.color=color; det.textContent=note; };
+  const qty=parseInt((document.getElementById('f-contracts')||{}).value||'0',10)||0;
+  const pv=POINT_VALUE[form.instrument||'MNQ']||0;
+  const cash=p=> (qty&&pv) ? ' ($'+Math.round(p*pv*qty).toLocaleString('en-US')+')' : '';
+  const c=rrCalc(), low=d=>d==='Long'?'long':'short';
+  if(c.state==='incomplete') return set('—','var(--muted)','Fill in entry and stop for the risk, add a target for the ratio.');
+  if(c.state==='no-risk')    return set('—','var(--red)','Stop sits on your entry — there is no risk to measure.');
+  if(c.state==='stop-side')  return set('!','var(--red)','On a '+low(c.dir)+', the stop belongs '+(c.dir==='Long'?'below':'above')+' your entry. Please check these prices; no R:R is calculated.');
+  if(c.state==='no-target')  return set('—','var(--muted)','Risk '+rrPts(c.risk)+' pts'+cash(c.risk)+' — add a target to get the ratio.');
+  if(c.state==='target-side')return set('!','var(--red)','On a '+low(c.dir)+', the target belongs '+(c.dir==='Long'?'above':'below')+' your entry. Please check these prices; no R:R is calculated.');
+  const col=c.rr>=2?'var(--green)':c.rr>=1?'var(--amber)':'var(--red)';
+  set('1 : '+c.rr.toFixed(1),col,
+    'Risk '+rrPts(c.risk)+' pts'+cash(c.risk)+' · target '+rrPts(c.reward)+' pts'+cash(c.reward)+
+    (c.rr<1?' — you are risking more than you stand to make.':''));
+}
+
+// Nur ein stimmiges Verhaeltnis wird gespeichert; widerspruechliche Eingaben
+// ergeben null statt einer Zahl, die spaeter als echt durchgeht.
+function plannedRR(){ const c=rrCalc(); return c.state==='ok' ? +c.rr.toFixed(2) : null; }
+
 function updateSetupQ(){ const map={'A+':100,'A':80,'B':60}; let s=map[form.grade]||0; if(s&&form.matchesPlaybook==='No')s-=15; if(s&&form.proWouldTake==='No')s-=15; s=Math.max(0,s); const col=s>=90?'var(--green)':s>=70?'var(--accent)':'var(--amber)'; const f=document.getElementById('setq-fill'),l=document.getElementById('setq-label'); if(f){f.style.width=s+'%';f.style.background=col;} if(l){l.textContent=form.grade?('Grade '+form.grade):'—';l.style.color=form.grade?col:'var(--muted)';} }
 
 let _savingTrade=false;
 async function saveTrade(){
   if(_savingTrade) return;
+  if(!['Win','Loss','Breakeven'].includes(form.result)){goStep(2);showToast('Ergebnis wählen. Der unfertige Trade bleibt als Entwurf erhalten.');return;}
+  const enteredPnl=Journal.num(Journal.value('f-pnl'));
+  if(enteredPnl!==null && ((form.result==='Win' && enteredPnl<0)||(form.result==='Loss' && enteredPnl>0))){goStep(2);showToast('Ergebnis und P&L-Vorzeichen prüfen. Es wird nichts automatisch umgedreht.');return;}
+  if(Journal.value('j-risk') && !(Journal.num(Journal.value('j-risk'))>0)){goStep(1);showToast('Ursprüngliches Risiko muss größer als null sein.');return;}
   _savingTrade=true;
   // gezielt der Speichern-Button in Schritt 5 -- '#sec-log .wz-nav .btn-primary'
   // haette den "Next"-Button aus Schritt 1 erwischt
-  const saveBtn=document.querySelector('#wz-5 .wz-nav .btn-primary');
+  const saveBtn=document.querySelector('#wz-3 .wz-nav .btn-primary');
   if(saveBtn) saveBtn.disabled=true;
   try{
     const data=[...(await loadTrades())];
     const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
     let pnlVal=g('f-pnl')!==''?parseFloat(g('f-pnl')):null;
-    if(pnlVal!==null && !isNaN(pnlVal)){
-      if(form.result==='Loss' && pnlVal>0) pnlVal=-pnlVal;
-      if(form.result==='Win' && pnlVal<0) pnlVal=-pnlVal;
-    }
+
     const t={
       id:editingTradeId!==null?editingTradeId:Date.now(),
       date:g('f-date')||new Date().toISOString().slice(0,10),
@@ -1866,8 +1876,10 @@ async function saveTrade(){
       keyLevels:g('f-levels'), expectations:g('f-exp'), scenarioAlt:g('f-scen2'),
       setup:getSetup(), confirmations:g('f-conf'),
       grade:form.grade||'', matchesPlaybook:form.matchesPlaybook||'', proWouldTake:form.proWouldTake||'', contracts:g('f-contracts'),
+      entry:g('f-entry')!==''?parseFloat(g('f-entry')):null, stopLoss:g('f-sl')!==''?parseFloat(g('f-sl')):null,
+      takeProfit:g('f-tp')!==''?parseFloat(g('f-tp')):null, plannedRR:plannedRR(),
       toPlan:form.toPlan||'', chased:form.chased||'', patience:form.patience||'', confirmationPresent:form.confirmation||'',
-      execQuality:form.execQuality||null, executionScore:execScoreCalc(), rulebased:form.rulebased||'',
+      execQuality:form.execQuality||null, executionScore:editingTradeId!==null ? execScoreCalc() : null, rulebased:form.rulebased||'',
       externalFactors:g('f-ext'), news:g('f-ext'),
       preFocus:form.preFocus||null, prePatience:form.prePatience||null, preEnergy:form.preEnergy||null, preState:form.preState||'',
       doubts:form.doubts||'', deviated:form.deviated||'', satisfied:form.satisfied||'',
@@ -1875,14 +1887,26 @@ async function saveTrade(){
       result:form.result||'', pnl:pnlVal,
       biggestFactor:g('f-factor'), bestRule:g('f-bestrule'), worstMistake:g('f-mistake'), lesson:g('f-lesson'),
       why:g('f-factor'), better:g('f-lesson'),
-      screenshot:getImg()
+      screenshot:getImg(),
+      ...Journal.patch()
     };
     if(editingTradeId!==null){
       const idx=data.findIndex(x=>x.id===editingTradeId);
       if(idx<0){ showToast('Trade no longer exists — editing cancelled'); finishEdit(); return; }
       // Altdaten-Felder ohne Eingabefeld im aktuellen Wizard nicht überschreiben.
       // Sobald wieder ein Feld existiert, greift der Schutz für diesen Key nicht mehr.
-      const patch={...t};
+      const patch={...t,journal:{...(data[idx].journal||{}),...t.journal}};
+      const original=data[idx];
+      // Distinct historical aliases contain information; a no-op edit must not merge them.
+      if(g('f-factor')===(original.biggestFactor||original.why||'')) delete patch.why;
+      if(g('f-lesson')===(original.lesson||original.better||'')) delete patch.better;
+      if(g('f-ext')===(original.externalFactors||original.news||'')) delete patch.news;
+      if(Journal.execution(t.journal.execution)===null){
+        if(t.journal.executionAssessed || original.executionScoreVersion===2) patch.executionScore=null;
+        else if(!['toPlan','chased','patience','execQuality'].some(k=>String(form[k]??'')!==String(original[k]??'')) && String(form.confirmation??'')===String(original.confirmationPresent??'')){
+          delete patch.executionScore;
+        }
+      }
       const legacyInputs={pd:null,pdh:null,keyLevels:'f-levels',scenarioAlt:'f-scen2',preState:null};
       Object.entries(legacyInputs).forEach(([k,inputId])=>{
         if(!patch[k] && !(inputId && document.getElementById(inputId))) delete patch[k];
@@ -1891,6 +1915,7 @@ async function saveTrade(){
       // (Altdaten/Import), gehen sonst still verloren -> anhängen.
       const orphanSetup=(data[idx].setup||[]).filter(s=>!setupLabelHasButton(s));
       if(orphanSetup.length) patch.setup=[...(patch.setup||[]), ...orphanSetup];
+      if(patch.setup.length===(original.setup||[]).length && patch.setup.every(s=>original.setup.includes(s))) patch.setup=[...original.setup];
       // Emotion wird per DOM gelesen -> nicht zuordenbare Altwerte nicht leeren
       if(!patch.emotion && data[idx].emotion &&
          ![...document.querySelectorAll('#trade-wizard .emo')].some(b=>b.textContent===data[idx].emotion)){
@@ -1931,9 +1956,11 @@ function clearForm(){
   document.getElementById('f-img').value='';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
   const ef=document.getElementById('exec-fill'); if(ef)ef.style.width='0%';
+  updateRR();
   const en=document.getElementById('exec-num'); if(en){en.textContent='0';en.style.color='var(--muted)';}
   const sf=document.getElementById('setq-fill'); if(sf)sf.style.width='0%';
   const sl=document.getElementById('setq-label'); if(sl){sl.textContent='—';sl.style.color='var(--muted)';}
+  Journal.update(); Journal.renderRules();
 }
 
 
@@ -1999,11 +2026,14 @@ async function openDetail(id){
   const data=await loadTrades(), t=data.find(x=>x.id===id); if(!t)return;
   if(t.isNoTrade){ renderNoTradeDetail(t); return; }
   const c=rc(t.result);
-  const row=(k,v)=> (v!==undefined&&v!==null&&v!=='') ? '<span class="dk">'+k+'</span><span class="dv">'+v+'</span>' : '';
+  const row=(k,v)=> (v!==undefined&&v!==null&&v!=='') ? '<span class="dk">'+Journal.esc(k)+'</span><span class="dv">'+Journal.esc(v)+'</span>' : '';
   const yn=v=> v==='Yes'?'✅ Yes':v==='No'?'❌ No':v==='Partial'?'⚠️ Partial':v||'';
   const stars=v=> v?('★'.repeat(v)+'☆'.repeat(5-v)):'';
   const planRows=[row('HTF Bias',t.htfbias),row('Prem/Disc',t.pd),row('PDH/PDL',t.pdh),row('Why bias',t.biasWhy),row('Key levels',t.keyLevels),row('Expectations & Primary scenario',t.expectations),row('Alt scenario',t.scenarioAlt)].filter(Boolean).join('');
-  const setupRows=[row('Concepts',(t.setup&&t.setup.length)?t.setup.join(', '):''),row('Confirmations',t.confirmations),row('Grade',t.grade),row('Contracts',t.contracts),row('Matches playbook',yn(t.matchesPlaybook)),row('Pro would take',t.proWouldTake)].filter(Boolean).join('');
+  const rrRow=(t.entry!==undefined&&t.entry!==null&&t.stopLoss!==undefined&&t.stopLoss!==null)
+    ? (t.entry+' → SL '+t.stopLoss+(t.takeProfit!==undefined&&t.takeProfit!==null?' → TP '+t.takeProfit:'')
+       +(t.plannedRR?'  ·  1 : '+t.plannedRR.toFixed(1):'')) : '';
+  const setupRows=[row('Concepts',(t.setup&&t.setup.length)?t.setup.join(', '):''),row('Confirmations',t.confirmations),row('Grade',t.grade),row('Contracts',t.contracts),row('Entry / stop / target',rrRow),row('Matches playbook',yn(t.matchesPlaybook)),row('Pro would take',t.proWouldTake)].filter(Boolean).join('');
   const execRows=[row('To plan',yn(t.toPlan)),row('Chased entry',yn(t.chased)),row('Patience',yn(t.patience)),row('Confirmation',yn(t.confirmationPresent)),row('Execution',stars(t.execQuality)),row('Followed rules',t.rulebased==='yes'?'✅ Yes':t.rulebased==='no'?'❌ No':t.rulebased==='partial'?'⚠️ Partial':''),row('External/News',t.externalFactors||t.news)].filter(Boolean).join('');
   const psyRows=[row('Focus',stars(t.preFocus)),row('Patience',stars(t.prePatience)),row('Energy',stars(t.preEnergy)),row('Mental state',t.preState),row('Doubts',yn(t.doubts)),row('Deviated',yn(t.deviated)),row('Satisfied',yn(t.satisfied)),row('Emotion',t.emotion),row('Notes',t.mindset)].filter(Boolean).join('');
   const revRows=[row('Biggest factor',t.biggestFactor||t.why),row('Best rule',t.bestRule),row('Worst mistake',t.worstMistake),row('Key lesson & adjustment',t.lesson)].filter(Boolean).join('');
@@ -2013,6 +2043,7 @@ async function openDetail(id){
   document.getElementById('detail-el').innerHTML=
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+t.instrument+'" style="font-size:13px;padding:4px 12px">'+t.instrument+'</span><span style="font-size:21px;font-weight:600">'+t.direction+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Edit</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
     (t.screenshot?'<img src="'+t.screenshot+'" class="shot-thumb" onclick="openLightbox(\''+t.screenshot+'\')">':'')+
+    Journal.summary(t)+
     (planRows?'<div class="card"><div class="card-title">Plan & Bias</div><div class="dl">'+planRows+'</div></div>':'')+
     (setupRows?'<div class="card"><div class="card-title">Setup & Quality</div><div class="dl">'+setupRows+'</div></div>':'')+
     (execRows?'<div class="card"><div class="card-title">Execution & Context</div><div class="dl">'+execRows+'</div></div>':'')+
@@ -2028,22 +2059,9 @@ async function deleteTrade(id){ if(!confirm('Delete?'))return; const d=(await lo
 
 function animateCount(el,target,dur,suffix){ if(!el)return; dur=dur||1000; suffix=suffix||''; const t0=performance.now(); function step(now){ const p=Math.min(1,(now-t0)/dur); const ev=1-Math.pow(1-p,3); el.textContent=Math.round(target*ev)+suffix; if(p<1)requestAnimationFrame(step); } requestAnimationFrame(step); }
 
-function disciplineScore(data){
-  if(!data.length) return 0;
-  const total=data.length;
-  const rb=data.filter(t=>t.rulebased==='yes').length, partial=data.filter(t=>t.rulebased==='partial').length;
-  const rbPct=(rb+partial*0.5)/total*100;
-  const w=data.filter(t=>t.result==='Win').length, l=data.filter(t=>t.result==='Loss').length;
-  const wr=(w+l)?w/(w+l)*100:0;
-  const calm=data.filter(t=>t.emotion&&(t.emotion.indexOf('Calm')>=0||t.emotion.indexOf('Neutral')>=0)).length;
-  const emo=calm/total*100;
-  return Math.max(0,Math.min(100,Math.round(rbPct*0.6+wr*0.2+emo*0.2)));
-}
+function disciplineScore(data){ return Journal.discipline(data); }
 
-// Rule-based Trades am Stueck, von neu nach alt gezaehlt -- die Serie gilt aber als
-// gerissen, sobald >3 Kalendertage ohne Trade vergehen (zwischen zwei Trades oder
-// zwischen dem letzten Trade und heute). Haelt die Streak "lebendig", statt sie nach
-// einem guten Lauf dauerhaft einzufrieren.
+// Nicht-Handeln beendet keine Disziplin-Serie.
 const STREAK_GAP_DAYS=3;
 function parseDay(s){ const p=String(s||'').split('-').map(Number); return (p.length===3&&p.every(n=>!isNaN(n)))?new Date(p[0],p[1]-1,p[2]):null; }
 function disciplineStreak(trades){
@@ -2052,11 +2070,9 @@ function disciplineStreak(trades){
   if(!dated.length) return {count:0,stale:false,gap:0};
   const DAY=864e5, today=new Date(); today.setHours(0,0,0,0);
   const gap=Math.round((today-parseDay(dated[0].date))/DAY);
-  if(gap>STREAK_GAP_DAYS) return {count:0,stale:true,gap};
   let count=0, prev=null;
   for(const t of dated){
     const d=parseDay(t.date);
-    if(prev && Math.round((prev-d)/DAY)>STREAK_GAP_DAYS) break;
     if(t.rulebased!=='yes') break;
     count++; prev=d;
   }
@@ -2064,20 +2080,20 @@ function disciplineStreak(trades){
 }
 
 let statsRange=0;
-function setStatsRange(r){ statsRange=r; document.querySelectorAll('#range-chips .rchip').forEach(c=>c.classList.toggle('active',+c.dataset.range===r)); renderStats(); }
+function setStatsRange(r){ statsRange=r; document.querySelectorAll('#range-chips .rchip').forEach(c=>c.classList.toggle('active',+c.dataset.range===r)); if(statsSubView==='review')renderReview();else renderStats(); }
 
 let statsSubView='cockpit';
 function setStatsSubView(v){
   statsSubView=v;
   document.querySelectorAll('#stats-subnav .rchip').forEach(c=>c.classList.toggle('active',c.dataset.view===v));
-  document.getElementById('range-chips').style.display = v==='cockpit' ? 'flex' : 'none';
+  document.getElementById('range-chips').style.display = 'flex';
   document.getElementById('stats-title').textContent = v==='cockpit' ? 'Performance Cockpit' : 'Review';
   document.getElementById('stats-sub').textContent = v==='cockpit' ? '' : 'Where you make money — and where you do not.';
   document.getElementById('stats-el').style.display = v==='cockpit' ? '' : 'none';
   document.getElementById('review-el').style.display = v==='review' ? '' : 'none';
   if(v==='cockpit') renderStats(); else renderReview();
 }
-function inRange(t){ if(!statsRange)return true; const d=new Date(t.date); if(isNaN(d))return true; return (Date.now()-d.getTime())/864e5<=statsRange; }
+function inRange(t){ return Journal.inScope(t,statsRange,Journal.value('stats-mode')); }
 function pnlOf(t){ return (t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='')?Number(t.pnl):0; }
 function money(v){ return (v<0?'-':'+')+'$'+Math.abs(Math.round(v)).toLocaleString('en-US'); }
 
@@ -2190,12 +2206,12 @@ function disciplineStripHTML(score,total,rbP,planP,emoP){
   const seg=(lab,val)=>'<div class="disc-seg"><div class="disc-lab">'+lab+'</div><div class="disc-val">'+val+'</div></div>';
   return '<div class="disc-strip">'+
     '<div class="disc-seg"><div class="disc-lab">Discipline Score</div>'+
-      '<div class="disc-val" style="color:'+col+'">'+(score/10).toFixed(1)+'<span class="disc-u">/ 10</span></div>'+
+      '<div class="disc-val" style="color:'+col+'">'+(score===null?'—':(score/10).toFixed(1))+'<span class="disc-u">/ 10</span></div>'+
       '<div class="disc-meter"><i data-w="'+score+'%" style="background:'+col+'"></i></div></div>'+
     seg('Trades taken',String(total))+
     seg('Rule-based',pct(rbP))+
     seg('Plan followed',pct(planP))+
-    seg('Emotional control',pct(emoP))+
+    seg('Regeltreue erfasst',pct(emoP))+
   '</div>';
 }
 
@@ -2224,7 +2240,7 @@ function disciplineGapBlock(trades,hasPnl){
   if(hasPnl && rb && dev && rb.avg!==null && dev.avg!==null && dev.wp>0){
     const delta=rb.avg-dev.avg;
     note=delta>0
-      ? 'Following your rules is worth about $'+Math.round(delta).toLocaleString('en-US')+' per trade · the '+dev.wp+' measured deviation'+(dev.wp!==1?'s':'')+' cost about $'+Math.round(delta*dev.wp).toLocaleString('en-US')+'.'
+      ? 'Der beobachtete Unterschied beträgt $'+Math.round(delta).toLocaleString('en-US')+' pro Trade. Unterschiedliche Setups und Risiken können mitwirken; keine nachgewiesenen Fehlerkosten.'
       : 'No P&L penalty for deviating in this sample yet — the broken habit is still the risk.';
   } else if(rb && rb.dec>0 && dev && dev.dec>0){
     note='Rule-based win rate '+rb.wr+'% vs '+dev.wr+'% when you deviated.';
@@ -2273,7 +2289,7 @@ function conceptEdgeBlock(trades,hasPnl){
         '<span class="mbar-n">'+r.wr+'% · '+r.hp+'</span></div>';
     }).join('');
     return '<div class="fcard"><div class="fcard-title">ICT Concept Edge</div>'+body+
-      '<p class="fcard-note">Net P&amp;L each tagged concept has produced · win rate and P&amp;L-trade count on the right.</p></div>';
+      '<p class="fcard-note">P&L der Trades mit diesem Tag. Tags überlappen; Beiträge nicht addieren. FVG-Timeframes zusammengefasst. Kein Ursachenbeweis.</p></div>';
   }
   rows=rows.filter(r=>r.dec>0).sort((a,b)=>b.wr-a.wr||b.dec-a.dec).slice(0,7);
   if(!rows.length) return fcardEmpty('ICT Concept Edge','Not enough decided trades per concept yet.');
@@ -2282,7 +2298,7 @@ function conceptEdgeBlock(trades,hasPnl){
     '<span class="mbar-val" style="color:'+wrColor(r.wr)+'">'+r.wr+'%</span>'+
     '<span class="mbar-n">'+r.w+'/'+r.dec+'</span></div>').join('');
   return '<div class="fcard"><div class="fcard-title">ICT Concept Edge</div>'+body+
-    '<p class="fcard-note">Ranked by win rate — add P&amp;L on your trades to weight this by money.</p></div>';
+    '<p class="fcard-note">Nach Win-Rate sortiert. Tags überlappen; kleine Gruppen belegen keinen Edge.</p></div>';
 }
 
 function perfTimelineHTML(data){
@@ -2319,13 +2335,14 @@ async function renderStats(){
 
   const wins=trades.filter(t=>t.result==='Win').length, losses=trades.filter(t=>t.result==='Loss').length, bes=trades.filter(t=>t.result==='Breakeven').length, total=trades.length;
   const dec=wins+losses, wr=dec?Math.round(wins/dec*100):0;
-  const rb=trades.filter(t=>t.rulebased==='yes').length, rbP=total?Math.round(rb/total*100):0;
+  const ruleMeasured=trades.filter(t=>['yes','partial','no'].includes(t.rulebased));
+  const rb=ruleMeasured.filter(t=>t.rulebased==='yes').length, rbP=ruleMeasured.length?Math.round(rb/ruleMeasured.length*100):null;
   const ds=disciplineScore(trades), dStreak=disciplineStreak(trades);
   const ntCount=ntDays.length;
   const planSet=trades.filter(t=>t.toPlan);
   const planP=planSet.length?Math.round(planSet.filter(t=>t.toPlan==='Yes').length/planSet.length*100):null;
-  const calm=trades.filter(t=>t.emotion&&(t.emotion.indexOf('Calm')>=0||t.emotion.indexOf('Neutral')>=0)).length;
-  const emoP=total?Math.round(calm/total*100):0;
+  const checkedRules=trades.filter(t=>['yes','partial','no'].includes(t.rulebased));
+  const emoP=total?Math.round(checkedRules.length/total*100):0;
 
   const hasPnl=trades.some(t=>t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='');
   const pnlTrades=trades.filter(t=>t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='');
@@ -2335,12 +2352,12 @@ async function renderStats(){
   const avgWin=winPnls.length?winPnls.reduce((a,b)=>a+b,0)/winPnls.length:0;
   const avgLoss=lossPnls.length?lossPnls.reduce((a,b)=>a+b,0)/lossPnls.length:0;
   const avgTrade=pnlTrades.length?totalPnl/pnlTrades.length:0;
-  const pc=hasPnl?pnlCurveSVG(trades):perfCurveSVG(trades);
+  const pc=hasPnl?pnlCurveSVG(pnlTrades):perfCurveSVG(trades);
   const heroCol=hasPnl?(totalPnl>=0?'var(--green)':'var(--red)'):pc.col;
   window._statsTrades=trades;
   const now=new Date(); if(calY===null){calY=now.getFullYear();calM=now.getMonth();}
 
-  el.innerHTML=
+  el.innerHTML=Journal.coverage(trades)+
     '<div class="stats-hero">'+
       '<div class="hero-card">'+
         '<div class="hero-top">'+
@@ -2360,8 +2377,8 @@ async function renderStats(){
       '<div class="gcard"><div class="g-label">Total trades</div><div class="g-val accent">'+total+'</div><div class="g-sub">in selected period</div></div>'+
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Win</div><div class="g-val" style="color:'+(winPnls.length?'var(--green)':'var(--muted)')+'">'+(winPnls.length?'$'+Math.round(avgWin).toLocaleString('en-US'):'\u2013')+'</div><div class="g-sub">'+(winPnls.length?winPnls.length+' wins with P&L':'no P&L data')+'</div></div>':'')+
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Loss</div><div class="g-val" style="color:'+(lossPnls.length?'var(--red)':'var(--muted)')+'">'+(lossPnls.length?'$'+Math.round(avgLoss).toLocaleString('en-US'):'\u2013')+'</div><div class="g-sub">'+(lossPnls.length?lossPnls.length+' losses with P&L':'no P&L data')+'</div></div>':'')+
-      '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val count" data-to="'+rbP+'" data-suffix="%" style="color:'+(rbP>=70?'var(--green)':'var(--amber)')+'">0</div><div class="g-sub">discipline</div></div>'+
-      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+dStreak.count+'" style="color:'+(dStreak.count>0?'var(--amber)':'var(--muted)')+'">0</div><div class="g-sub">'+(dStreak.stale?'reset · '+dStreak.gap+' days idle':dStreak.count>0?'rule-based · resets after '+STREAK_GAP_DAYS+' quiet days':'follow your plan to start')+'</div></div>'+
+      '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val" style="color:'+(rbP===null?'var(--muted)':rbP>=70?'var(--green)':'var(--amber)')+'">'+(rbP===null?'—':rbP+'%')+'</div><div class="g-sub">'+ruleMeasured.length+'/'+total+' Trades bewertet</div></div>'+
+      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+dStreak.count+'" style="color:'+(dStreak.count>0?'var(--amber)':'var(--muted)')+'">0</div><div class="g-sub">'+(dStreak.stale?'reset · '+dStreak.gap+' days idle':dStreak.count>0?'regelkonforme Trades · Pausen sind erlaubt':'follow your plan to start')+'</div></div>'+
       '<div class="gcard"><div class="g-label">\uD83D\uDEAB No-Trade Days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
     '</div>'+
     disciplineStripHTML(ds,total,rbP,planP,emoP)+
@@ -2389,7 +2406,8 @@ async function renderStats(){
 function wrColor(wr){ return wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)'; }
 async function renderReview(){
   const allData=await loadTrades(), el=document.getElementById('review-el');
-  const data=allData.filter(t=>!t.isNoTrade);
+  const data=allData.filter(t=>!t.isNoTrade && inRange(t));
+  document.getElementById('stats-sub').textContent=(statsRange?'Letzte '+statsRange+' Tage':'Alle Trades')+' · '+data.length+' Trades';
   if(data.length<2){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>Log a few trades first — the review needs data to find your patterns.</p></div>'; return; }
   const days=['Mon','Tue','Wed','Thu','Fri'], dayIdx=[1,2,3,4,5];
   let dayHtml='';
@@ -2429,17 +2447,17 @@ async function renderReview(){
     }).join('');
   } else emoHtml='<p style="color:var(--muted);font-size:13px">No emotions tagged on your trades yet.</p>';
   const bestEmo=emoArr.filter(e=>e.dec>=2).sort((a,b)=>b.wr-a.wr)[0];
-  const bestTrades=data.filter(t=>t.result==='Win'&&t.rulebased==='yes').slice(0,5);
+  const bestTrades=data.filter(t=>t.rulebased==='yes').slice(0,5);
   let bestHtml='';
-  if(bestTrades.length){ bestHtml=bestTrades.map(t=>`<div class="trade-item" onclick="switchTab('list');setTimeout(()=>openDetail(${t.id}),100)"><div class="trade-head"><div class="trade-name"><span class="instr ${t.instrument}">${t.instrument}</span>${t.direction}<span style="color:var(--muted);font-weight:400"> · ${t.date}</span></div><span class="badge win">Win</span></div><div class="trade-meta">${t.setup&&t.setup.length?`<span>${t.setup.slice(0,3).join(', ')}</span>`:''}</div></div>`).join(''); }
-  else bestHtml='<p style="color:var(--muted);font-size:13px">No rule-based wins yet. Those are the trades to repeat!</p>';
+  if(bestTrades.length){ bestHtml=bestTrades.map(t=>`<div class="trade-item" onclick="switchTab('list');setTimeout(()=>openDetail(${t.id}),100)"><div class="trade-head"><div class="trade-name"><span class="instr ${t.instrument}">${t.instrument}</span>${t.direction}<span style="color:var(--muted);font-weight:400"> · ${t.date}</span></div><span class="badge">${Journal.esc(t.result)}</span></div><div class="trade-meta">${t.setup&&t.setup.length?`<span>${t.setup.slice(0,3).join(', ')}</span>`:''}</div></div>`).join(''); }
+  else bestHtml='<p style="color:var(--muted);font-size:13px">Noch keine als vollständig regelkonform erfassten Trades.</p>';
   const topSetup=setupArr[0];
   const rhHtml='<div class="review-highlights">'+
     '<div class="rh-card"><div class="rh-lab">Best weekday</div><div class="rh-val" style="color:var(--green)">'+(bestDay||'\u2013')+'</div><div class="rh-sub">'+(bestDay?'net '+(bestScore>0?'+':'')+bestScore:'not enough data')+'</div></div>'+
     '<div class="rh-card"><div class="rh-lab">Best setup</div><div class="rh-val" style="color:'+(topSetup?wrColor(topSetup.wr):'var(--muted)')+'">'+(topSetup?topSetup.name:'\u2013')+'</div><div class="rh-sub">'+(topSetup?topSetup.wr+'% \u00b7 '+topSetup.w+'/'+topSetup.dec:'log more setups')+'</div></div>'+
     '<div class="rh-card"><div class="rh-lab">Best mindset</div><div class="rh-val" style="color:'+(bestEmo?wrColor(bestEmo.wr):'var(--muted)')+';font-size:15px">'+(bestEmo?bestEmo.name:'\u2013')+'</div><div class="rh-sub">'+(bestEmo?bestEmo.wr+'% \u00b7 '+bestEmo.w+'/'+bestEmo.dec:'tag how you felt')+'</div></div>'+
   '</div>';
-  el.innerHTML=rhHtml+`<div class="card"><div class="card-title">Win rate by weekday</div>${dayHtml}${bestDay?`<p style="font-size:12px;color:var(--muted);margin-top:14px">📈 Strongest day so far: <span style="color:var(--green);font-weight:600">${bestDay}</span> (net ${bestScore>0?'+':''}${bestScore})</p>`:''}</div><div class="card"><div class="card-title">Setup performance — best concepts</div>${setupHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Sorted by win rate. Faded = fewer than 3 decided trades (not reliable yet).</p></div><div class="card"><div class="card-title">Emotional state — results</div>${emoHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Win rate and average P&L per feeling you logged. Faded = fewer than 3 decided trades.</p></div><div class="card"><div class="card-title">Your best trades — repeat these</div>${bestHtml}</div>`;
+  el.innerHTML=Journal.coverage(data)+Journal.patterns(data)+rhHtml+`<div class="card"><div class="card-title">Win rate by weekday</div>${dayHtml}${bestDay?`<p style="font-size:12px;color:var(--muted);margin-top:14px">📈 Strongest day so far: <span style="color:var(--green);font-weight:600">${bestDay}</span> (net ${bestScore>0?'+':''}${bestScore})</p>`:''}</div><div class="card"><div class="card-title">Setup performance — best concepts</div>${setupHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Sorted by win rate. Kleine Gruppen bleiben vorläufig; auch drei Trades belegen keinen Edge.</p></div><div class="card"><div class="card-title">Emotional state — results</div>${emoHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Win rate and average P&L per feeling you logged. Faded = fewer than 3 decided trades.</p></div><div class="card"><div class="card-title">Regelkonforme Trades prüfen — auch Verluste</div>${bestHtml}</div>`;
 }
 
 async function exportJSON(){ const data=await loadTrades(); const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='trades-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showToast('Exported ✓'); }
@@ -2675,7 +2693,7 @@ function lossRun(trades){
 // und verliert genau das Gewicht, das ihn hierher gehoeren laesst.
 function statsScripture(s){
   const rules=[
-    [s.ds<50,              'be',    'Discipline sits at '+(s.ds/10).toFixed(1)+' of 10. Rules first, results after.'],
+    [s.ds!==null && s.ds<50,              'be',    'Discipline sits at '+(s.ds/10).toFixed(1)+' of 10. Rules first, results after.'],
     [s.run>=3,             'loss',  s.run+' losses in a row. The streak is not the verdict on you.'],
     [s.rbP>=80&&s.wr>=55,  'win',   s.rbP+'% rule-based at a '+s.wr+'% win rate. Hold it with an open hand.'],
     [s.nt>=3,              'be',    s.nt+' days you chose to stay out. Sitting still is a decision too.'],
@@ -2867,12 +2885,28 @@ async function renderFaith(){
 
 // ── LEARN ────────────────────────────────────────────────────────────────
 const LEARN_KEY = 'tj_learn_v1';
-function loadLearn(){ try{ return JSON.parse(localStorage.getItem(LEARN_KEY)||'[]'); }catch(e){ return []; } }
-function saveLearn(d){ localStorage.setItem(LEARN_KEY, JSON.stringify(d)); saveLearnToCloud(d); }
-
-async function saveLearnToCloud(data){
-  if(!currentUser) return;
-  try{ await sb.from('journal_data').update({learn:data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }catch(e){ console.error('Learn sync failed',e); }
+let _learnCache=null, _savingLearn=false;
+function loadLearn(){
+  if(_learnCache!==null)return [..._learnCache];
+  try{const data=JSON.parse(localStorage.getItem(LEARN_KEY)||'[]');return Array.isArray(data)?data:[];}catch(e){return [];}
+}
+async function readyLearn(){
+  if(!currentUser)return false;
+  if(_journalLoadPromise){try{await _journalLoadPromise;}catch(e){return false;}}
+  return _cache!==null;
+}
+async function saveLearn(d){
+  if(_savingLearn || !await readyLearn())return false;
+  if(_savingLearn)return false;
+  _savingLearn=true;
+  try {
+    const {error}=await sb.from('journal_data').update({learn:d,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
+    if(error)return false;
+    _learnCache=d;
+    try{localStorage.setItem(LEARN_KEY,JSON.stringify(d));}catch(e){console.warn('Learn local cache unavailable');}
+    return true;
+  }catch(e){console.error('Learn save failed',e);return false;}
+  finally{_savingLearn=false;}
 }
 
 async function initLearn(){
@@ -2899,7 +2933,8 @@ function clearLearnForm(){
   document.getElementById('ln-img').value='';
 }
 
-function saveLearnEntry(){
+async function saveLearnEntry(){
+  if(!await readyLearn()){showToast('Journal noch nicht verfügbar. Deine Notiz bleibt erhalten.');return;}
   const title=document.getElementById('ln-title').value.trim();
   const body=document.getElementById('ln-body').value.trim();
   if(!title&&!body){ showToast('Add a title or some text first'); return; }
@@ -2907,13 +2942,14 @@ function saveLearnEntry(){
   const img=prev.style.display!=='none'?prev.src:'';
   const entries=loadLearn();
   entries.unshift({ id:Date.now(), date:new Date().toISOString().slice(0,10), title:title||'Untitled', body, img });
-  saveLearn(entries);
+  if(!await saveLearn(entries)){showToast('Speichern fehlgeschlagen. Deine Notiz bleibt erhalten.');return;}
   clearLearnForm();
   showToast('Entry saved \u2713');
   learnTab('notes');
 }
 
 function renderLearnList(){
+  Journal.learnProgress();
   const all=loadLearn();
   const el=document.getElementById('learn-entries'); if(!el)return;
   closeLearnDetail();
@@ -2924,16 +2960,16 @@ function renderLearnList(){
   const q=(document.getElementById('learn-search')?.value||'').trim().toLowerCase();
   const entries=q?all.filter(e=>(e.title||'').toLowerCase().includes(q)||(e.body||'').toLowerCase().includes(q)):all;
   if(!entries.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>No notes match "'+q+'".</p></div>';
+    el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>No notes match "'+Journal.esc(q)+'".</p></div>';
     return;
   }
   el.innerHTML=entries.map(e=>`
     <div class="learn-item" onclick="openLearnDetail(${e.id})">
       <div class="learn-item-head">
-        <span class="learn-title">${e.title}</span>
+        <span class="learn-title">${Journal.esc(e.title)}</span>
         <span class="learn-date">${e.date}</span>
       </div>
-      <div class="learn-preview">${e.body.slice(0,120)}${e.body.length>120?'…':''}</div>
+      <div class="learn-preview">${Journal.esc(e.body.slice(0,120))}${e.body.length>120?'…':''}</div>
       ${e.img?'<div class="learn-has-img">📸 Screenshot attached</div>':''}
     </div>`).join('');
 }
@@ -2945,12 +2981,12 @@ function openLearnDetail(id){
   document.getElementById('learn-detail-el').innerHTML=
     '<div class="card">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'+
-        '<div><div style="font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px">'+e.title+'</div>'+
+        '<div><div style="font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px">'+Journal.esc(e.title)+'</div>'+
         '<div style="font-size:12px;color:var(--muted)">'+e.date+'</div></div>'+
         '<button class="delete-btn" onclick="deleteLearnEntry('+e.id+')">🗑 Delete</button>'+
       '</div>'+
       (e.img?'<img src="'+e.img+'" class="shot-thumb" onclick="openLightbox(\''+e.img+'\')">':'')+
-      '<div style="font-size:15px;color:var(--text);line-height:1.85;white-space:pre-wrap">'+e.body+'</div>'+
+      '<div style="font-size:15px;color:var(--text);line-height:1.85;white-space:pre-wrap">'+Journal.esc(e.body)+'</div>'+
     '</div>';
   document.querySelector('.main-wrap').scrollTop=0;
 }
@@ -2960,17 +2996,19 @@ function closeLearnDetail(){
   if(lv)lv.style.display='block'; if(dv)dv.style.display='none';
 }
 
-function deleteLearnEntry(id){
+async function deleteLearnEntry(id){
   if(!confirm('Delete this entry?'))return;
+  if(!await readyLearn()){showToast('Journal noch nicht verfügbar.');return;}
   const entries=loadLearn().filter(e=>e.id!==id);
-  saveLearn(entries); renderLearnList(); closeLearnDetail(); showToast('Deleted');
+  if(!await saveLearn(entries)){showToast('Löschen fehlgeschlagen');return;} renderLearnList(); closeLearnDetail(); showToast('Deleted');
 }
 
 async function loadJournalRow(){
   const {data,error}=await sb.from('journal_data').select('trades,learn,settings').eq('user_id',currentUser.id).single();
   if(error){ console.error('Could not load journal',error); return; }
   _cache=data.trades||[];
-  localStorage.setItem(LEARN_KEY, JSON.stringify(data.learn||[]));
+  _learnCache=data.learn||[];
+  try{localStorage.setItem(LEARN_KEY, JSON.stringify(_learnCache));}catch(e){console.warn('Learn local cache unavailable');}
   _settingsCache=data.settings||{};
   applyTheme(_settingsCache.theme||'light');
 }
@@ -2999,6 +3037,7 @@ async function startApp(){
   catch(e){ console.error('Could not load journal',e); }
   finally{ _journalLoadPromise=null; }
   updateStatus();
+  Journal.renderRules();
   renderSplashDiscipline();
   refreshActiveTab();
 }
@@ -3324,6 +3363,7 @@ async function init(){
 // laufen dann nicht neu, das entfernte #intro-Overlay bleibt weg), einmal frisch
 // laden, damit die Startsequenz auch bei "zurueck" / erneutem Aufruf wieder laeuft.
 window.addEventListener('pageshow',function(e){ if(e.persisted) location.reload(); });
+Journal.init();
 startIntro();
 init();
 </script>
