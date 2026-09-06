@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -655,7 +655,7 @@
   <main class="main">
 
     <div id="sec-log" class="section active">
-      <div class="page-head"><div class="page-title">New Entry</div><div class="page-desc">Wenige Angaben. Klare Entscheidungen. Eine überprüfbare Erkenntnis.</div></div>
+      <div class="page-head"><div class="page-title">New Entry</div><div class="page-desc">A few inputs. Clear decisions. One lesson you can check.</div></div>
       <div class="recent-strip" id="recent-strip"></div>
 
       <div class="mode-toggle">
@@ -667,33 +667,33 @@
         <div class="draft-note"><span id="trade-draft-status">Draft saved automatically · screenshots excluded</span><button type="button" onclick="discardTradeDraft()">Discard draft</button></div>
         <div id="edit-banner" class="edit-banner" style="display:none"><span class="edit-banner-label">Editing trade</span><button type="button" onclick="cancelEdit()">Cancel editing</button></div>
 
-        <div class="wz-progress" aria-label="Trade erfassen">
-          <button type="button" class="wz-step active" onclick="goStep(1)"><span class="wz-num">1</span><span class="wz-name">Plan</span></button><button type="button" class="wz-step" onclick="goStep(2)"><span class="wz-num">2</span><span class="wz-name">Abschluss</span></button><button type="button" class="wz-step" onclick="goStep(3)"><span class="wz-num">3</span><span class="wz-name">Erkenntnis</span></button>
+        <div class="wz-progress" aria-label="Log a trade">
+          <button type="button" class="wz-step active" onclick="goStep(1)"><span class="wz-num">1</span><span class="wz-name">Plan</span></button><button type="button" class="wz-step" onclick="goStep(2)"><span class="wz-num">2</span><span class="wz-name">Outcome</span></button><button type="button" class="wz-step" onclick="goStep(3)"><span class="wz-num">3</span><span class="wz-name">Lesson</span></button>
         </div>
         <div class="wz-track"><div class="wz-fill" id="wz-fill"></div></div>
         <div class="wz-panel active" id="wz-1">
-          <p class="journal-intro">Vor dem Entry: Modell, Plan und Grenzen festlegen. Details nur ergänzen, wenn sie eine Entscheidung erklären.</p>
-          <details class="journal-details"><summary>Meine Wochenregel vor dem Entry lesen</summary><div id="j-rules" class="journal-actions"></div><p id="j-current-rule"></p><input id="j-rule-id" type="hidden"></details>
+          <p class="journal-intro">Before the entry: set your model, your plan and your limits. Add details only when they explain a decision.</p>
+          <details class="journal-details"><summary>Read my weekly rule before the entry</summary><div id="j-rules" class="journal-actions"></div><p id="j-current-rule"></p><input id="j-rule-id" type="hidden"></details>
           <div class="card journal-fields">
-            <div class="subgrid"><div class="field"><label for="f-date">Datum</label><input id="f-date" type="date"  placeholder=""></div><div class="journal-check"><label for="j-mode">Umgebung</label><select id="j-mode"><option value="">Bitte wählen</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option></select></div></div>
-            <div class="subgrid"><div class="field"><label>Instrument</label><div class="seg" data-field="instrument" role="group" aria-label="Instrument"><button type="button" class="opt sel" data-v="MNQ" onclick="choice('instrument',this);Journal.update()">MNQ</button><button type="button" class="opt" data-v="MES" onclick="choice('instrument',this);Journal.update()">MES</button></div></div><div class="field"><label>Richtung</label><div class="seg" data-field="direction" role="group" aria-label="Richtung"><button type="button" class="opt sel" data-v="Long" onclick="choice('direction',this);Journal.update()">Long</button><button type="button" class="opt" data-v="Short" onclick="choice('direction',this);Journal.update()">Short</button></div></div></div>
-            <div class="field"><label for="j-model">Mein Modell / Version</label><input id="j-model" type="text"  placeholder="z. B. HTF + Sweep + IFVG/CISD · v1"></div>
-            <button class="btn" type="button" onclick="Journal.reuseModel()">Letztes Modell mit Management-Regel übernehmen</button>
+            <div class="subgrid"><div class="field"><label for="f-date">Date</label><input id="f-date" type="date"  placeholder=""></div><div class="journal-check"><label for="j-mode">Environment</label><select id="j-mode"><option value="">Select…</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option></select></div></div>
+            <div class="subgrid"><div class="field"><label>Instrument</label><div class="seg" data-field="instrument" role="group" aria-label="Instrument"><button type="button" class="opt sel" data-v="MNQ" onclick="choice('instrument',this);Journal.update()">MNQ</button><button type="button" class="opt" data-v="MES" onclick="choice('instrument',this);Journal.update()">MES</button></div></div><div class="field"><label>Direction</label><div class="seg" data-field="direction" role="group" aria-label="Direction"><button type="button" class="opt sel" data-v="Long" onclick="choice('direction',this);Journal.update()">Long</button><button type="button" class="opt" data-v="Short" onclick="choice('direction',this);Journal.update()">Short</button></div></div></div>
+            <div class="field"><label for="j-model">My model / version</label><input id="j-model" type="text"  placeholder="e.g. HTF + sweep + IFVG/CISD · v1"></div>
+            <button class="btn" type="button" onclick="Journal.reuseModel()">Reuse my last model and management rule</button>
             <div class="field"><label>HTF Bias</label><div class="seg" data-field="htfbias" role="group" aria-label="HTF Bias"><button type="button" class="opt" data-v="Bullish" onclick="choice('htfbias',this);Journal.update()">Bullish</button><button type="button" class="opt" data-v="Bearish" onclick="choice('htfbias',this);Journal.update()">Bearish</button><button type="button" class="opt" data-v="Neutral" onclick="choice('htfbias',this);Journal.update()">Neutral</button></div></div>
-            <div class="field"><label for="f-exp">Mein Wenn-dann-Plan · ein Satz</label><textarea id="f-exp" rows="2" placeholder="Wenn [Level / Bedingung], dann Entry erst nach [Trigger] in [Zone]; Ziel [Level]."></textarea></div>
-            <div class="subgrid"><div class="field"><label for="j-invalidation">Kein Trade / Idee ungültig, wenn …</label><input id="j-invalidation" type="text"  placeholder="Konkretes Level oder fehlende Bedingung"></div><div class="field"><label for="j-management">Exit / Breakeven nur, wenn …</label><input id="j-management" type="text"  placeholder="Mein vorher festgelegter Management-Auslöser"></div></div>
-            <details class="journal-details"><summary>Bias-Begründung, Gegenargument und News</summary><div class="journal-fields"><div class="field"><label for="f-bwhy">Bias — warum?</label><textarea id="f-bwhy" rows="2" placeholder="HTF + Zone + Ziel; dagegen spricht …"></textarea></div><div class="field"><label for="f-levels">Wichtige Levels</label><input id="f-levels" type="text"  placeholder=""></div><div class="field"><label for="f-scen2">Alternativszenario</label><textarea id="f-scen2" rows="2" placeholder=""></textarea></div><div class="field"><label for="f-ext">News / Zeitfenster</label><textarea id="f-ext" rows="2" placeholder="Ereignis, Uhrzeit mit Zeitzone und meine Sperrzeit"></textarea></div></div></details>
+            <div class="field"><label for="f-exp">My if-then plan · one sentence</label><textarea id="f-exp" rows="2" placeholder="If [level / condition], then enter only after [trigger] inside [zone]; target [level]."></textarea></div>
+            <div class="subgrid"><div class="field"><label for="j-invalidation">No trade / idea invalid when …</label><input id="j-invalidation" type="text"  placeholder="A specific level or a missing condition"></div><div class="field"><label for="j-management">Exit / breakeven only when …</label><input id="j-management" type="text"  placeholder="The management trigger I set beforehand"></div></div>
+            <details class="journal-details"><summary>Bias reasoning, counter-argument and news</summary><div class="journal-fields"><div class="field"><label for="f-bwhy">Bias — why?</label><textarea id="f-bwhy" rows="2" placeholder="HTF + zone + target; the counter-argument is …"></textarea></div><div class="field"><label for="f-levels">Key levels</label><input id="f-levels" type="text"  placeholder=""></div><div class="field"><label for="f-scen2">Alternative scenario</label><textarea id="f-scen2" rows="2" placeholder=""></textarea></div><div class="field"><label for="f-ext">News / time window</label><textarea id="f-ext" rows="2" placeholder="Event, time with time zone and my blackout window"></textarea></div></div></details>
           </div>
           <div class="card">
-            <h3 class="card-title">Setup Quality · nach meinem Playbook</h3>
-            <p class="field-help">Bewerte, was beim Entry vorliegt. Definiere Pflichtkriterien und optionale Extras einmal in Learn.</p>
-            <div class="journal-check"><label for="j-context">HTF-Kontext, Ziel und Gegenargument geklärt</label><select id="j-context"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option></select></div>
-            <div class="journal-check"><label for="j-trigger">Pflichtbestätigung meines Modells beim Entry vorhanden</label><select id="j-trigger"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option></select></div>
-            <div class="journal-check"><label for="j-conditions">Entry-Zone, Risiko, Zeitfenster und News-Regeln erfüllt</label><select id="j-conditions"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option></select></div>
-            <div class="journal-check"><label for="j-extras">Vorab definierte Zusatzmerkmale</label><select id="j-extras"><option value="">Bitte wählen</option><option value="all">Alle vorhanden</option><option value="some">Optionales fehlt</option><option value="limited">Erlaubte Einschränkung</option></select></div>
-            <div class="journal-score"><span>Setup</span><strong id="j-grade">Noch nicht bewertet</strong></div><p class="field-help" id="j-grade-help"></p>
-            <div class="field"><label for="j-grade-reason">Nur bei Einschränkung: Was fehlt?</label><input id="j-grade-reason" type="text"  placeholder="Sonst reichen die Kriterien oben."></div>
-            <details class="journal-details"><summary>ICT-Tags und Chart-Beleg</summary><div class="journal-fields">          <div id="setup-tags">
+            <h3 class="card-title">Setup quality · per my playbook</h3>
+            <p class="field-help">Grade what was actually there at the entry. Define the required criteria and the optional extras once in Learn.</p>
+            <div class="journal-check"><label for="j-context">HTF context, target and counter-argument are clear</label><select id="j-context"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
+            <div class="journal-check"><label for="j-trigger">Required confirmation from my model was present at entry</label><select id="j-trigger"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
+            <div class="journal-check"><label for="j-conditions">Entry zone, risk, time window and news rules were met</label><select id="j-conditions"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
+            <div class="journal-check"><label for="j-extras">Extra features defined in advance</label><select id="j-extras"><option value="">Select…</option><option value="all">All present</option><option value="some">Optional one missing</option><option value="limited">Allowed limitation</option></select></div>
+            <div class="journal-score"><span>Setup</span><strong id="j-grade">Not graded yet</strong></div><p class="field-help" id="j-grade-help"></p>
+            <div class="field"><label for="j-grade-reason">Only if limited: what is missing?</label><input id="j-grade-reason" type="text"  placeholder="Otherwise the criteria above are enough."></div>
+            <details class="journal-details"><summary>ICT tags and chart evidence</summary><div class="journal-fields">          <div id="setup-tags">
             <div class="tag-group"><div class="tag-group-label">Liquidity</div><div class="tag-wrap">
               <button class="tag" onclick="toggleTag(this)">Liquidity Sweep</button><button class="tag" onclick="toggleTag(this)">Stop Hunt</button><button class="tag" onclick="toggleTag(this)">Judas Swing</button>
             </div></div>
@@ -711,58 +711,58 @@
               <button class="tag" onclick="toggleTag(this)">SMT Divergence</button><button class="tag" onclick="toggleTag(this)">OTE</button><button class="tag" onclick="toggleTag(this)">Silver Bullet</button>
             </div></div>
           </div>
-<div class="field"><label for="f-conf">Bestätigung — optional präzisieren</label><textarea id="f-conf" rows="2" placeholder="Level, Timeframe, Kerzenschluss. Was war VOR dem Entry vorhanden?"></textarea></div></div></details>
+<div class="field"><label for="f-conf">Confirmation — optional detail</label><textarea id="f-conf" rows="2" placeholder="Level, timeframe, candle close. What was there BEFORE the entry?"></textarea></div></div></details>
           </div>
           <div class="card journal-fields">
-            <h3 class="card-title">Risiko vorher festhalten</h3>
-            <div class="subgrid"><div class="field"><label for="j-risk">Ursprüngliches Geldrisiko ($)</label><input id="j-risk" type="number" step="0.01" placeholder="Für realisiertes R"></div><div class="field"><label for="f-contracts">Contracts</label><input id="f-contracts" type="number" step="0.01" placeholder="Anzahl"></div></div>
-            <details class="journal-details"><summary>Entry, Stop und Ziel für geplantes R:R</summary><div class="journal-fields"><div class="field"><label for="f-entry">Geplanter Entry</label><input id="f-entry" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-sl">Ursprünglicher Stop loss</label><input id="f-sl" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-tp">Take profit</label><input id="f-tp" type="number" step="0.01" placeholder=""></div><div class="journal-score"><span>Geplantes R:R</span><strong id="rr-label">—</strong></div><p id="rr-detail" class="field-help"></p></div></details>
-            <button class="btn" type="button" id="j-freeze" onclick="Journal.freezePlan()">Diesen Plan festhalten</button><p id="j-plan-status" class="field-help" aria-live="polite"></p>
+            <h3 class="card-title">Lock the risk beforehand</h3>
+            <div class="subgrid"><div class="field"><label for="j-risk">Original money risk ($)</label><input id="j-risk" type="number" step="0.01" placeholder="For realized R"></div><div class="field"><label for="f-contracts">Contracts</label><input id="f-contracts" type="number" step="0.01" placeholder="Count"></div></div>
+            <details class="journal-details"><summary>Entry, stop and target for the planned R:R</summary><div class="journal-fields"><div class="field"><label for="f-entry">Planned entry</label><input id="f-entry" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-sl">Original stop loss</label><input id="f-sl" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-tp">Take profit</label><input id="f-tp" type="number" step="0.01" placeholder=""></div><div class="journal-score"><span>Planned R:R</span><strong id="rr-label">—</strong></div><p id="rr-detail" class="field-help"></p></div></details>
+            <button class="btn" type="button" id="j-freeze" onclick="Journal.freezePlan()">Lock this plan</button><p id="j-plan-status" class="field-help" aria-live="polite"></p>
           </div>
-          <div class="wz-nav"><button class="btn" onclick="saveTradeDraftNow()">Entwurf sichern</button><button class="btn btn-primary" onclick="nextStep()">Weiter zum Abschluss</button></div>
+          <div class="wz-nav"><button class="btn" onclick="saveTradeDraftNow()">Save draft</button><button class="btn btn-primary" onclick="nextStep()">Next: outcome</button></div>
         </div>
         <div class="wz-panel" id="wz-2">
-          <p class="journal-intro">Nach dem Exit: Ergebnis und drei Entscheidungen. Gewinne ändern deine Ausführungsbewertung nicht.</p>
+          <p class="journal-intro">After the exit: the result and three decisions. A profit does not change your execution grade.</p>
           <div class="card journal-fields">
-            <div class="field"><label>Ergebnis</label><div class="seg" data-field="result" role="group" aria-label="Ergebnis"><button type="button" class="opt" data-v="Win" onclick="choice('result',this);Journal.update()">Win</button><button type="button" class="opt" data-v="Loss" onclick="choice('result',this);Journal.update()">Loss</button><button type="button" class="opt" data-v="Breakeven" onclick="choice('result',this);Journal.update()">Breakeven</button></div></div>
-            <div class="field"><label for="f-pnl">Netto-P&L ($) · nach Gebühren</label><input id="f-pnl" type="number" step="0.01" placeholder="z. B. 240 oder −150"></div>
-            <div class="journal-check"><label for="j-exec-entry">Entry nach meinen vollständigen Regeln?</label><select id="j-exec-entry"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="Partial">Teilweise</option><option value="No">Nein</option></select></div>
-            <div class="journal-check"><label for="j-exec-risk">Stop und Positionsgröße innerhalb meines Risikoplans?</label><select id="j-exec-risk"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="Partial">Teilweise</option><option value="No">Nein</option></select></div>
-            <div class="journal-check"><label for="j-exec-exit">Management / Exit wie vorher festgelegt?</label><select id="j-exec-exit"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="Partial">Teilweise</option><option value="No">Nein</option></select></div>
+            <div class="field"><label>Result</label><div class="seg" data-field="result" role="group" aria-label="Result"><button type="button" class="opt" data-v="Win" onclick="choice('result',this);Journal.update()">Win</button><button type="button" class="opt" data-v="Loss" onclick="choice('result',this);Journal.update()">Loss</button><button type="button" class="opt" data-v="Breakeven" onclick="choice('result',this);Journal.update()">Breakeven</button></div></div>
+            <div class="field"><label for="f-pnl">Net P&L ($) · after fees</label><input id="f-pnl" type="number" step="0.01" placeholder="e.g. 240 or −150"></div>
+            <div class="journal-check"><label for="j-exec-entry">Entry by my full rules?</label><select id="j-exec-entry"><option value="">Select…</option><option value="Yes">Yes</option><option value="Partial">Partial</option><option value="No">No</option></select></div>
+            <div class="journal-check"><label for="j-exec-risk">Stop and position size inside my risk plan?</label><select id="j-exec-risk"><option value="">Select…</option><option value="Yes">Yes</option><option value="Partial">Partial</option><option value="No">No</option></select></div>
+            <div class="journal-check"><label for="j-exec-exit">Management / exit as set beforehand?</label><select id="j-exec-exit"><option value="">Select…</option><option value="Yes">Yes</option><option value="Partial">Partial</option><option value="No">No</option></select></div>
             <div class="journal-score"><span>Execution Score</span><strong id="j-score">—</strong></div><p id="j-score-help" class="field-help"></p>
           </div>
           <div class="card journal-fields">
-            <h3 class="card-title">Psychology · was hat meine Entscheidung beeinflusst?</h3>
-            <div class="journal-check"><label for="j-pressure">Stärkster Einfluss</label><select id="j-pressure"><option value="">Bitte wählen</option><option value="none">Kein spürbarer Druck</option><option value="fomo">FOMO / etwas verpasst</option><option value="funded">Funded / Payout</option><option value="fear">Verlustangst</option><option value="revenge">Verlust aufholen</option><option value="other">Anderer Einfluss</option></select></div>
-            <div id="j-pressure-detail" class="journal-fields" hidden><div class="field"><label for="j-psych-trigger">Auslöser · wenige Worte</label><input id="j-psych-trigger" type="text"  placeholder="z. B. erste Gegenkerze; Gedanke: Account verlieren"></div><div class="field"><label for="j-action">Meine tatsächliche Handlung</label><input id="j-action" type="text"  placeholder="z. B. Stop unverändert gelassen / vorzeitig geschlossen"></div></div>
-            <details class="journal-details"><summary>Weitere Mindset-Notiz / Emotion</summary><div class="journal-fields"><div class="emo-wrap">
+            <h3 class="card-title">Psychology · what influenced my decision?</h3>
+            <div class="journal-check"><label for="j-pressure">Strongest influence</label><select id="j-pressure"><option value="">Select…</option><option value="none">No noticeable pressure</option><option value="fomo">FOMO / missed something</option><option value="funded">Funded / payout</option><option value="fear">Fear of losing</option><option value="revenge">Making a loss back</option><option value="other">Other influence</option></select></div>
+            <div id="j-pressure-detail" class="journal-fields" hidden><div class="field"><label for="j-psych-trigger">Trigger · a few words</label><input id="j-psych-trigger" type="text"  placeholder="e.g. first opposing candle; thought: losing the account"></div><div class="field"><label for="j-action">What I actually did</label><input id="j-action" type="text"  placeholder="e.g. left the stop alone / closed early"></div></div>
+            <details class="journal-details"><summary>More mindset notes / emotion</summary><div class="journal-fields"><div class="emo-wrap">
             <button class="emo" onclick="toggleEmo(this)">😊 Good</button><button class="emo" onclick="toggleEmo(this)">😌 Calm</button><button class="emo" onclick="toggleEmo(this)">🧘 Patient</button><button class="emo" onclick="toggleEmo(this)">🎯 Focused</button><button class="emo" onclick="toggleEmo(this)">💪 Disciplined</button><button class="emo" onclick="toggleEmo(this)">😶 Neutral</button><button class="emo" onclick="toggleEmo(this)">😤 Impatient</button><button class="emo" onclick="toggleEmo(this)">😰 Anxious</button><button class="emo" onclick="toggleEmo(this)">🤩 Overconfident</button><button class="emo" onclick="toggleEmo(this)">😓 FOMO</button><button class="emo" onclick="toggleEmo(this)">😩 Revenge</button>
-          </div><div class="field"><label for="f-mind">Mindset notes</label><textarea id="f-mind" rows="2" placeholder="Gedanke → Handlungsdrang → tatsächliche Handlung."></textarea></div></div></details>
+          </div><div class="field"><label for="f-mind">Mindset notes</label><textarea id="f-mind" rows="2" placeholder="Thought → urge → what I actually did."></textarea></div></div></details>
           </div>
-          <details id="j-legacy" class="journal-details" hidden><summary>Frühere Bewertungen prüfen</summary><p id="j-legacy-note" class="field-help"></p><div class="journal-fields"><div class="field"><label>Bisherige Setup-Note</label><div class="seg" data-field="grade" role="group" aria-label="Bisherige Setup-Note"><button type="button" class="opt" data-v="A+" onclick="choice('grade',this);Journal.update()">A+</button><button type="button" class="opt" data-v="A" onclick="choice('grade',this);Journal.update()">A</button><button type="button" class="opt" data-v="B" onclick="choice('grade',this);Journal.update()">B</button><button type="button" class="opt" data-v="Invalid" onclick="choice('grade',this);Journal.update()">Nicht im Playbook</button></div></div><div class="field"><label>Matches playbook?</label><div class="seg" data-field="matchesPlaybook" role="group" aria-label="Matches playbook?"><button type="button" class="opt" data-v="Yes" onclick="choice('matchesPlaybook',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('matchesPlaybook',this);Journal.update()">Nein</button></div></div><div class="field"><label>Would a pro take this?</label><div class="seg" data-field="proWouldTake" role="group" aria-label="Would a pro take this?"><button type="button" class="opt" data-v="Yes" onclick="choice('proWouldTake',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('proWouldTake',this);Journal.update()">Nein</button><button type="button" class="opt" data-v="Unsure" onclick="choice('proWouldTake',this);Journal.update()">Unsicher</button></div></div><div class="field"><label>To plan?</label><div class="seg" data-field="toPlan" role="group" aria-label="To plan?"><button type="button" class="opt" data-v="Yes" onclick="choice('toPlan',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="Partial" onclick="choice('toPlan',this);Journal.update()">Teilweise</button><button type="button" class="opt" data-v="No" onclick="choice('toPlan',this);Journal.update()">Nein</button></div></div><div class="field"><label>Entry gechased?</label><div class="seg" data-field="chased" role="group" aria-label="Entry gechased?"><button type="button" class="opt" data-v="Yes" onclick="choice('chased',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('chased',this);Journal.update()">Nein</button></div></div><div class="field"><label>Geduldig?</label><div class="seg" data-field="patience" role="group" aria-label="Geduldig?"><button type="button" class="opt" data-v="Yes" onclick="choice('patience',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('patience',this);Journal.update()">Nein</button></div></div><div class="field"><label>Confirmation present?</label><div class="seg" data-field="confirmation" role="group" aria-label="Confirmation present?"><button type="button" class="opt" data-v="Yes" onclick="choice('confirmation',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('confirmation',this);Journal.update()">Nein</button></div></div><div class="field"><label>Followed rules?</label><div class="seg" data-field="rulebased" role="group" aria-label="Followed rules?"><button type="button" class="opt" data-v="yes" onclick="choice('rulebased',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="partial" onclick="choice('rulebased',this);Journal.update()">Teilweise</button><button type="button" class="opt" data-v="no" onclick="choice('rulebased',this);Journal.update()">Nein</button></div></div><div class="field"><label>Bisherige Execution 1–5</label><div class="rate" data-field="execQuality"><button type="button" class="dot" onclick="rate('execQuality',this)">1</button><button type="button" class="dot" onclick="rate('execQuality',this)">2</button><button type="button" class="dot" onclick="rate('execQuality',this)">3</button><button type="button" class="dot" onclick="rate('execQuality',this)">4</button><button type="button" class="dot" onclick="rate('execQuality',this)">5</button></div></div><div class="field"><label>Focus</label><div class="rate" data-field="preFocus"><button type="button" class="dot" onclick="rate('preFocus',this)">1</button><button type="button" class="dot" onclick="rate('preFocus',this)">2</button><button type="button" class="dot" onclick="rate('preFocus',this)">3</button><button type="button" class="dot" onclick="rate('preFocus',this)">4</button><button type="button" class="dot" onclick="rate('preFocus',this)">5</button></div></div><div class="field"><label>Patience</label><div class="rate" data-field="prePatience"><button type="button" class="dot" onclick="rate('prePatience',this)">1</button><button type="button" class="dot" onclick="rate('prePatience',this)">2</button><button type="button" class="dot" onclick="rate('prePatience',this)">3</button><button type="button" class="dot" onclick="rate('prePatience',this)">4</button><button type="button" class="dot" onclick="rate('prePatience',this)">5</button></div></div><div class="field"><label>Energy</label><div class="rate" data-field="preEnergy"><button type="button" class="dot" onclick="rate('preEnergy',this)">1</button><button type="button" class="dot" onclick="rate('preEnergy',this)">2</button><button type="button" class="dot" onclick="rate('preEnergy',this)">3</button><button type="button" class="dot" onclick="rate('preEnergy',this)">4</button><button type="button" class="dot" onclick="rate('preEnergy',this)">5</button></div></div><div class="field"><label>Doubts?</label><div class="seg" data-field="doubts" role="group" aria-label="Doubts?"><button type="button" class="opt" data-v="Yes" onclick="choice('doubts',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('doubts',this);Journal.update()">Nein</button></div></div><div class="field"><label>Deviated?</label><div class="seg" data-field="deviated" role="group" aria-label="Deviated?"><button type="button" class="opt" data-v="Yes" onclick="choice('deviated',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('deviated',this);Journal.update()">Nein</button></div></div><div class="field"><label>Satisfied?</label><div class="seg" data-field="satisfied" role="group" aria-label="Satisfied?"><button type="button" class="opt" data-v="Yes" onclick="choice('satisfied',this);Journal.update()">Ja</button><button type="button" class="opt" data-v="No" onclick="choice('satisfied',this);Journal.update()">Nein</button></div></div></div><span id="exec-num" hidden></span><span id="exec-fill" hidden></span><span id="setq-label" hidden></span><span id="setq-fill" hidden></span></details>
-          <div class="wz-nav"><button class="btn" onclick="prevStep()">Zurück</button><button class="btn btn-primary" onclick="nextStep()">Eine Erkenntnis festhalten</button></div>
+          <details id="j-legacy" class="journal-details" hidden><summary>Check earlier ratings</summary><p id="j-legacy-note" class="field-help"></p><div class="journal-fields"><div class="field"><label>Previous setup grade</label><div class="seg" data-field="grade" role="group" aria-label="Previous setup grade"><button type="button" class="opt" data-v="A+" onclick="choice('grade',this);Journal.update()">A+</button><button type="button" class="opt" data-v="A" onclick="choice('grade',this);Journal.update()">A</button><button type="button" class="opt" data-v="B" onclick="choice('grade',this);Journal.update()">B</button><button type="button" class="opt" data-v="Invalid" onclick="choice('grade',this);Journal.update()">Not in playbook</button></div></div><div class="field"><label>Matches playbook?</label><div class="seg" data-field="matchesPlaybook" role="group" aria-label="Matches playbook?"><button type="button" class="opt" data-v="Yes" onclick="choice('matchesPlaybook',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('matchesPlaybook',this);Journal.update()">No</button></div></div><div class="field"><label>Would a pro take this?</label><div class="seg" data-field="proWouldTake" role="group" aria-label="Would a pro take this?"><button type="button" class="opt" data-v="Yes" onclick="choice('proWouldTake',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('proWouldTake',this);Journal.update()">No</button><button type="button" class="opt" data-v="Unsure" onclick="choice('proWouldTake',this);Journal.update()">Unsure</button></div></div><div class="field"><label>To plan?</label><div class="seg" data-field="toPlan" role="group" aria-label="To plan?"><button type="button" class="opt" data-v="Yes" onclick="choice('toPlan',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="Partial" onclick="choice('toPlan',this);Journal.update()">Partial</button><button type="button" class="opt" data-v="No" onclick="choice('toPlan',this);Journal.update()">No</button></div></div><div class="field"><label>Chased the entry?</label><div class="seg" data-field="chased" role="group" aria-label="Chased the entry?"><button type="button" class="opt" data-v="Yes" onclick="choice('chased',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('chased',this);Journal.update()">No</button></div></div><div class="field"><label>Patient?</label><div class="seg" data-field="patience" role="group" aria-label="Patient?"><button type="button" class="opt" data-v="Yes" onclick="choice('patience',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('patience',this);Journal.update()">No</button></div></div><div class="field"><label>Confirmation present?</label><div class="seg" data-field="confirmation" role="group" aria-label="Confirmation present?"><button type="button" class="opt" data-v="Yes" onclick="choice('confirmation',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('confirmation',this);Journal.update()">No</button></div></div><div class="field"><label>Followed rules?</label><div class="seg" data-field="rulebased" role="group" aria-label="Followed rules?"><button type="button" class="opt" data-v="yes" onclick="choice('rulebased',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="partial" onclick="choice('rulebased',this);Journal.update()">Partial</button><button type="button" class="opt" data-v="no" onclick="choice('rulebased',this);Journal.update()">No</button></div></div><div class="field"><label>Previous execution 1–5</label><div class="rate" data-field="execQuality"><button type="button" class="dot" onclick="rate('execQuality',this)">1</button><button type="button" class="dot" onclick="rate('execQuality',this)">2</button><button type="button" class="dot" onclick="rate('execQuality',this)">3</button><button type="button" class="dot" onclick="rate('execQuality',this)">4</button><button type="button" class="dot" onclick="rate('execQuality',this)">5</button></div></div><div class="field"><label>Focus</label><div class="rate" data-field="preFocus"><button type="button" class="dot" onclick="rate('preFocus',this)">1</button><button type="button" class="dot" onclick="rate('preFocus',this)">2</button><button type="button" class="dot" onclick="rate('preFocus',this)">3</button><button type="button" class="dot" onclick="rate('preFocus',this)">4</button><button type="button" class="dot" onclick="rate('preFocus',this)">5</button></div></div><div class="field"><label>Patience</label><div class="rate" data-field="prePatience"><button type="button" class="dot" onclick="rate('prePatience',this)">1</button><button type="button" class="dot" onclick="rate('prePatience',this)">2</button><button type="button" class="dot" onclick="rate('prePatience',this)">3</button><button type="button" class="dot" onclick="rate('prePatience',this)">4</button><button type="button" class="dot" onclick="rate('prePatience',this)">5</button></div></div><div class="field"><label>Energy</label><div class="rate" data-field="preEnergy"><button type="button" class="dot" onclick="rate('preEnergy',this)">1</button><button type="button" class="dot" onclick="rate('preEnergy',this)">2</button><button type="button" class="dot" onclick="rate('preEnergy',this)">3</button><button type="button" class="dot" onclick="rate('preEnergy',this)">4</button><button type="button" class="dot" onclick="rate('preEnergy',this)">5</button></div></div><div class="field"><label>Doubts?</label><div class="seg" data-field="doubts" role="group" aria-label="Doubts?"><button type="button" class="opt" data-v="Yes" onclick="choice('doubts',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('doubts',this);Journal.update()">No</button></div></div><div class="field"><label>Deviated?</label><div class="seg" data-field="deviated" role="group" aria-label="Deviated?"><button type="button" class="opt" data-v="Yes" onclick="choice('deviated',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('deviated',this);Journal.update()">No</button></div></div><div class="field"><label>Satisfied?</label><div class="seg" data-field="satisfied" role="group" aria-label="Satisfied?"><button type="button" class="opt" data-v="Yes" onclick="choice('satisfied',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('satisfied',this);Journal.update()">No</button></div></div></div><span id="exec-num" hidden></span><span id="exec-fill" hidden></span><span id="setq-label" hidden></span><span id="setq-fill" hidden></span></details>
+          <div class="wz-nav"><button class="btn" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Next: the lesson</button></div>
         </div>
         <div class="wz-panel" id="wz-3">
           <div class="card journal-fields">
-            <h3 class="card-title">Eine Erkenntnis genügt</h3>
-            <div class="journal-check"><label for="j-focus">Was nehme ich mit?</label><select id="j-focus"><option value="">Bitte wählen</option><option value="repeat">Sauber ausgeführt</option><option value="chase">Entry hinterhergelaufen</option><option value="early">Zu früh eingestiegen</option><option value="risk">Risiko verändert</option><option value="exit">Ungeplanter Exit / BE</option><option value="pressure">Funded- / Payout-Druck</option><option value="context">HTF / ES übersehen</option><option value="other">Andere Beobachtung</option></select></div>
-            <button class="btn" type="button" onclick="Journal.suggestLesson()">Passenden Satz als Ausgangspunkt einsetzen</button>
-            <div class="field"><label for="f-lesson">Beim nächsten passenden Anlass …</label><textarea id="f-lesson" rows="2" placeholder="Wenn [Auslöser], dann [prüfbare Handlung]. Eine bewährte Regel darf gleich bleiben."></textarea></div>
-            <p class="field-help">Den Vorschlag an dein Playbook anpassen. Aus einem Gewinn oder Verlust entsteht noch keine neue Strategieregel.</p>
-            <button id="j-to-learn" class="btn" type="button" onclick="Journal.toLearn()">Als Wochenregel in Learn vormerken</button>
-            <details class="journal-details"><summary>Deep Review · nur falls noch etwas erklärt werden muss</summary><div class="journal-fields"><div class="field"><label for="f-factor">Größter beobachteter Faktor</label><textarea id="f-factor" rows="2" placeholder="Was ist belegt? Was ist nur meine Vermutung?"></textarea></div><div class="field"><label for="f-bestrule">Gut eingehaltene Regel</label><textarea id="f-bestrule" rows="2" placeholder="Welche konkrete Entscheidung wiederholen?"></textarea></div><div class="field"><label for="f-mistake">Wichtigste Abweichung</label><textarea id="f-mistake" rows="2" placeholder="Kein erkennbarer Regelverstoß ist eine gültige Antwort."></textarea></div></div></details>
+            <h3 class="card-title">One lesson is enough</h3>
+            <div class="journal-check"><label for="j-focus">What do I take away?</label><select id="j-focus"><option value="">Select…</option><option value="repeat">Executed cleanly</option><option value="chase">Chased the entry</option><option value="early">Entered too early</option><option value="risk">Changed the risk</option><option value="exit">Unplanned exit / breakeven</option><option value="pressure">Funded / payout pressure</option><option value="context">Missed HTF / ES</option><option value="other">Other observation</option></select></div>
+            <button class="btn" type="button" onclick="Journal.suggestLesson()">Insert a matching sentence as a starting point</button>
+            <div class="field"><label for="f-lesson">Next time this comes up …</label><textarea id="f-lesson" rows="2" placeholder="If [trigger], then [action I can check]. A rule that works may stay the same."></textarea></div>
+            <p class="field-help">Adapt the suggestion to your playbook. A single win or loss is not a new strategy rule.</p>
+            <button id="j-to-learn" class="btn" type="button" onclick="Journal.toLearn()">Save as a weekly rule in Learn</button>
+            <details class="journal-details"><summary>Deep review · only if something still needs explaining</summary><div class="journal-fields"><div class="field"><label for="f-factor">Biggest factor observed</label><textarea id="f-factor" rows="2" placeholder="What is evidenced? What is only my guess?"></textarea></div><div class="field"><label for="f-bestrule">Rule I followed well</label><textarea id="f-bestrule" rows="2" placeholder="Which concrete decision should I repeat?"></textarea></div><div class="field"><label for="f-mistake">Most important deviation</label><textarea id="f-mistake" rows="2" placeholder="&quot;No rule broken&quot; is a valid answer."></textarea></div></div></details>
           </div>
-          <div class="card"><h3 class="card-title">Meine Wochenregel prüfen</h3><p class="field-help">Im Plan eine Wochenregel auswählen; hier nur die Umsetzung bewerten.</p>
-            <div class="journal-check"><label for="j-rule-check">Diese Regel bei diesem Trade eingehalten?</label><select id="j-rule-check"><option value="">Bitte wählen</option><option value="Yes">Ja</option><option value="No">Nein</option><option value="NA">Nicht passend</option></select></div>
+          <div class="card"><h3 class="card-title">Check my weekly rule</h3><p class="field-help">Pick a weekly rule in the plan step; here you only rate how you executed it.</p>
+            <div class="journal-check"><label for="j-rule-check">Did I follow that rule on this trade?</label><select id="j-rule-check"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option><option value="NA">Not applicable</option></select></div>
           </div>
-          <details class="journal-details"><summary>Screenshot anhängen · optional</summary>          <div class="upload-zone" id="screenshot-zone" onclick="document.getElementById('f-img').click()" style="position:relative">
+          <details class="journal-details"><summary>Attach a screenshot · optional</summary>          <div class="upload-zone" id="screenshot-zone" onclick="document.getElementById('f-img').click()" style="position:relative">
             <div id="screenshot-hint">📸 Click to upload · or <kbd style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit">Ctrl+V</kbd> to paste · or <button onclick="event.stopPropagation();autoGrabClipboard()" style="background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">⚡ Auto-load last screenshot</button></div>
           </div>
           <input type="file" id="f-img" accept="image/*" style="display:none" onchange="handleImg(this)">
           <img id="img-prev" class="img-preview">
 </details>
           <p class="journal-notice" id="j-save-check" aria-live="polite"></p>
-          <div class="wz-nav"><button class="btn" onclick="prevStep()">Zurück</button><button class="btn btn-primary" onclick="saveTrade()">Trade speichern</button></div>
+          <div class="wz-nav"><button class="btn" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="saveTrade()">Save trade</button></div>
         </div>
       </div><!-- /trade-wizard -->
 
@@ -841,7 +841,7 @@
             <button class="rchip" data-range="30" onclick="setStatsRange(30)">30d</button>
             <button class="rchip" data-range="90" onclick="setStatsRange(90)">90d</button>
             <button class="rchip active" data-range="0" onclick="setStatsRange(0)">All</button>
-            <select id="stats-mode" aria-label="Umgebung filtern" onchange="setStatsRange(statsRange)" style="width:auto"><option value="">Alle Umgebungen</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option><option value="Unknown">Nicht erfasst</option></select>
+            <select id="stats-mode" aria-label="Filter by environment" onchange="setStatsRange(statsRange)" style="width:auto"><option value="">All environments</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option><option value="Unknown">Not recorded</option></select>
           </div>
         </div>
       </div>
@@ -855,9 +855,9 @@
     <div id="sec-learn" class="section">
       <div class="page-head"><div class="page-title">Learn</div><div class="page-desc">Document what you learn — concepts, mistakes, setups, mindset.</div></div>
 
-      <div id="j-learn-progress" class="card"></div>
-      <button type="button" class="btn" onclick="Journal.playbookTemplate()">ICT-Playbook-Vorlage ausfüllen</button>
-      <div class="journal-notice">Wöchentlich: eine wiederkehrende Abweichung und Gegenbeispiele prüfen. Eine Regel testen; nach zehn passenden Trades die Umsetzung auswerten. Das ist kein Profitabilitätsnachweis.</div>
+      <div id="j-learn-progress" class="card" hidden></div>
+      <button type="button" class="btn" onclick="Journal.playbookTemplate()">Fill in the ICT playbook template</button>
+      <div class="journal-notice">Weekly: look at one recurring deviation and its counter-examples. Test one rule; review how you executed it after ten matching trades. This is not proof of profitability.</div>
       <div class="learn-tabs">
         <button class="ltab active" id="lt-new" onclick="learnTab('new')">✏️ New entry</button>
         <button class="ltab" id="lt-notes" onclick="learnTab('notes')">📖 My notes</button>
@@ -1684,7 +1684,7 @@ function tradeToDraft(t){
 function enterEditUI(t){
   const b=document.getElementById('edit-banner'); if(b)b.style.display='flex';
   const lab=document.querySelector('#edit-banner .edit-banner-label');
-  if(lab)lab.textContent='Trade vom '+(t.date||'?')+' bearbeiten';
+  if(lab)lab.textContent='Editing trade from '+(t.date||'?');
   const btn=document.querySelector('#wz-3 .wz-nav .btn-primary'); if(btn)btn.textContent='✓ Save changes';
   // Entwurf-Hinweis (mit "Entwurf verwerfen") ergibt beim Bearbeiten keinen Sinn
   const dn=document.querySelector('#trade-wizard .draft-note'); if(dn)dn.style.display='none';
@@ -1710,7 +1710,7 @@ function abortTradeEdit(){
   _tradeDraftSuspended=false;
 }
 function finishEdit(){ abortTradeEdit(); switchTab('list',true); }
-function cancelEdit(){ if(editingTradeId===null)return; finishEdit(); showToast('Bearbeitung abgebrochen'); }
+function cancelEdit(){ if(editingTradeId===null)return; finishEdit(); showToast('Editing cancelled'); }
 
 async function editTrade(id){
   const t=(await loadTrades()).find(x=>x.id===id);
@@ -1762,7 +1762,7 @@ function abortNoTradeEdit(){
   else ntFormReset();
 }
 function finishEditNoTrade(){ abortNoTradeEdit(); setMode('trade'); switchTab('list',true); }
-function cancelEditNoTrade(){ if(editingNoTradeId===null)return; finishEditNoTrade(); showToast('Bearbeitung abgebrochen'); }
+function cancelEditNoTrade(){ if(editingNoTradeId===null)return; finishEditNoTrade(); showToast('Editing cancelled'); }
 
 function ntOptionExists(field,v){
   const seg=document.querySelector('#notrade-form .seg[data-field="'+field+'"]');
@@ -1792,7 +1792,7 @@ function editNoTrade(t){
   if(lab)lab.textContent='Editing no-trade day of '+(t.date||'?');
   const sb=document.querySelector('#notrade-form .btn-row .btn-primary'); if(sb)sb.textContent='✓ Save changes';
   closeDetail();
-  showToast('Bearbeitungsmodus');
+  showToast('Editing mode');
 }
 
 function goStep(n,skipDraft){ if(n<1||n>STEPS)return; curStep=n; document.querySelectorAll('.wz-panel').forEach(p=>p.classList.remove('active')); const pan=document.getElementById('wz-'+n); if(pan)pan.classList.add('active'); document.querySelectorAll('.wz-step').forEach((el,i)=>{ el.classList.toggle('active',i+1===n); el.classList.toggle('done',i+1<n); el.setAttribute('aria-current',i+1===n?'step':'false'); }); const f=document.getElementById('wz-fill'); if(f)f.style.width=((n-1)/(STEPS-1)*100)+'%'; const mw=document.querySelector('.main-wrap'); if(mw){mw.scrollTop=0; if(n>1)mw.scrollTop=document.getElementById('trade-wizard').getBoundingClientRect().top-mw.getBoundingClientRect().top-8;} if(!skipDraft)scheduleTradeDraft(); Journal.update(); if(n===1||n===3)Journal.renderRules(); }
@@ -1854,10 +1854,10 @@ function updateSetupQ(){ const map={'A+':100,'A':80,'B':60}; let s=map[form.grad
 let _savingTrade=false;
 async function saveTrade(){
   if(_savingTrade) return;
-  if(!['Win','Loss','Breakeven'].includes(form.result)){goStep(2);showToast('Ergebnis wählen. Der unfertige Trade bleibt als Entwurf erhalten.');return;}
+  if(!['Win','Loss','Breakeven'].includes(form.result)){goStep(2);showToast('Pick a result. The unfinished trade is kept as a draft.');return;}
   const enteredPnl=Journal.num(Journal.value('f-pnl'));
-  if(enteredPnl!==null && ((form.result==='Win' && enteredPnl<0)||(form.result==='Loss' && enteredPnl>0))){goStep(2);showToast('Ergebnis und P&L-Vorzeichen prüfen. Es wird nichts automatisch umgedreht.');return;}
-  if(Journal.value('j-risk') && !(Journal.num(Journal.value('j-risk'))>0)){goStep(1);showToast('Ursprüngliches Risiko muss größer als null sein.');return;}
+  if(enteredPnl!==null && ((form.result==='Win' && enteredPnl<0)||(form.result==='Loss' && enteredPnl>0))){goStep(2);showToast('Check the result and the P&L sign. Nothing is flipped automatically.');return;}
+  if(Journal.value('j-risk') && !(Journal.num(Journal.value('j-risk'))>0)){goStep(1);showToast('The original risk has to be greater than zero.');return;}
   _savingTrade=true;
   // gezielt der Speichern-Button in Schritt 5 -- '#sec-log .wz-nav .btn-primary'
   // haette den "Next"-Button aus Schritt 1 erwischt
@@ -1915,7 +1915,7 @@ async function saveTrade(){
       // (Altdaten/Import), gehen sonst still verloren -> anhängen.
       const orphanSetup=(data[idx].setup||[]).filter(s=>!setupLabelHasButton(s));
       if(orphanSetup.length) patch.setup=[...(patch.setup||[]), ...orphanSetup];
-      if(patch.setup.length===(original.setup||[]).length && patch.setup.every(s=>original.setup.includes(s))) patch.setup=[...original.setup];
+      if(original.setup && patch.setup.length===original.setup.length && patch.setup.every(s=>original.setup.includes(s))) patch.setup=[...original.setup];
       // Emotion wird per DOM gelesen -> nicht zuordenbare Altwerte nicht leeren
       if(!patch.emotion && data[idx].emotion &&
          ![...document.querySelectorAll('#trade-wizard .emo')].some(b=>b.textContent===data[idx].emotion)){
@@ -2041,7 +2041,7 @@ async function openDetail(id){
   const execBadge = (t.executionScore!==undefined&&t.executionScore!==null&&t.executionScore!=='')?'<span class="badge" style="background:rgba(52,211,153,.12);color:var(--green)">Exec '+t.executionScore+'</span>':'';
   const pnlBadge = (t.pnl!==undefined&&t.pnl!==null&&t.pnl!=='')?'<span class="badge" style="background:'+(t.pnl>=0?'rgba(52,211,153,.15);color:var(--green)':'rgba(248,113,113,.15);color:var(--red)')+'">'+(t.pnl>=0?'+':'')+'$'+t.pnl.toFixed(2)+'</span>':'';
   document.getElementById('detail-el').innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+t.instrument+'" style="font-size:13px;padding:4px 12px">'+t.instrument+'</span><span style="font-size:21px;font-weight:600">'+t.direction+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Edit</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="instr '+Journal.esc(t.instrument||'')+'" style="font-size:13px;padding:4px 12px">'+Journal.esc(t.instrument||'')+'</span><span style="font-size:21px;font-weight:600">'+Journal.esc(t.direction||'')+'</span><span class="badge '+c+'">'+(t.result||'–')+'</span>'+gradeBadge+execBadge+pnlBadge+'</div><div style="color:var(--muted);font-size:13px">'+t.date+'</div></div><div class="detail-actions"><button class="edit-btn" onclick="editTrade('+t.id+')">✎ Edit</button><button class="delete-btn" onclick="deleteTrade('+t.id+')">🗑 Delete</button></div></div>'+
     (t.screenshot?'<img src="'+t.screenshot+'" class="shot-thumb" onclick="openLightbox(\''+t.screenshot+'\')">':'')+
     Journal.summary(t)+
     (planRows?'<div class="card"><div class="card-title">Plan & Bias</div><div class="dl">'+planRows+'</div></div>':'')+
@@ -2211,7 +2211,7 @@ function disciplineStripHTML(score,total,rbP,planP,emoP){
     seg('Trades taken',String(total))+
     seg('Rule-based',pct(rbP))+
     seg('Plan followed',pct(planP))+
-    seg('Regeltreue erfasst',pct(emoP))+
+    seg('Rule check logged',pct(emoP))+
   '</div>';
 }
 
@@ -2240,7 +2240,7 @@ function disciplineGapBlock(trades,hasPnl){
   if(hasPnl && rb && dev && rb.avg!==null && dev.avg!==null && dev.wp>0){
     const delta=rb.avg-dev.avg;
     note=delta>0
-      ? 'Der beobachtete Unterschied beträgt $'+Math.round(delta).toLocaleString('en-US')+' pro Trade. Unterschiedliche Setups und Risiken können mitwirken; keine nachgewiesenen Fehlerkosten.'
+      ? 'The observed difference is $'+Math.round(delta).toLocaleString('en-US')+' per trade. Different setups and risks can play into that; it is not a proven cost of mistakes.'
       : 'No P&L penalty for deviating in this sample yet — the broken habit is still the risk.';
   } else if(rb && rb.dec>0 && dev && dev.dec>0){
     note='Rule-based win rate '+rb.wr+'% vs '+dev.wr+'% when you deviated.';
@@ -2289,7 +2289,7 @@ function conceptEdgeBlock(trades,hasPnl){
         '<span class="mbar-n">'+r.wr+'% · '+r.hp+'</span></div>';
     }).join('');
     return '<div class="fcard"><div class="fcard-title">ICT Concept Edge</div>'+body+
-      '<p class="fcard-note">P&L der Trades mit diesem Tag. Tags überlappen; Beiträge nicht addieren. FVG-Timeframes zusammengefasst. Kein Ursachenbeweis.</p></div>';
+      '<p class="fcard-note">P&L of the trades carrying this tag. Tags overlap; do not add the contributions up. FVG timeframes are merged. Not proof of cause.</p></div>';
   }
   rows=rows.filter(r=>r.dec>0).sort((a,b)=>b.wr-a.wr||b.dec-a.dec).slice(0,7);
   if(!rows.length) return fcardEmpty('ICT Concept Edge','Not enough decided trades per concept yet.');
@@ -2298,7 +2298,7 @@ function conceptEdgeBlock(trades,hasPnl){
     '<span class="mbar-val" style="color:'+wrColor(r.wr)+'">'+r.wr+'%</span>'+
     '<span class="mbar-n">'+r.w+'/'+r.dec+'</span></div>').join('');
   return '<div class="fcard"><div class="fcard-title">ICT Concept Edge</div>'+body+
-    '<p class="fcard-note">Nach Win-Rate sortiert. Tags überlappen; kleine Gruppen belegen keinen Edge.</p></div>';
+    '<p class="fcard-note">Sorted by win rate. Tags overlap; small groups do not prove an edge.</p></div>';
 }
 
 function perfTimelineHTML(data){
@@ -2357,8 +2357,7 @@ async function renderStats(){
   window._statsTrades=trades;
   const now=new Date(); if(calY===null){calY=now.getFullYear();calM=now.getMonth();}
 
-  el.innerHTML=Journal.coverage(trades)+
-    '<div class="stats-hero">'+
+  el.innerHTML='<div class="stats-hero">'+
       '<div class="hero-card">'+
         '<div class="hero-top">'+
           '<div><div class="hero-lab">'+(hasPnl?'Net P&L':'Net score')+'</div>'+
@@ -2377,8 +2376,8 @@ async function renderStats(){
       '<div class="gcard"><div class="g-label">Total trades</div><div class="g-val accent">'+total+'</div><div class="g-sub">in selected period</div></div>'+
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Win</div><div class="g-val" style="color:'+(winPnls.length?'var(--green)':'var(--muted)')+'">'+(winPnls.length?'$'+Math.round(avgWin).toLocaleString('en-US'):'\u2013')+'</div><div class="g-sub">'+(winPnls.length?winPnls.length+' wins with P&L':'no P&L data')+'</div></div>':'')+
       (hasPnl?'<div class="gcard"><div class="g-label">\u00D8 Loss</div><div class="g-val" style="color:'+(lossPnls.length?'var(--red)':'var(--muted)')+'">'+(lossPnls.length?'$'+Math.round(avgLoss).toLocaleString('en-US'):'\u2013')+'</div><div class="g-sub">'+(lossPnls.length?lossPnls.length+' losses with P&L':'no P&L data')+'</div></div>':'')+
-      '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val" style="color:'+(rbP===null?'var(--muted)':rbP>=70?'var(--green)':'var(--amber)')+'">'+(rbP===null?'—':rbP+'%')+'</div><div class="g-sub">'+ruleMeasured.length+'/'+total+' Trades bewertet</div></div>'+
-      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+dStreak.count+'" style="color:'+(dStreak.count>0?'var(--amber)':'var(--muted)')+'">0</div><div class="g-sub">'+(dStreak.stale?'reset · '+dStreak.gap+' days idle':dStreak.count>0?'regelkonforme Trades · Pausen sind erlaubt':'follow your plan to start')+'</div></div>'+
+      '<div class="gcard"><div class="g-label">Rule-based</div><div class="g-val" style="color:'+(rbP===null?'var(--muted)':rbP>=70?'var(--green)':'var(--amber)')+'">'+(rbP===null?'—':rbP+'%')+'</div><div class="g-sub">'+ruleMeasured.length+'/'+total+' trades rated</div></div>'+
+      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+dStreak.count+'" style="color:'+(dStreak.count>0?'var(--amber)':'var(--muted)')+'">0</div><div class="g-sub">'+(dStreak.stale?'reset · '+dStreak.gap+' days idle':dStreak.count>0?'rule-based trades · breaks are allowed':'follow your plan to start')+'</div></div>'+
       '<div class="gcard"><div class="g-label">\uD83D\uDEAB No-Trade Days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
     '</div>'+
     disciplineStripHTML(ds,total,rbP,planP,emoP)+
@@ -2407,7 +2406,7 @@ function wrColor(wr){ return wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--
 async function renderReview(){
   const allData=await loadTrades(), el=document.getElementById('review-el');
   const data=allData.filter(t=>!t.isNoTrade && inRange(t));
-  document.getElementById('stats-sub').textContent=(statsRange?'Letzte '+statsRange+' Tage':'Alle Trades')+' · '+data.length+' Trades';
+  document.getElementById('stats-sub').textContent=(statsRange?('Last '+statsRange+' days'):'All trades')+' · '+data.length+' Trade'+(data.length!==1?'s':'');
   if(data.length<2){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>Log a few trades first — the review needs data to find your patterns.</p></div>'; return; }
   const days=['Mon','Tue','Wed','Thu','Fri'], dayIdx=[1,2,3,4,5];
   let dayHtml='';
@@ -2450,14 +2449,14 @@ async function renderReview(){
   const bestTrades=data.filter(t=>t.rulebased==='yes').slice(0,5);
   let bestHtml='';
   if(bestTrades.length){ bestHtml=bestTrades.map(t=>`<div class="trade-item" onclick="switchTab('list');setTimeout(()=>openDetail(${t.id}),100)"><div class="trade-head"><div class="trade-name"><span class="instr ${t.instrument}">${t.instrument}</span>${t.direction}<span style="color:var(--muted);font-weight:400"> · ${t.date}</span></div><span class="badge">${Journal.esc(t.result)}</span></div><div class="trade-meta">${t.setup&&t.setup.length?`<span>${t.setup.slice(0,3).join(', ')}</span>`:''}</div></div>`).join(''); }
-  else bestHtml='<p style="color:var(--muted);font-size:13px">Noch keine als vollständig regelkonform erfassten Trades.</p>';
+  else bestHtml='<p style="color:var(--muted);font-size:13px">No trades logged as fully rule-based yet.</p>';
   const topSetup=setupArr[0];
   const rhHtml='<div class="review-highlights">'+
     '<div class="rh-card"><div class="rh-lab">Best weekday</div><div class="rh-val" style="color:var(--green)">'+(bestDay||'\u2013')+'</div><div class="rh-sub">'+(bestDay?'net '+(bestScore>0?'+':'')+bestScore:'not enough data')+'</div></div>'+
     '<div class="rh-card"><div class="rh-lab">Best setup</div><div class="rh-val" style="color:'+(topSetup?wrColor(topSetup.wr):'var(--muted)')+'">'+(topSetup?topSetup.name:'\u2013')+'</div><div class="rh-sub">'+(topSetup?topSetup.wr+'% \u00b7 '+topSetup.w+'/'+topSetup.dec:'log more setups')+'</div></div>'+
     '<div class="rh-card"><div class="rh-lab">Best mindset</div><div class="rh-val" style="color:'+(bestEmo?wrColor(bestEmo.wr):'var(--muted)')+';font-size:15px">'+(bestEmo?bestEmo.name:'\u2013')+'</div><div class="rh-sub">'+(bestEmo?bestEmo.wr+'% \u00b7 '+bestEmo.w+'/'+bestEmo.dec:'tag how you felt')+'</div></div>'+
   '</div>';
-  el.innerHTML=Journal.coverage(data)+Journal.patterns(data)+rhHtml+`<div class="card"><div class="card-title">Win rate by weekday</div>${dayHtml}${bestDay?`<p style="font-size:12px;color:var(--muted);margin-top:14px">📈 Strongest day so far: <span style="color:var(--green);font-weight:600">${bestDay}</span> (net ${bestScore>0?'+':''}${bestScore})</p>`:''}</div><div class="card"><div class="card-title">Setup performance — best concepts</div>${setupHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Sorted by win rate. Kleine Gruppen bleiben vorläufig; auch drei Trades belegen keinen Edge.</p></div><div class="card"><div class="card-title">Emotional state — results</div>${emoHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Win rate and average P&L per feeling you logged. Faded = fewer than 3 decided trades.</p></div><div class="card"><div class="card-title">Regelkonforme Trades prüfen — auch Verluste</div>${bestHtml}</div>`;
+  el.innerHTML=Journal.patterns(data)+rhHtml+`<div class="card"><div class="card-title">Win rate by weekday</div>${dayHtml}${bestDay?`<p style="font-size:12px;color:var(--muted);margin-top:14px">📈 Strongest day so far: <span style="color:var(--green);font-weight:600">${bestDay}</span> (net ${bestScore>0?'+':''}${bestScore})</p>`:''}</div><div class="card"><div class="card-title">Setup performance — best concepts</div>${setupHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Sorted by win rate. Small groups stay provisional; even three trades do not prove an edge.</p></div><div class="card"><div class="card-title">Emotional state — results</div>${emoHtml}<p style="font-size:11px;color:var(--muted);margin-top:14px">Win rate and average P&L per feeling you logged. Faded = fewer than 3 decided trades.</p></div><div class="card"><div class="card-title">Review rule-based trades — losses included</div>${bestHtml}</div>`;
 }
 
 async function exportJSON(){ const data=await loadTrades(); const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='trades-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showToast('Exported ✓'); }
@@ -2934,7 +2933,7 @@ function clearLearnForm(){
 }
 
 async function saveLearnEntry(){
-  if(!await readyLearn()){showToast('Journal noch nicht verfügbar. Deine Notiz bleibt erhalten.');return;}
+  if(!await readyLearn()){showToast('Journal not available yet. Your note is kept.');return;}
   const title=document.getElementById('ln-title').value.trim();
   const body=document.getElementById('ln-body').value.trim();
   if(!title&&!body){ showToast('Add a title or some text first'); return; }
@@ -2942,7 +2941,7 @@ async function saveLearnEntry(){
   const img=prev.style.display!=='none'?prev.src:'';
   const entries=loadLearn();
   entries.unshift({ id:Date.now(), date:new Date().toISOString().slice(0,10), title:title||'Untitled', body, img });
-  if(!await saveLearn(entries)){showToast('Speichern fehlgeschlagen. Deine Notiz bleibt erhalten.');return;}
+  if(!await saveLearn(entries)){showToast('Save failed. Your note is kept.');return;}
   clearLearnForm();
   showToast('Entry saved \u2713');
   learnTab('notes');
@@ -2998,9 +2997,9 @@ function closeLearnDetail(){
 
 async function deleteLearnEntry(id){
   if(!confirm('Delete this entry?'))return;
-  if(!await readyLearn()){showToast('Journal noch nicht verfügbar.');return;}
+  if(!await readyLearn()){showToast('Journal not available yet.');return;}
   const entries=loadLearn().filter(e=>e.id!==id);
-  if(!await saveLearn(entries)){showToast('Löschen fehlgeschlagen');return;} renderLearnList(); closeLearnDetail(); showToast('Deleted');
+  if(!await saveLearn(entries)){showToast('Delete failed');return;} renderLearnList(); closeLearnDetail(); showToast('Deleted');
 }
 
 async function loadJournalRow(){

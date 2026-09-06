@@ -2,20 +2,25 @@
 'use strict';
 const Journal = (() => {
   const criteria = [
-    ['context', 'HTF-Kontext, Ziel und Gegenargument geklärt'],
-    ['trigger', 'Pflichtbestätigung meines Modells beim Entry vorhanden'],
-    ['conditions', 'Entry-Zone, Risiko, Zeitfenster und News-Regeln erfüllt']
+    ['context', 'HTF context, target and counter-argument are clear'],
+    ['trigger', 'Required confirmation from my model was present at entry'],
+    ['conditions', 'Entry zone, risk, time window and news rules were met']
   ];
   const focus = {
-    repeat: ['Sauber ausgeführt', 'Wenn mein vollständiger Trigger vorliegt, wiederhole ich den geplanten Ablauf.'],
-    chase: ['Entry hinterhergelaufen', 'Wenn meine Entry-Zone verlassen ist, lasse ich den Einstieg aus.'],
-    early: ['Zu früh eingestiegen', 'Solange meine Pflichtbestätigung fehlt, sende ich keine Order.'],
-    risk: ['Risiko verändert', 'Vor der Order prüfe ich Stop und Positionsgröße gegen mein Risikolimit.'],
-    exit: ['Ungeplanter Exit / Breakeven', 'Bevor ich den Exit ändere, prüfe ich meinen vorher festgelegten Exit-Grund.'],
-    pressure: ['Funded- / Payout-Druck', 'Wenn mein Kontoziel die Entscheidung treibt, pausiere ich und prüfe den ursprünglichen Plan.'],
-    context: ['HTF / ES übersehen', 'Vor der Order prüfe ich die in meinem Modell vorgesehenen HTF- und Vergleichslevels.'],
-    other: ['Andere Beobachtung', '']
+    repeat: ['Executed cleanly', 'When my full trigger is there, I repeat the planned sequence.'],
+    chase: ['Chased the entry', 'Once price has left my entry zone, I skip the entry.'],
+    early: ['Entered too early', 'As long as my required confirmation is missing, I send no order.'],
+    risk: ['Changed the risk', 'Before the order I check stop and position size against my risk limit.'],
+    exit: ['Unplanned exit / breakeven', 'Before I move the exit, I check the exit reason I set beforehand.'],
+    pressure: ['Funded / payout pressure', 'When my account target drives the decision, I pause and re-read the original plan.'],
+    context: ['Missed HTF / ES', 'Before the order I check the HTF and correlation levels my model requires.'],
+    other: ['Other observation', '']
   };
+  const pressures = {
+    none: 'No noticeable pressure', fomo: 'FOMO / missed something', funded: 'Funded / payout',
+    fear: 'Fear of losing', revenge: 'Making a loss back', other: 'Other influence'
+  };
+  const ruleChecks = {Yes: 'Yes', No: 'No', NA: 'Not applicable'};
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const num = value => value === '' || value === null || value === undefined || !Number.isFinite(Number(value)) ? null : Number(value);
   const value = id => document.getElementById(id)?.value.trim() || '';
@@ -44,13 +49,13 @@ const Journal = (() => {
   }
   function issues(t) {
     const out = [];
-    if (t.journal?.execution?.entry==='Yes' && scoreFor(t.journal)===null && execution(t.journal.execution)!==null) out.push('Entry als regelkonform markiert, obwohl ein Pflichtkriterium fehlt oder ein Entry-Fehler gewählt ist.');
-    if (t.rulebased === 'yes' && (t.toPlan === 'No' || t.deviated === 'Yes' || t.matchesPlaybook === 'No')) out.push('Regeltreue widerspricht Plan oder Playbook.');
-    if (t.toPlan === 'Yes' && t.deviated === 'Yes') out.push('Plan eingehalten und vom Plan abgewichen sind beide gewählt.');
-    if (t.matchesPlaybook === 'No' && ['A+','A','B'].includes(t.grade)) out.push('Qualitätsstufe vergeben, obwohl das Playbook nicht erfüllt ist.');
-    if (t.confirmationPresent === 'No' && t.execQuality >= 4) out.push('Hohe Execution-Note trotz fehlender Bestätigung.');
+    if (t.journal?.execution?.entry==='Yes' && scoreFor(t.journal)===null && execution(t.journal.execution)!==null) out.push('Entry marked as rule-based although a required criterion is missing or an entry mistake is selected.');
+    if (t.rulebased === 'yes' && (t.toPlan === 'No' || t.deviated === 'Yes' || t.matchesPlaybook === 'No')) out.push('Rule adherence contradicts the plan or the playbook.');
+    if (t.toPlan === 'Yes' && t.deviated === 'Yes') out.push('Followed the plan and deviated from the plan are both selected.');
+    if (t.matchesPlaybook === 'No' && ['A+','A','B'].includes(t.grade)) out.push('A quality grade is set although the playbook is not met.');
+    if (t.confirmationPresent === 'No' && t.execQuality >= 4) out.push('High execution rating despite a missing confirmation.');
     const pnl = num(t.pnl);
-    if (pnl !== null && ((t.result === 'Win' && pnl < 0) || (t.result === 'Loss' && pnl > 0))) out.push('Ergebnis und P&L-Vorzeichen widersprechen sich.');
+    if (pnl !== null && ((t.result === 'Win' && pnl < 0) || (t.result === 'Loss' && pnl > 0))) out.push('Result and P&L sign contradict each other.');
     return out;
   }
   function checks(prefix, keys) { return Object.fromEntries(keys.map(key => [key,value(prefix+key)])); }
@@ -111,44 +116,44 @@ const Journal = (() => {
   }
   function update() {
     const j=current(), g=grade(j.criteria,j.extras), score=scoreFor(j);
-    document.getElementById('j-grade').textContent=g==='Invalid'?'Nicht im Playbook':g||'Noch nicht bewertet';
-    document.getElementById('j-grade-help').textContent=g==='Invalid'?'Pflichtkriterium fehlt. Einen bereits genommenen Trade trotzdem ehrlich erfassen.':g==='B'?'Nur zulässig, wenn diese Einschränkung im Playbook erlaubt ist. Kurz benennen.':'Die Einstufung folgt deinen Antworten. Optionale Extras müssen vorher im Playbook feststehen.';
-    document.getElementById('j-score').textContent=score===null?'—':score+'/100';
-    document.getElementById('j-score-help').textContent=score===null?'Drei Antworten genügen. Keine Punkte für Gewinn oder gute Stimmung.':'Entry 40 · Risiko 40 · Management/Exit 20. Bewertet die Ausführung, nicht den Ausgang.';
+    document.getElementById('j-grade').textContent=g==='Invalid'?'Not in playbook':g||'Not graded yet';
+    document.getElementById('j-grade-help').textContent=g==='Invalid'?'A required criterion is missing. Still log a trade you already took, honestly.':g==='B'?'Only valid if your playbook allows this limitation. Name it briefly.':'The grade follows your answers. Optional extras have to be defined in the playbook beforehand.';
+    document.getElementById('j-score').textContent=score===null?'\u2014':score+'/100';
+    document.getElementById('j-score-help').textContent=score===null?'Three answers are enough. No points for profit or good mood.':'Entry 40 \u00b7 Risk 40 \u00b7 Management/Exit 20. Rates the execution, not the outcome.';
     document.getElementById('j-pressure-detail').hidden=(!j.pressure || j.pressure==='none') && !j.trigger && !j.action;
     const snapshot=j.planSnapshot;
-    document.getElementById('j-plan-status').textContent=snapshot?'Plan festgehalten: '+new Date(snapshot.at).toLocaleString('de-DE')+'. Spätere Änderungen ersetzen diesen Stand nicht.':'Optional vor dem Entry festhalten. Der Zeitpunkt allein beweist keinen Pre-Trade-Eintrag.';
+    document.getElementById('j-plan-status').textContent=snapshot?'Plan locked: '+new Date(snapshot.at).toLocaleString('en-GB')+'. Later changes do not replace this state.':'Optional, before the entry. The timestamp alone does not prove a pre-trade entry.';
     document.getElementById('j-freeze').disabled=Boolean(snapshot);
     const warning=document.getElementById('j-save-check');
     const missing=[];
-    if (!form.result) missing.push('Ergebnis');
-    if (value('f-pnl')==='') missing.push('Netto-P&L');
-    if (!(j.initialRisk>0)) missing.push('ursprüngliches Risiko für R');
-    if (score===null) missing.push('vollständiger Execution-Check');
-    if (!g && !form.grade) missing.push('Setup-Bewertung');
-    if (['A','B'].includes(g) && !j.setupReason) missing.push('benannte Setup-Einschränkung');
-    if (j.pressure && j.pressure!=='none' && (!j.trigger || !j.action)) missing.push('Auslöser und tatsächliche Handlung');
-    if (j.ruleCheck && !j.ruleId) missing.push('zugehörige Wochenregel');
-    if (!value('f-lesson')) missing.push('eine konkrete Lesson');
-    if (snapshot?.initialRisk>0 && j.initialRisk!==snapshot.initialRisk) missing.push('Risiko weicht vom festgehaltenen Plan ab; R nutzt dessen ursprünglichen Wert');
+    if (!form.result) missing.push('result');
+    if (value('f-pnl')==='') missing.push('net P&L');
+    if (!(j.initialRisk>0)) missing.push('original risk for R');
+    if (score===null) missing.push('a complete execution check');
+    if (!g && !form.grade) missing.push('setup grade');
+    if (['A','B'].includes(g) && !j.setupReason) missing.push('the named setup limitation');
+    if (j.pressure && j.pressure!=='none' && (!j.trigger || !j.action)) missing.push('trigger and actual action');
+    if (j.ruleCheck && !j.ruleId) missing.push('the matching weekly rule');
+    if (!value('f-lesson')) missing.push('one concrete lesson');
+    if (snapshot?.initialRisk>0 && j.initialRisk!==snapshot.initialRisk) missing.push('risk differs from the locked plan; R uses that original value');
     const old={...form,...patch(),result:form.result,pnl:num(value('f-pnl'))};
-    warning.textContent=[missing.length?'Noch offen: '+missing.join(', ')+'.':'Die wichtigsten Angaben sind vorhanden.',...issues(old),'Unvollständige Trades bleiben speicherbar; fehlende Werte zählen nicht als Null.'].join(' ');
+    warning.textContent=[missing.length?'Still open: '+missing.join(', ')+'.':'The key entries are there.',...issues(old),'Incomplete trades can still be saved; missing values do not count as zero.'].join(' ');
     const legacy=document.getElementById('j-legacy');
     legacy.hidden=editingTradeId===null;
-    if (editingTradeId!==null) document.getElementById('j-legacy-note').textContent='Originalwerte bleiben erhalten, bis du sie änderst oder den neuen Check vollständig beantwortest.';
+    if (editingTradeId!==null) document.getElementById('j-legacy-note').textContent='Original values stay untouched until you change them or answer the new check in full.';
   }
   function freezePlan() {
     if (form.journalPlanSnapshot) return;
     const j=current();
-    if (!value('f-exp') || !j.model) {showToast('Modell und kurzen Wenn-dann-Plan eintragen.');return;}
+    if (!value('f-exp') || !j.model) {showToast('Enter your model and a short if-then plan.');return;}
     form.journalPlanSnapshot={at:new Date().toISOString(),model:j.model,bias:form.htfbias||'',biasWhy:value('f-bwhy'),plan:value('f-exp'),invalidation:j.invalidation,management:j.management,criteria:j.criteria,extras:j.extras,grade:grade(j.criteria,j.extras),reason:j.setupReason,initialRisk:j.initialRisk,entry:value('f-entry'),stop:value('f-sl'),target:value('f-tp'),contracts:value('f-contracts')};
     saveTradeDraftNow(); update();
   }
   function suggestLesson() {
     const suggestion=focus[value('j-focus')]?.[1];
-    if (!suggestion) {showToast('Für diese Beobachtung eine eigene Wenn-dann-Regel formulieren.');return;}
+    if (!suggestion) {showToast('Write your own if-then rule for this observation.');return;}
     const field=document.getElementById('f-lesson');
-    if (field.value.trim()) {showToast('Deine bestehende Lesson bleibt erhalten.');return;}
+    if (field.value.trim()) {showToast('Your existing lesson stays as it is.');return;}
     field.value=suggestion; field.focus(); scheduleTradeDraft(); update();
   }
   function adoptRule(id) {
@@ -167,23 +172,23 @@ const Journal = (() => {
       const button=document.createElement('button'); button.type='button'; button.className='btn';
       button.textContent=rule.title; button.onclick=()=>adoptRule(rule.id); host.append(button);
     });
-    if (!rules.length) host.textContent='Eine Lesson in Learn als Wochenregel vormerken; hier beim nächsten Trade auswählen.';
+    if (!rules.length) host.textContent='Save a lesson in Learn as a weekly rule; pick it here on your next trade.';
     const selected=loadLearn().find(e=>String(e.id)===value('j-rule-id'));
-    document.getElementById('j-current-rule').textContent=selected?(selected.rule||selected.body):value('j-rule-id')?'Regel nicht mehr in Learn vorhanden.':'';
+    document.getElementById('j-current-rule').textContent=selected?(selected.rule||selected.body):value('j-rule-id')?'That rule is no longer in Learn.':'';
   }
   async function reuseModel() {
     const previous=(await loadTrades()).find(t=>!t.isNoTrade && t.journal?.model);
-    if (!previous) {showToast('Nach dem ersten Kurzrapport kannst du dein Modell hier wiederverwenden.');return;}
-    if (value('j-model') || value('j-management')) {showToast('Vorhandene Modell- und Management-Angaben bleiben erhalten.');return;}
+    if (!previous) {showToast('After your first short report you can reuse your model here.');return;}
+    if (value('j-model') || value('j-management')) {showToast('Existing model and management entries stay as they are.');return;}
     document.getElementById('j-model').value=previous.journal.model;
     document.getElementById('j-management').value=previous.journal.management||'';
     scheduleTradeDraft(); update();
   }
   function playbookTemplate() {
-    if (value('ln-title') || value('ln-body')) {showToast('Dein angefangener Learn-Eintrag bleibt erhalten.');return;}
+    if (value('ln-title') || value('ln-body')) {showToast('Your unfinished Learn entry stays as it is.');return;}
     learnTab('new');
-    document.getElementById('ln-title').value='Mein ICT-Playbook · v1';
-    document.getElementById('ln-body').value='Modell / Variante:\n\nPflichtkriterien (vor jedem Entry):\n• HTF-Zone, Liquiditätsziel und Gegenargument:\n• Sweep erforderlich? Welches Level?\n• IFVG / CISD / MSS: welcher Timeframe, welcher bestätigte Schluss?\n• ES-Abgleich / SMT: Pflicht oder optional?\n• Retest oder direkter Entry? Zulässige Entry-Zone:\n• Zeitfenster, News-Sperre und Risikolimit:\n\nZusatzmerkmale für A+:\nOptional fehlendes Merkmal für A:\nAusdrücklich erlaubte Einschränkung für B:\nFehlt ein Pflichtkriterium: nicht im Playbook.\n\nExit / Breakeven / Teilgewinne nur bei:\n\nChart-Beispiele und Gegenbeispiele:\n\nÄnderungen erst als Hypothese prüfen; neue Version ab Datum:';
+    document.getElementById('ln-title').value='My ICT playbook \u00b7 v1';
+    document.getElementById('ln-body').value='Model / variant:\n\nRequired criteria (before every entry):\n\u2022 HTF zone, liquidity target and counter-argument:\n\u2022 Sweep required? Which level?\n\u2022 IFVG / CISD / MSS: which timeframe, which confirmed close?\n\u2022 ES correlation / SMT: required or optional?\n\u2022 Retest or direct entry? Valid entry zone:\n\u2022 Time window, news block and risk limit:\n\nExtra features for A+:\nOptional feature that may be missing for A:\nExplicitly allowed limitation for B:\nIf a required criterion is missing: not in the playbook.\n\nExit / breakeven / partials only when:\n\nChart examples and counter-examples:\n\nTest changes as a hypothesis first; new version from date:';
     document.getElementById('ln-body').focus();
   }
   function inScope(t,range,mode,now=new Date()) {
@@ -195,53 +200,48 @@ const Journal = (() => {
     return !isNaN(day) && day>=start && day<=today;
   }
   async function toLearn() {
-    if (!await readyLearn()) {showToast('Journal noch nicht verfügbar. Bitte erneut versuchen.');return;}
+    if (!await readyLearn()) {showToast('Journal not available yet. Please try again.');return;}
     const rule=value('f-lesson');
-    if (!rule) {showToast('Zuerst eine konkrete Lesson eintragen.');return;}
+    if (!rule) {showToast('Write one concrete lesson first.');return;}
     const entries=loadLearn();
     const existing=entries.find(e=>e.kind==='behavior-rule' && e.rule===rule);
-    if (existing) {showToast('Diese Regel ist bereits in Learn.');return;}
+    if (existing) {showToast('That rule is already in Learn.');return;}
     const date=value('f-date');
-    const title=(focus[value('j-focus')]?.[0]||'Meine Wochenregel');
+    const title=(focus[value('j-focus')]?.[0]||'My weekly rule');
     const entry={id:Date.now(),date,kind:'behavior-rule',title,rule,
-      body:rule+'\n\nAus Trade: '+date+' · '+(form.instrument||'MNQ')+'\nPrüfung: nächste zehn passende Trades. Nicht passend separat markieren.\nWöchentlich: eingehalten x/y; Gegenbeispiele; beibehalten oder ändern.',img:''};
+      body:rule+'\n\nFrom trade: '+date+' \u00b7 '+(form.instrument||'MNQ')+'\nTest: the next ten matching trades. Mark non-matching ones separately.\nWeekly: followed x/y; counter-examples; keep or change.',img:''};
     const button=document.getElementById('j-to-learn'); button.disabled=true;
     try {
-      if (!await saveLearn([entry,...entries])) {showToast('Learn konnte nicht gespeichert werden. Deine Lesson bleibt im Formular.');return;}
-      showToast('Wochenregel in Learn gespeichert.'); renderRules();
+      if (!await saveLearn([entry,...entries])) {showToast('Learn could not be saved. Your lesson stays in the form.');return;}
+      showToast('Weekly rule saved to Learn.'); renderRules();
     } finally {button.disabled=false;}
   }
   function summary(t) {
     const j=t.journal;
     if (!j) return '';
-    const rows=[['Modell',j.model],['Umgebung',j.mode],...criteria.map(([key,label])=>[label,{Yes:'Ja',No:'Nein'}[j.criteria?.[key]]]),['Zusatzmerkmale',{all:'Alle vorhanden',some:'Optionales fehlt',limited:'Erlaubte Einschränkung'}[j.extras]],['Setup-Begründung',j.setupReason],['Invalidierung',j.invalidation],['Management',j.management],...['entry','risk','exit'].map(key=>['Execution '+key,{Yes:'Ja',Partial:'Teilweise',No:'Nein'}[j.execution?.[key]]]),['Ursprüngliches Risiko',j.initialRisk>0?'$'+j.initialRisk:''],['Realisiertes R',realizedR(t)!==null?realizedR(t).toFixed(2)+' R':''],['Druck',j.pressure],['Auslöser',j.trigger],['Handlung',j.action],['Fokus',focus[j.focus]?.[0]],['Wochenregel geprüft',j.ruleCheck]];
+    const rows=[['Model',j.model],['Environment',j.mode],...criteria.map(([key,label])=>[label,{Yes:'Yes',No:'No'}[j.criteria?.[key]]]),['Extra features',{all:'All present',some:'Optional one missing',limited:'Allowed limitation'}[j.extras]],['Setup reason',j.setupReason],['Invalidation',j.invalidation],['Management',j.management],...['entry','risk','exit'].map(key=>['Execution '+key,{Yes:'Yes',Partial:'Partial',No:'No'}[j.execution?.[key]]]),['Original risk',j.initialRisk>0?'$'+j.initialRisk:''],['Realized R',realizedR(t)!==null?realizedR(t).toFixed(2)+' R':''],['Pressure',pressures[j.pressure]||j.pressure],['Trigger',j.trigger],['Action',j.action],['Focus',focus[j.focus]?.[0]],['Weekly rule followed',ruleChecks[j.ruleCheck]]];
     const snapshot=j.planSnapshot;
-    return '<div class="card"><h3>Kurzrapport</h3><dl class="journal-summary">'+rows.filter(([,v])=>v!==undefined&&v!==null&&v!=='').map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+(snapshot?'<details><summary>Festgehaltener Plan · '+esc(snapshot.at)+'</summary><pre>'+esc(JSON.stringify(snapshot,null,2))+'</pre></details>':'')+'</div>';
-  }
-  function coverage(trades) {
-    const pnl=trades.filter(t=>num(t.pnl)!==null).length, r=trades.filter(t=>realizedR(t)!==null).length;
-    const conflicts=trades.filter(t=>issues(t).length).length;
-    const modes=[...new Set(trades.map(t=>t.journal?.mode||'Unbekannt'))];
-    return '<div class="journal-notice">Datenbasis: '+trades.length+' Trades · P&L '+pnl+'/'+trades.length+' · R '+r+'/'+trades.length+' · '+conflicts+' mit widersprüchlichen Auswahlfeldern. Fehlende Beträge sind keine Nullwerte. Historische Angaben bleiben unverändert. Umgebung: '+esc(modes.join(', '))+'.'+(modes.length>1?' Für Vergleiche nach Live, Demo oder Replay filtern.':'')+'</div>';
+    return '<div class="card"><h3>Short report</h3><dl class="journal-summary">'+rows.filter(([,v])=>v!==undefined&&v!==null&&v!=='').map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+(snapshot?'<details><summary>Locked plan \u00b7 '+esc(snapshot.at)+'</summary><pre>'+esc(JSON.stringify(snapshot,null,2))+'</pre></details>':'')+'</div>';
   }
   function patterns(trades) {
-    const groups=[['Entry gechased',t=>t.chased==='Yes'||t.journal?.focus==='chase'],['Entry nicht gechased',t=>t.chased==='No'],['Pflichtbestätigung fehlt',t=>t.confirmationPresent==='No'||t.journal?.focus==='early'],['Ungeplanter Exit / BE',t=>t.journal?.focus==='exit'],['Funded- / Payout-Druck',t=>t.journal?.pressure==='funded'||t.journal?.focus==='pressure']];
+    const groups=[['Chased the entry',t=>t.chased==='Yes'||t.journal?.focus==='chase'],['Did not chase the entry',t=>t.chased==='No'],['Required confirmation missing',t=>t.confirmationPresent==='No'||t.journal?.focus==='early'],['Unplanned exit / BE',t=>t.journal?.focus==='exit'],['Funded / payout pressure',t=>t.journal?.pressure==='funded'||t.journal?.focus==='pressure']];
     const rows=groups.map(([name,predicate])=>{
       const ts=trades.filter(predicate), pnls=ts.map(t=>num(t.pnl)).filter(v=>v!==null), rs=ts.map(realizedR).filter(v=>v!==null);
-      return '<tr><th scope="row">'+name+'</th><td>'+ts.length+'</td><td>'+(pnls.length?(pnls.reduce((a,b)=>a+b,0)/pnls.length).toFixed(2)+' $ ('+pnls.length+')':'—')+'</td><td>'+(rs.length?(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(2)+' R ('+rs.length+')':'—')+'</td></tr>';
+      return '<tr><th scope="row">'+name+'</th><td>'+ts.length+'</td><td>'+(pnls.length?(pnls.reduce((a,b)=>a+b,0)/pnls.length).toFixed(2)+' $ ('+pnls.length+')':'\u2014')+'</td><td>'+(rs.length?(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(2)+' R ('+rs.length+')':'\u2014')+'</td></tr>';
     }).join('');
-    return '<div class="card"><h3>Was wiederholt sich?</h3><p>Wöchentlich eine Beobachtung prüfen und eine Regel in Learn festhalten.</p><div class="journal-table"><table><thead><tr><th>Beobachtung</th><th>Trades</th><th>Ø P&L (n)</th><th>Ø R (n)</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="field-help">Beschreibende Gruppen, keine Ursachenbeweise. Gruppen können überlappen; Risiko, Modell und Marktphase können sich unterscheiden. Neue Druck-/Exit-Tags werden nicht aus alten Freitexten erraten.</p></div>';
+    return '<div class="card"><h3>What keeps repeating?</h3><p>Check one observation each week and write a rule for it in Learn.</p><div class="journal-table"><table><thead><tr><th>Observation</th><th>Trades</th><th>\u00d8 P&L (n)</th><th>\u00d8 R (n)</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="field-help">Descriptive groups, not proof of cause. Groups can overlap; risk, model and market phase may differ. New pressure and exit tags are never guessed from older free text.</p></div>';
   }
   async function learnProgress() {
     const host=document.getElementById('j-learn-progress'); if (!host) return;
     const trades=(await loadTrades()).filter(t=>!t.isNoTrade);
     const rules=loadLearn().filter(e=>e.kind==='behavior-rule');
-    host.innerHTML=rules.length?'<h3>Deine Regeltests</h3>'+rules.map(rule=>{
+    host.hidden=!rules.length;
+    host.innerHTML=rules.length?'<h3>Your rule tests</h3>'+rules.map(rule=>{
       const checked=trades.filter(t=>String(t.journal?.ruleId)===String(rule.id));
       const applicable=checked.filter(t=>['Yes','No'].includes(t.journal?.ruleCheck));
       const yes=applicable.filter(t=>t.journal.ruleCheck==='Yes').length;
-      return '<div class="journal-rule"><strong>'+esc(rule.title)+'</strong><p>'+esc(rule.rule)+'</p><span>'+yes+'/'+applicable.length+' eingehalten · '+checked.filter(t=>t.journal.ruleCheck==='NA').length+' nicht passend · '+checked.filter(t=>!t.journal.ruleCheck).length+' ungeprüft'+(applicable.length>=10?' · Jetzt wöchentlich auswerten.':' · Erste Auswertung nach zehn passenden Trades.')+'</span></div>';
-    }).join(''):'<p>Speichere eine konkrete Lesson als Wochenregel. Beim nächsten Trade wählst du sie aus und prüfst sie mit einem Klick.</p>';
+      return '<div class="journal-rule"><strong>'+esc(rule.title)+'</strong><p>'+esc(rule.rule)+'</p><span>'+yes+'/'+applicable.length+' followed \u00b7 '+checked.filter(t=>t.journal.ruleCheck==='NA').length+' not applicable \u00b7 '+checked.filter(t=>!t.journal.ruleCheck).length+' unchecked'+(applicable.length>=10?' \u00b7 Time for the weekly review.':' \u00b7 First review after ten matching trades.')+'</span></div>';
+    }).join(''):'';
   }
   function init() {
     document.getElementById('trade-wizard').addEventListener('input',e=>{
@@ -251,5 +251,5 @@ const Journal = (() => {
     document.getElementById('trade-wizard').addEventListener('change',()=>{scheduleTradeDraft();update();});
     update();
   }
-  return {criteria,focus,esc,num,value,grade,execution,scoreFor,discipline,realizedR,issues,current,patch,restoreFields,update,freezePlan,suggestLesson,renderRules,reuseModel,playbookTemplate,inScope,toLearn,summary,coverage,patterns,learnProgress,init};
+  return {criteria,focus,esc,num,value,grade,execution,scoreFor,discipline,realizedR,issues,current,patch,restoreFields,update,freezePlan,suggestLesson,renderRules,reuseModel,playbookTemplate,inScope,toLearn,summary,patterns,learnProgress,init};
 })();

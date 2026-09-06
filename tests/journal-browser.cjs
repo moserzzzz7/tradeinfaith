@@ -101,7 +101,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   assert.equal(await run('_cache[0].executionScore'),null,'Missing execution must not become zero');
   assert.ok((await run('document.getElementById("j-learn-progress").textContent')).includes('1/1'));
   await run(`statsRange=30;_cache=[{id:1,date:new Date().toISOString().slice(0,10),result:'Loss',rulebased:'yes',pnl:-10},{id:2,date:'2020-01-01',result:'Win',rulebased:'no',pnl:30}];await renderReview();`);
-  assert.ok((await run('document.getElementById("stats-sub").textContent')).includes('1 Trades'));
+  assert.ok((await run('document.getElementById("stats-sub").textContent')).includes('1 Trade'));
   await run('await renderStats();');
   assert.ok(!(await run('document.getElementById("stats-el").textContent')).includes('Emotional control'));
   assert.equal(await run('disciplineStreak([{date:"2020-01-01",rulebased:"yes"}]).count'),1,'Waiting must not reset discipline');
