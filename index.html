@@ -683,15 +683,16 @@
             <div class="field"><label>HTF Bias</label><div class="seg" data-field="htfbias" role="group" aria-label="HTF Bias"><button type="button" class="opt" data-v="Bullish" onclick="choice('htfbias',this);Journal.update()">Bullish</button><button type="button" class="opt" data-v="Bearish" onclick="choice('htfbias',this);Journal.update()">Bearish</button><button type="button" class="opt" data-v="Neutral" onclick="choice('htfbias',this);Journal.update()">Neutral</button></div></div>
             <div class="field"><label for="f-exp">My if-then plan · one sentence</label><textarea id="f-exp" rows="2" placeholder="If [level / condition], then enter only after [trigger] inside [zone]; target [level]."></textarea></div>
             <div class="subgrid"><div class="field"><label for="j-invalidation">No trade / idea invalid when …</label><input id="j-invalidation" type="text"  placeholder="A specific level or a missing condition"></div><div class="field"><label for="j-management">Exit / breakeven only when …</label><input id="j-management" type="text"  placeholder="The management trigger I set beforehand"></div></div>
-            <details class="journal-details"><summary>Bias reasoning, counter-argument and news</summary><div class="journal-fields"><div class="field"><label for="f-bwhy">Bias — why?</label><textarea id="f-bwhy" rows="2" placeholder="HTF + zone + target; the counter-argument is …"></textarea></div><div class="field"><label for="f-levels">Key levels</label><input id="f-levels" type="text"  placeholder=""></div><div class="field"><label for="f-scen2">Alternative scenario</label><textarea id="f-scen2" rows="2" placeholder=""></textarea></div><div class="field"><label for="f-ext">News / time window</label><textarea id="f-ext" rows="2" placeholder="Event, time with time zone and my blackout window"></textarea></div></div></details>
+            <details class="journal-details"><summary>Bias reasoning and news window</summary><div class="journal-fields"><div class="field"><label for="f-bwhy">Bias — why?</label><textarea id="f-bwhy" rows="2" placeholder="HTF + zone + target; the counter-argument is …"></textarea></div><div class="field"><label for="f-ext">News / time window</label><textarea id="f-ext" rows="2" placeholder="Event, time with time zone and my blackout window"></textarea></div></div></details>
           </div>
           <div class="card">
             <h3 class="card-title">Setup quality · per my playbook</h3>
-            <p class="field-help">Grade what was actually there at the entry. Define the required criteria and the optional extras once in Learn.</p>
+            <p class="field-help" id="j-setup-standard-hint">Define your standard setup in Settings to turn this into a real comparison. Until then the points stay generic.</p>
             <div class="journal-check"><label for="j-context">HTF context, target and counter-argument are clear</label><select id="j-context"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
             <div class="journal-check"><label for="j-trigger">Required confirmation from my model was present at entry</label><select id="j-trigger"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
             <div class="journal-check"><label for="j-conditions">Entry zone, risk, time window and news rules were met</label><select id="j-conditions"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
             <div class="journal-check"><label for="j-extras">Extra features defined in advance</label><select id="j-extras"><option value="">Select…</option><option value="all">All present</option><option value="some">Optional one missing</option><option value="limited">Allowed limitation</option></select></div>
+            <p class="field-help" id="j-extras-def" hidden></p>
             <div class="journal-score"><span>Setup</span><strong id="j-grade">Not graded yet</strong></div><p class="field-help" id="j-grade-help"></p>
             <div class="field"><label for="j-grade-reason">Only if limited: what is missing?</label><input id="j-grade-reason" type="text"  placeholder="Otherwise the criteria above are enough."></div>
             <details class="journal-details"><summary>ICT tags and chart evidence</summary><div class="journal-fields">          <div id="setup-tags">
@@ -780,6 +781,7 @@
             <div class="field"><label for="q-pnl">Net P&L ($) · after fees</label><input id="q-pnl" type="number" step="0.01" placeholder="e.g. 240 or −150"></div>
             <div class="field"><label for="q-risk">Original risk ($) · optional</label><input id="q-risk" type="number" step="0.01" placeholder="For realized R"></div>
           </div>
+          <div class="field"><label for="q-setup">Setup · why this trade</label><textarea id="q-setup" rows="2" placeholder="HTF read, pattern or level — in your own words."></textarea></div>
           <div class="field"><label for="q-note">One line · optional</label><input id="q-note" type="text" placeholder="What happened, in a sentence."></div>
           <div class="upload-zone" id="q-shot" onclick="document.getElementById('q-img').click()">
             <div id="q-shot-hint">📸 Click to upload · or <kbd style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit">Ctrl+V</kbd> to paste</div>
@@ -953,6 +955,17 @@
       </div>
 
       <div class="card">
+        <div class="card-title">Standard setup</div>
+        <p class="field-help" style="margin-bottom:14px">This is the setup the journal checks against when it grades setup quality. Write what has to be true at entry, in your own words. Changing it here leaves trades you already saved untouched.</p>
+        <div class="field" style="margin-bottom:14px"><label for="set-setup-context">Required — HTF context, target, counter-argument</label><textarea id="set-setup-context" rows="2" placeholder="e.g. HTF bias set from the 4H, a clear liquidity target, and the counter-argument named."></textarea></div>
+        <div class="field" style="margin-bottom:14px"><label for="set-setup-trigger">Required — entry trigger from my model</label><textarea id="set-setup-trigger" rows="2" placeholder="e.g. sweep of the session level, then a confirmed 1m IFVG or CISD close back inside."></textarea></div>
+        <div class="field" style="margin-bottom:14px"><label for="set-setup-conditions">Required — entry zone, risk, time window, news</label><textarea id="set-setup-conditions" rows="2" placeholder="e.g. entry inside the named zone, risk within my limit, inside the kill zone, no red news pending."></textarea></div>
+        <div class="field" style="margin-bottom:14px"><label for="set-setup-extras">Extra confluences — all present makes it A+</label><textarea id="set-setup-extras" rows="2" placeholder="e.g. SMT with ES, OTE overlap, HTF order block alignment."></textarea></div>
+        <div class="field" style="margin-bottom:14px"><label for="set-setup-limitation">Limitation my playbook still allows as B</label><input type="text" id="set-setup-limitation" placeholder="e.g. no SMT, but every required point was there."></div>
+        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="saveStandardSetup()">Save standard setup</button></div>
+      </div>
+
+      <div class="card">
         <div class="card-title">Email</div>
         <div class="field" style="margin-bottom:14px"><label>Current email</label><input type="email" id="set-email" placeholder="name@example.com"></div>
         <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="changeEmail()">Change email</button></div>
@@ -1035,6 +1048,52 @@ async function setTheme(theme){
   if(!currentUser) return;
   try{ await sb.from('journal_data').update({settings:_settingsCache,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }
   catch(e){ console.error('Theme sync failed',e); }
+}
+
+// ---- Standard setup ----
+// The user's own definition of what a valid trade needs. The Setup-quality step
+// in the journal grades each Yes/No against these lines, so A+/A/B is a
+// comparison against a fixed standard rather than three loose questions.
+const SETUP_KEYS=['context','trigger','conditions','extras','limitation'];
+const SETUP_DEFAULT_LABELS={
+  context:'HTF context, target and counter-argument are clear',
+  trigger:'Required confirmation from my model was present at entry',
+  conditions:'Entry zone, risk, time window and news rules were met'
+};
+function getStandardSetup(){
+  const s=_settingsCache.standardSetup;
+  return (s && typeof s==='object') ? s : {};
+}
+function renderStandardSetup(){
+  const s=getStandardSetup();
+  ['context','trigger','conditions'].forEach(key=>{
+    const label=document.querySelector('#wz-1 label[for="j-'+key+'"]');
+    if(label) label.textContent=(s[key]||'').trim()||SETUP_DEFAULT_LABELS[key];
+  });
+  const hint=document.getElementById('j-setup-standard-hint');
+  const anySet=['context','trigger','conditions','extras','limitation'].some(k=>(s[k]||'').trim());
+  if(hint) hint.textContent=anySet
+    ? 'You grade each point against the standard setup you saved in Settings, so the score is a comparison and not a guess.'
+    : 'Define your standard setup in Settings to turn this into a real comparison. Until then the points stay generic.';
+  const def=document.getElementById('j-extras-def');
+  if(def){
+    const parts=[];
+    if((s.extras||'').trim()) parts.push('All present, grade A+: '+s.extras.trim());
+    if((s.limitation||'').trim()) parts.push('Allowed as B: '+s.limitation.trim());
+    def.textContent=parts.join('  ·  ');
+    def.hidden=!parts.length;
+  }
+}
+async function saveStandardSetup(){
+  const ss={};
+  SETUP_KEYS.forEach(key=>{ const el=document.getElementById('set-setup-'+key); ss[key]=el?(el.value||'').trim():''; });
+  _settingsCache={..._settingsCache,standardSetup:ss};
+  if(currentUser){
+    try{ await sb.from('journal_data').update({settings:_settingsCache,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id); }
+    catch(e){ console.error('Standard setup sync failed',e); showToast('Could not save — check your connection'); return; }
+  }
+  renderStandardSetup();
+  showToast('Standard setup saved ✓');
 }
 
 function showAuthError(msg){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.display='block'; }
@@ -1525,7 +1584,7 @@ function qClearShot(){
 function qGetShot(){ const p=document.getElementById('q-img-prev'); return p&&p.style.display!=='none'?p.src:''; }
 function qResetForm(){
   qForm={'q-instrument':'MNQ','q-direction':'Long'};
-  ['q-pnl','q-risk','q-note'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  ['q-pnl','q-risk','q-setup','q-note'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
   const qd=document.getElementById('q-date'); if(qd)qd.value=new Date().toISOString().slice(0,10);
   document.querySelectorAll('#quick-form .seg').forEach(seg=>{
     const f=seg.dataset.field;
@@ -1536,12 +1595,12 @@ function qResetForm(){
 function qUpdateNotice(){
   const n=document.getElementById('q-save-check'); if(!n)return;
   n.textContent = qForm['q-result']
-    ? 'Ready to save. P&L, risk and a one-line note make the later review sharper.'
+    ? 'Ready to save. A setup reason, P&L and risk make the later review sharper.'
     : 'Pick a result to save. Everything else can wait until you open the trade later.';
 }
 function quickToFull(){
   const note=(document.getElementById('q-note').value||'').trim();
-  const carry=[['f-date','q-date'],['f-pnl','q-pnl'],['j-risk','q-risk']];
+  const carry=[['f-date','q-date'],['f-pnl','q-pnl'],['j-risk','q-risk'],['f-exp','q-setup']];
   setMode('trade');
   if(editingTradeId===null){
     carry.forEach(([to,from])=>{ const s=document.getElementById(from), d=document.getElementById(to); if(s&&d&&s.value&&!d.value)d.value=s.value; });
@@ -1565,12 +1624,14 @@ async function saveQuickTrade(){
   try{
     const data=[...(await loadTrades())];
     const note=(document.getElementById('q-note').value||'').trim();
+    const setup=(document.getElementById('q-setup').value||'').trim();
     const t={
       id:Date.now(),
       date:document.getElementById('q-date').value||new Date().toISOString().slice(0,10),
       instrument:qForm['q-instrument']||'MNQ', direction:qForm['q-direction']||'Long',
       result, pnl,
       screenshot:qGetShot(),
+      expectations:setup,
       lesson:note, better:note,
       quickCapture:true
     };
@@ -1745,7 +1806,6 @@ function tradeToDraft(t){
   const str=v=>(v===0||v)?String(v):'';
   const fields={
     'f-date':t.date||'', 'f-bwhy':t.biasWhy||'', 'f-exp':t.expectations||'',
-    'f-levels':t.keyLevels||'', 'f-scen2':t.scenarioAlt||'',
     'f-conf':t.confirmations||'', 'f-contracts':str(t.contracts),
     'f-entry':str(t.entry), 'f-sl':str(t.stopLoss), 'f-tp':str(t.takeProfit),
     'f-ext':t.externalFactors||t.news||'', 'f-mind':t.mindset||'', 'f-pnl':str(t.pnl),
@@ -1982,7 +2042,7 @@ async function saveTrade(){
       date:g('f-date')||new Date().toISOString().slice(0,10),
       instrument:form.instrument||'MNQ', direction:form.direction||'Long',
       htfbias:form.htfbias||'Neutral', pd:form.pd||'', pdh:form.pdh||'', biasWhy:g('f-bwhy'),
-      keyLevels:g('f-levels'), expectations:g('f-exp'), scenarioAlt:g('f-scen2'),
+      expectations:g('f-exp'),
       setup:getSetup(), confirmations:g('f-conf'),
       grade:form.grade||'', matchesPlaybook:form.matchesPlaybook||'', proWouldTake:form.proWouldTake||'', contracts:g('f-contracts'),
       entry:g('f-entry')!==''?parseFloat(g('f-entry')):null, stopLoss:g('f-sl')!==''?parseFloat(g('f-sl')):null,
@@ -2016,7 +2076,7 @@ async function saveTrade(){
           delete patch.executionScore;
         }
       }
-      const legacyInputs={pd:null,pdh:null,keyLevels:'f-levels',scenarioAlt:'f-scen2',preState:null};
+      const legacyInputs={pd:null,pdh:null,keyLevels:null,scenarioAlt:null,preState:null};
       Object.entries(legacyInputs).forEach(([k,inputId])=>{
         if(!patch[k] && !(inputId && document.getElementById(inputId))) delete patch[k];
       });
@@ -3148,6 +3208,7 @@ async function startApp(){
   finally{ _journalLoadPromise=null; }
   updateStatus();
   Journal.renderRules();
+  renderStandardSetup();
   renderSplashDiscipline();
   refreshActiveTab();
 }
@@ -3171,6 +3232,8 @@ function renderSettings(){
   if(emailEl) emailEl.value=(currentUser&&currentUser.email)||'';
   const pw1=document.getElementById('set-pw1'), pw2=document.getElementById('set-pw2');
   if(pw1)pw1.value=''; if(pw2)pw2.value='';
+  const ss=getStandardSetup();
+  SETUP_KEYS.forEach(key=>{ const el=document.getElementById('set-setup-'+key); if(el)el.value=ss[key]||''; });
   cancelDeleteAccount();
 }
 
