@@ -100,6 +100,23 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   assert.equal(await run('loadLearn().length'),1);
   assert.equal(await run('_cache[0].executionScore'),null,'Missing execution must not become zero');
   assert.ok((await run('document.getElementById("j-learn-progress").textContent')).includes('1/1'));
+  // Quick capture: a result alone stores a real trade; risk still feeds R, saving
+  // returns to the full journal, and the entry can be completed there later.
+  await run(`_cache=[];clearForm();setMode('quick');qChoice('q-result',document.querySelector('#quick-form .seg[data-field="q-result"] .opt[data-v="Loss"]'));setField('q-pnl','-75');setField('q-risk','150');setField('q-note','Chased the entry after the sweep.');await saveQuickTrade();`);
+  assert.equal(await run('_cache.length'),1,'Quick capture stores a trade');
+  assert.equal(await run('_cache[0].result'),'Loss');
+  assert.equal(await run('_cache[0].pnl'),-75);
+  assert.equal(await run('_cache[0].quickCapture'),true,'Quick capture is marked');
+  assert.equal(await run('_cache[0].lesson'),'Chased the entry after the sweep.');
+  assert.equal(await run('Journal.realizedR(_cache[0])'),-0.5,'Quick risk feeds realized R');
+  assert.equal(await run('currentMode'),'trade','Saving a quick trade returns to the full journal');
+  assert.equal(await run('document.getElementById("quick-form").style.display'),'none','Quick form hides after save');
+  await run('await saveQuickTrade();');
+  assert.equal(await run('_cache.length'),1,'A quick save without a result is rejected');
+  await run(`await editTrade(_cache[0].id);setField('j-exec-entry','Yes');setField('j-exec-risk','Yes');setField('j-exec-exit','Yes');setField('j-context','Yes');setField('j-trigger','Yes');setField('j-conditions','Yes');setField('j-extras','all');await saveTrade();`);
+  assert.equal(await run('_cache[0].executionScore'),100,'A quick trade can be enriched in the full wizard');
+  assert.equal(await run('_cache[0].pnl'),-75,'Enriching keeps the quick P&L');
+  assert.equal(await run('Journal.realizedR(_cache[0])'),-0.5,'Enriching keeps R from the quick risk');
   await run(`statsRange=30;_cache=[{id:1,date:new Date().toISOString().slice(0,10),result:'Loss',rulebased:'yes',pnl:-10},{id:2,date:'2020-01-01',result:'Win',rulebased:'no',pnl:30}];await renderReview();`);
   assert.ok((await run('document.getElementById("stats-sub").textContent')).includes('1 Trade'));
   await run('await renderStats();');

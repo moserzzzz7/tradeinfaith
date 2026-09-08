@@ -37,3 +37,9 @@
 #trade-wizard [hidden]{display:none!important}
 @media(max-width:560px){.journal-check{grid-template-columns:1fr;gap:6px}.journal-check select{width:100%}.journal-summary{grid-template-columns:1fr}.journal-summary dd{margin-bottom:8px}.journal-score strong{font-size:18px}}
 #sec-learn>.btn{margin-bottom:18px}
+/* Quick-capture teilt die ruhige Schrift des Wizards, liegt aber ausserhalb
+   von #trade-wizard und wuerde sonst die globalen Grossbuchstaben-Labels erben. */
+#quick-form .field label{text-transform:none;letter-spacing:0;font-size:13px}
+#quick-form #q-shot{position:relative}
+/* Drei Modus-Knoepfe muessen auf schmalen Screens nebeneinander passen. */
+@media(max-width:560px){.mode-toggle{gap:6px}.mode-btn{padding:12px 6px;font-size:11.5px;letter-spacing:-.01em;white-space:nowrap}}
