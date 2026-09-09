@@ -769,7 +769,7 @@
       </div><!-- /trade-wizard -->
 
       <div id="quick-form" style="display:none">
-        <p class="journal-intro">Get the trade on record in a few seconds. Open it later from All trades to add the plan, the execution check and the lesson.</p>
+        <p class="journal-intro">The money and the chart: what you risked, what the target was worth, and a screenshot. Pick the result and the sign is set for you. Open it later from All trades for the plan and the lesson.</p>
         <div class="card journal-fields">
           <div class="subgrid">
             <div class="field"><label for="q-date">Date</label><input id="q-date" type="date"></div>
@@ -778,18 +778,16 @@
           <div class="field"><label>Direction</label><div class="seg" data-field="q-direction" role="group" aria-label="Direction"><button type="button" class="opt sel" data-v="Long" onclick="qChoice('q-direction',this)">Long</button><button type="button" class="opt" data-v="Short" onclick="qChoice('q-direction',this)">Short</button></div></div>
           <div class="field"><label>Result</label><div class="seg" data-field="q-result" role="group" aria-label="Result"><button type="button" class="opt" data-v="Win" onclick="qChoice('q-result',this)">Win</button><button type="button" class="opt" data-v="Loss" onclick="qChoice('q-result',this)">Loss</button><button type="button" class="opt" data-v="Breakeven" onclick="qChoice('q-result',this)">Breakeven</button></div></div>
           <div class="subgrid">
-            <div class="field"><label for="q-pnl">Net P&L ($) · after fees</label><input id="q-pnl" type="number" step="0.01" placeholder="e.g. 240 or −150"></div>
-            <div class="field"><label for="q-risk">Original risk ($) · optional</label><input id="q-risk" type="number" step="0.01" placeholder="For realized R"></div>
+            <div class="field"><label for="q-risk">Risk ($)</label><input id="q-risk" type="text" inputmode="decimal" autocomplete="off" placeholder="What a stop-out would have cost" oninput="qUpdateNotice()"></div>
+            <div class="field"><label for="q-tp">Take profit ($)</label><input id="q-tp" type="text" inputmode="decimal" autocomplete="off" placeholder="The win you'd have booked" oninput="qUpdateNotice()"></div>
           </div>
-          <div class="field"><label for="q-setup">Setup · why this trade</label><textarea id="q-setup" rows="2" placeholder="HTF read, pattern or level — in your own words."></textarea></div>
-          <div class="field"><label for="q-note">One line · optional</label><input id="q-note" type="text" placeholder="What happened, in a sentence."></div>
           <div class="upload-zone" id="q-shot" onclick="document.getElementById('q-img').click()">
             <div id="q-shot-hint">📸 Click to upload · or <kbd style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit">Ctrl+V</kbd> to paste</div>
           </div>
           <input type="file" id="q-img" accept="image/*" style="display:none" onchange="qHandleImg(this)">
           <img id="q-img-prev" class="img-preview">
         </div>
-        <p class="journal-notice" id="q-save-check" aria-live="polite">Pick a result to save. Everything else can wait until you open the trade later.</p>
+        <p class="journal-notice" id="q-save-check" aria-live="polite">Pick a result to save. Risk and take profit are just the amounts — enter them without a sign.</p>
         <div class="wz-nav"><button class="btn" onclick="quickToFull()">Full journal instead</button><button class="btn btn-primary" onclick="saveQuickTrade()">Save trade</button></div>
       </div>
 
@@ -926,6 +924,11 @@
         </div>
       </div>
 
+    </div>
+
+    <div id="sec-lessons" class="section">
+      <div class="page-head"><div class="page-title">Lessons</div><div class="page-desc" id="lessons-desc">Every takeaway you wrote on a trade or a no-trade day.</div></div>
+      <div id="lessons-el"></div>
     </div>
 
     <div id="sec-settings" class="section">
@@ -1176,9 +1179,10 @@ const TABS=[
   {id:'list',  icon:'\uD83D\uDCCB', name:'All trades', desc:'Every entry with screenshot, tags and notes'},
   {id:'stats', icon:'\uD83D\uDCCA', name:'Stats',      desc:'Cockpit and patterns \u2014 curve, calendar, setups, review'},
   {id:'faith', icon:'\u271D\uFE0F', name:'Faith',      desc:'Scripture that answers the day you traded'},
-  {id:'learn', icon:'\uD83D\uDCDA', name:'Learn',      desc:'Your own notes and lessons from the chart'}
+  {id:'learn', icon:'\uD83D\uDCDA', name:'Learn',      desc:'Your own notes and lessons from the chart'},
+  {id:'lessons', icon:'\uD83D\uDCA1', name:'Lessons',  desc:'Every takeaway you wrote on a trade, in one place'}
 ];
-const SPLASH_PICKS=['log','list','stats','faith','learn'];
+const SPLASH_PICKS=['log','list','stats','faith','learn','lessons'];
 
 // Zahnrad (lucide "settings")
 const GEAR_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
@@ -1452,6 +1456,7 @@ function switchTab(t,force){
     else if(t==='stats')setStatsSubView(statsSubView);
     else if(t==='faith')renderFaith();
     else if(t==='learn')renderLearnList();
+    else if(t==='lessons')renderLessons();
   },force);
 }
 
@@ -1465,6 +1470,7 @@ function refreshActiveTab(){
   else if(t==='stats')setStatsSubView(statsSubView);
   else if(t==='faith')renderFaith();
   else if(t==='learn')renderLearnList();
+  else if(t==='lessons')renderLessons();
 }
 
 function toggleTag(b){ b.classList.toggle('sel'); scheduleTradeDraft(); }
@@ -1526,14 +1532,20 @@ async function autoGrabClipboard(){
 }
 
 // Global paste listener: Ctrl+V anywhere loads a screenshot into whichever
-// capture form is open — the quick card or the full wizard.
+// capture form is on screen — the quick card or the full wizard. Keyed on the
+// visible form, not currentMode, so it survives edit/tab jumps.
 document.addEventListener('paste', function(e){
   const items=e.clipboardData&&e.clipboardData.items;
   if(!items)return;
   for(let i=0;i<items.length;i++){
     if(items[i].type.startsWith('image/')){
       const file=items[i].getAsFile();
-      if(file){ (currentMode==='quick'?qLoadImg:loadImgFile)(file); showToast('Screenshot pasted ✓'); }
+      if(file){
+        const qf=document.getElementById('quick-form');
+        const onQuick=qf&&qf.style.display!=='none';
+        (onQuick?qLoadImg:loadImgFile)(file);
+        showToast('Screenshot pasted ✓');
+      }
       break;
     }
   }
@@ -1564,8 +1576,10 @@ function setMode(mode){
 }
 
 /* ===== Quick capture =====
-   Ein bewusst kleiner Pfad: Ergebnis reicht zum Speichern, der Rest wird spaeter
-   im vollen Wizard ergaenzt. Schreibt einen echten Trade, keinen Draft. */
+   Das Geld und der Chart: Risk und Take Profit als Betraege, dazu ein optionaler
+   Screenshot. Das Ergebnis bestimmt das Vorzeichen -- Win = +TP, Loss = -Risk,
+   Breakeven = 0. Fees bleiben aussen vor. Schreibt einen echten Trade, keinen
+   Draft; Plan und Lesson kommen spaeter im vollen Wizard dazu. */
 let qForm={'q-instrument':'MNQ','q-direction':'Long'};
 function qChoice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); qForm[field]=btn.dataset.v; qUpdateNotice(); }
 function qHandleImg(i){ const f=i.files[0]; if(f)qLoadImg(f); }
@@ -1582,9 +1596,24 @@ function qClearShot(){
   if(h)h.innerHTML='📸 Click to upload · or <kbd style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit">Ctrl+V</kbd> to paste';
 }
 function qGetShot(){ const p=document.getElementById('q-img-prev'); return p&&p.style.display!=='none'?p.src:''; }
+// Betrag aus einem freien Feld: typografisches Minus und Komma-Dezimal werden
+// toleriert, das Vorzeichen ignoriert -- Risk/TP sind reine Betraege.
+function qMoney(id){
+  let s=(document.getElementById(id)?.value||'').trim();
+  if(!s) return null;
+  s=s.replace(/[−‒–—―]/g,'-').replace(/[\s$]/g,'').replace(',','.');
+  const n=parseFloat(s);
+  return Number.isFinite(n) ? Math.abs(n) : null;
+}
+function qPnl(result,risk,tp){
+  if(result==='Win') return tp!==null ? tp : null;
+  if(result==='Loss') return risk!==null ? -risk : null;
+  if(result==='Breakeven') return 0;
+  return null;
+}
 function qResetForm(){
   qForm={'q-instrument':'MNQ','q-direction':'Long'};
-  ['q-pnl','q-risk','q-setup','q-note'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  ['q-risk','q-tp'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
   const qd=document.getElementById('q-date'); if(qd)qd.value=new Date().toISOString().slice(0,10);
   document.querySelectorAll('#quick-form .seg').forEach(seg=>{
     const f=seg.dataset.field;
@@ -1594,45 +1623,41 @@ function qResetForm(){
 }
 function qUpdateNotice(){
   const n=document.getElementById('q-save-check'); if(!n)return;
-  n.textContent = qForm['q-result']
-    ? 'Ready to save. A setup reason, P&L and risk make the later review sharper.'
-    : 'Pick a result to save. Everything else can wait until you open the trade later.';
+  const result=qForm['q-result'], risk=qMoney('q-risk'), tp=qMoney('q-tp');
+  if(!result){ n.textContent='Pick a result to save. Risk and take profit are just the amounts — enter them without a sign.'; return; }
+  const pnl=qPnl(result,risk,tp);
+  if(pnl===null){ n.textContent='Result is enough to save. Add '+(result==='Win'?'the take profit':'the risk')+' to record the amount.'; return; }
+  const money=(pnl>0?'+$':pnl<0?'-$':'$')+Math.abs(pnl).toFixed(2).replace(/\.00$/,'');
+  const r=(result==='Win'&&risk>0&&tp>0)?tp/risk:(result==='Loss'&&risk>0)?-1:result==='Breakeven'?0:null;
+  n.textContent='Saves as '+money+(r===null?'':' · '+(r>0?'+':'')+r.toFixed(1)+'R')+'. The sign follows the result; fees stay out of it.';
 }
 function quickToFull(){
-  const note=(document.getElementById('q-note').value||'').trim();
-  const carry=[['f-date','q-date'],['f-pnl','q-pnl'],['j-risk','q-risk'],['f-exp','q-setup']];
+  const result=qForm['q-result'], risk=qMoney('q-risk'), tp=qMoney('q-tp'), pnl=qPnl(result,risk,tp);
   setMode('trade');
   if(editingTradeId===null){
-    carry.forEach(([to,from])=>{ const s=document.getElementById(from), d=document.getElementById(to); if(s&&d&&s.value&&!d.value)d.value=s.value; });
-    if(note){ const l=document.getElementById('f-lesson'); if(l&&!l.value)l.value=note; }
+    const set=(id,v)=>{ const d=document.getElementById(id); if(d&&(v||v===0)&&!d.value)d.value=v; };
+    set('f-date',document.getElementById('q-date').value);
+    if(pnl!==null) set('f-pnl',pnl);
+    if(risk>0) set('j-risk',risk);
     scheduleTradeDraft(); Journal.update();
   }
-  showToast('Values carried over — add the plan, execution and lesson.');
+  showToast('Amounts carried over — add the plan, execution and lesson.');
 }
 async function saveQuickTrade(){
   if(_savingTrade)return;
   const result=qForm['q-result'];
   if(!['Win','Loss','Breakeven'].includes(result)){ showToast('Pick a result. Nothing else is required.'); return; }
-  const rawPnl=(document.getElementById('q-pnl').value||'').trim();
-  const pnl=rawPnl!==''?parseFloat(rawPnl):null;
-  if(pnl!==null && ((result==='Win'&&pnl<0)||(result==='Loss'&&pnl>0))){ showToast('Check the result and the P&L sign. Nothing is flipped automatically.'); return; }
-  const rawRisk=(document.getElementById('q-risk').value||'').trim();
-  const risk=rawRisk!==''?parseFloat(rawRisk):null;
-  if(risk!==null && !(risk>0)){ showToast('The original risk has to be greater than zero.'); return; }
+  const risk=qMoney('q-risk'), tp=qMoney('q-tp'), pnl=qPnl(result,risk,tp);
   _savingTrade=true;
   const btn=document.querySelector('#quick-form .wz-nav .btn-primary'); if(btn)btn.disabled=true;
   try{
     const data=[...(await loadTrades())];
-    const note=(document.getElementById('q-note').value||'').trim();
-    const setup=(document.getElementById('q-setup').value||'').trim();
     const t={
       id:Date.now(),
       date:document.getElementById('q-date').value||new Date().toISOString().slice(0,10),
       instrument:qForm['q-instrument']||'MNQ', direction:qForm['q-direction']||'Long',
       result, pnl,
       screenshot:qGetShot(),
-      expectations:setup,
-      lesson:note, better:note,
       quickCapture:true
     };
     if(risk>0) t.journal={version:1,initialRisk:risk};
@@ -1641,7 +1666,7 @@ async function saveQuickTrade(){
     qResetForm();
     setMode('trade');
     renderRecentStrip();
-    showToast('Trade saved — open it from All trades to add the details ✓');
+    showToast('Trade saved — open it from All trades to add the plan and the lesson ✓');
   } finally {
     _savingTrade=false;
     if(btn)btn.disabled=false;
@@ -2168,6 +2193,29 @@ async function renderList(){
     const meta=isNT?(t.noTradeReasons&&t.noTradeReasons.length?'<span>'+t.noTradeReasons.slice(0,2).join(', ')+'</span>':'<span>Discipline day</span>'):(bare?'<span style="color:var(--muted)">quick capture · open to add the details</span>':((t.setup&&t.setup.length?'<span>'+t.setup.slice(0,3).join(', ')+(t.setup.length>3?'…':'')+'</span>':'')+(t.emotion?' <span>'+t.emotion+'</span>':'')+(t.rulebased==='yes'?' <span style="color:var(--green)">Rule-based ✓</span>':t.rulebased==='no'?' <span style="color:var(--red)">Deviated ✗</span>':'')));
     const pnlSpan=(!isNT && t.pnl!==undefined && t.pnl!==null && t.pnl!=='')?'<span class="badge" style="background:'+(t.pnl>=0?'rgba(52,211,153,.15);color:var(--green)':'rgba(248,113,113,.15);color:var(--red)')+';margin-left:6px">'+(t.pnl>=0?'+':'')+'$'+t.pnl.toFixed(2)+'</span>':'';
     return '<div class="trade-item'+(isNT?' nt-item':'')+'" onclick="openDetail('+t.id+')"><div class="trade-head"><div class="trade-name">'+badge+'<span style="color:var(--muted);font-weight:400"> · '+t.date+'</span></div><span><span class="badge '+(isNT?'nt':rc(t.result))+'">'+( t.result||'–')+'</span>'+pnlSpan+'</span></div><div class="trade-meta">'+meta+'</div></div>';
+  }).join('');
+}
+async function renderLessons(){
+  const el=document.getElementById('lessons-el'); if(!el)return;
+  const rows=(await loadTrades())
+    .map(t=>({t,text:(t.isNoTrade?t.lesson:(t.lesson||t.better))||''}))
+    .filter(r=>r.text.trim())
+    .sort((a,b)=>String(b.t.date||'').localeCompare(String(a.t.date||'')));
+  const desc=document.getElementById('lessons-desc');
+  if(desc)desc.textContent=rows.length?rows.length+(rows.length===1?' lesson':' lessons')+' · newest first':'Every takeaway you wrote on a trade or a no-trade day.';
+  if(!rows.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">💡</div><p>No lessons yet. Write one on the last step of a trade and it lands here.</p></div>';
+    return;
+  }
+  el.innerHTML=rows.map(({t,text})=>{
+    const isNT=t.isNoTrade;
+    const head=isNT
+      ? '<span class="nt-badge">🚫 No Trade</span>'
+      : '<span class="instr '+t.instrument+'">'+t.instrument+'</span> '+t.direction;
+    const tag=isNT?'<span class="badge nt">No Trade</span>':'<span class="badge '+rc(t.result)+'">'+(t.result||'–')+'</span>';
+    return '<div class="trade-item'+(isNT?' nt-item':'')+'" onclick="switchTab(\'list\');openDetail('+t.id+')">'+
+      '<div class="trade-head"><div class="trade-name">'+head+'<span style="color:var(--muted);font-weight:400"> · '+t.date+'</span></div>'+tag+'</div>'+
+      '<p style="margin:2px 0 0;font-size:14px;line-height:1.6;color:var(--text);max-width:68ch">'+Journal.esc(text.trim())+'</p></div>';
   }).join('');
 }
 function renderNoTradeDetail(t){

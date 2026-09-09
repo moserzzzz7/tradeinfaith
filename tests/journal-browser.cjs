@@ -100,25 +100,41 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   assert.equal(await run('loadLearn().length'),1);
   assert.equal(await run('_cache[0].executionScore'),null,'Missing execution must not become zero');
   assert.ok((await run('document.getElementById("j-learn-progress").textContent')).includes('1/1'));
-  // Quick capture: a result alone stores a real trade; risk still feeds R, saving
-  // returns to the full journal, and the entry can be completed there later.
-  await run(`_cache=[];clearForm();setMode('quick');qChoice('q-result',document.querySelector('#quick-form .seg[data-field="q-result"] .opt[data-v="Loss"]'));setField('q-pnl','-75');setField('q-risk','150');setField('q-setup','HTF sweep into 1m FVG, London reversal.');setField('q-note','Chased the entry after the sweep.');await saveQuickTrade();`);
+  // Quick capture: risk and take profit are plain amounts; the result sets the
+  // sign. A negative or comma-typed figure must not be rejected as "> 0".
+  await run(`_cache=[];clearForm();setMode('quick');qChoice('q-result',document.querySelector('#quick-form .seg[data-field="q-result"] .opt[data-v="Loss"]'));setField('q-risk','-240');setField('q-tp','480');await saveQuickTrade();`);
   assert.equal(await run('_cache.length'),1,'Quick capture stores a trade');
   assert.equal(await run('_cache[0].result'),'Loss');
-  assert.equal(await run('_cache[0].pnl'),-75);
+  assert.equal(await run('_cache[0].pnl'),-240,'A loss books minus the risk amount');
   assert.equal(await run('_cache[0].quickCapture'),true,'Quick capture is marked');
-  assert.equal(await run('_cache[0].expectations'),'HTF sweep into 1m FVG, London reversal.','Quick capture keeps the free-text setup reason');
-  assert.equal(await run('_cache[0].lesson'),'Chased the entry after the sweep.');
-  assert.equal(await run('Journal.realizedR(_cache[0])'),-0.5,'Quick risk feeds realized R');
+  assert.equal(await run('_cache[0].journal.initialRisk'),240,'Risk is stored as a positive amount whatever sign was typed');
+  assert.equal(await run('Journal.realizedR(_cache[0])'),-1,'A stopped-out quick trade is -1R');
   assert.equal(await run('currentMode'),'trade','Saving a quick trade returns to the full journal');
   assert.equal(await run('document.getElementById("quick-form").style.display'),'none','Quick form hides after save');
   await run('await saveQuickTrade();');
   assert.equal(await run('_cache.length'),1,'A quick save without a result is rejected');
+  // A win books the take profit; comma decimals parse; realized R is TP over risk.
+  await run(`setMode('quick');qChoice('q-result',document.querySelector('#quick-form .seg[data-field="q-result"] .opt[data-v="Win"]'));setField('q-risk','200,00');setField('q-tp','500');await saveQuickTrade();`);
+  assert.equal(await run('_cache.length'),2,'The win is stored alongside the loss');
+  assert.equal(await run('_cache[0].pnl'),500,'A win books the take profit amount');
+  assert.equal(await run('_cache[0].journal.initialRisk'),200,'Comma-typed risk parses to a plain number');
   await run(`await editTrade(_cache[0].id);setField('j-exec-entry','Yes');setField('j-exec-risk','Yes');setField('j-exec-exit','Yes');setField('j-context','Yes');setField('j-trigger','Yes');setField('j-conditions','Yes');setField('j-extras','all');await saveTrade();`);
   assert.equal(await run('_cache[0].executionScore'),100,'A quick trade can be enriched in the full wizard');
-  assert.equal(await run('_cache[0].pnl'),-75,'Enriching keeps the quick P&L');
-  assert.equal(await run('_cache[0].expectations'),'HTF sweep into 1m FVG, London reversal.','Enriching keeps the quick setup reason');
-  assert.equal(await run('Journal.realizedR(_cache[0])'),-0.5,'Enriching keeps R from the quick risk');
+  assert.equal(await run('_cache[0].pnl'),500,'Enriching keeps the quick P&L');
+  assert.equal(await run('Journal.realizedR(_cache[0])'),2.5,'Enriching keeps R from the quick risk');
+  // Quick capture keeps its screenshot: Ctrl+V while the quick form is on screen
+  // routes into it, and the image is stored on the saved trade.
+  assert.ok(await run('!!document.querySelector("#quick-form #q-shot")'),'The quick form keeps its screenshot drop zone');
+  await run(`setMode('quick');(function(){const ev=new Event('paste');ev.clipboardData={items:[{type:'image/png',getAsFile:()=>new File([new Uint8Array([137,80,78,71])],'s.png',{type:'image/png'})}]};document.dispatchEvent(ev);})();await new Promise(r=>setTimeout(r,60));`);
+  assert.equal(await run('document.getElementById("q-img-prev").style.display'),'block','Ctrl+V routes the screenshot into the visible quick form');
+  await run(`qClearShot();qChoice('q-result',document.querySelector('#quick-form .seg[data-field="q-result"] .opt[data-v="Breakeven"]'));qSetShot('data:image/png;base64,iVBORw0KGgo=');await saveQuickTrade();`);
+  assert.equal(await run('_cache[0].screenshot'),'data:image/png;base64,iVBORw0KGgo=','A quick screenshot is stored on the trade');
+  assert.equal(await run('document.getElementById("q-img-prev").style.display'),'none','Saving resets the quick screenshot preview');
+  // Lessons tab: every takeaway written on a trade shows up, newest first.
+  await run(`_cache=[{id:11,date:'2026-09-02',instrument:'MNQ',direction:'Long',result:'Loss',lesson:'Wait for the confirmed close.'},{id:12,date:'2026-09-05',instrument:'MES',direction:'Short',result:'Win',better:'Repeat the A+ sequence.'},{id:13,date:'2026-09-04',isNoTrade:true,instrument:'MNQ',lesson:'No setup is a position.'},{id:14,date:'2026-09-01',result:'Win'}];await renderLessons();`);
+  assert.equal(await run('document.querySelectorAll("#lessons-el .trade-item").length'),3,'Only entries with a lesson are listed');
+  assert.ok((await run('document.getElementById("lessons-el").textContent')).indexOf('Repeat the A+ sequence.')<(await run('document.getElementById("lessons-el").textContent')).indexOf('No setup is a position.'),'Newest lesson comes first');
+  assert.ok((await run('document.getElementById("lessons-desc").textContent')).includes('3 lessons'));
   await run(`statsRange=30;_cache=[{id:1,date:new Date().toISOString().slice(0,10),result:'Loss',rulebased:'yes',pnl:-10},{id:2,date:'2020-01-01',result:'Win',rulebased:'no',pnl:30}];await renderReview();`);
   assert.ok((await run('document.getElementById("stats-sub").textContent')).includes('1 Trade'));
   await run('await renderStats();');
