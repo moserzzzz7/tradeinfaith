@@ -135,6 +135,10 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   assert.equal(await run('document.querySelectorAll("#lessons-el .trade-item").length'),3,'Only entries with a lesson are listed');
   assert.ok((await run('document.getElementById("lessons-el").textContent')).indexOf('Repeat the A+ sequence.')<(await run('document.getElementById("lessons-el").textContent')).indexOf('No setup is a position.'),'Newest lesson comes first');
   assert.ok((await run('document.getElementById("lessons-desc").textContent')).includes('3 lessons'));
+  // Each card is the lesson itself, not a trade card: no instrument/direction/result badge.
+  assert.ok(!(await run('document.getElementById("lessons-el").textContent')).includes('MES'),'No instrument badge on a lesson card');
+  assert.equal(await run('document.querySelectorAll("#lessons-el .instr, #lessons-el .badge").length'),0,'No trade badges on lesson cards');
+  assert.ok((await run('document.getElementById("lessons-el").textContent')).includes('2026-09-05'),'The date stays as the only orientation');
   await run(`statsRange=30;_cache=[{id:1,date:new Date().toISOString().slice(0,10),result:'Loss',rulebased:'yes',pnl:-10},{id:2,date:'2020-01-01',result:'Win',rulebased:'no',pnl:30}];await renderReview();`);
   assert.ok((await run('document.getElementById("stats-sub").textContent')).includes('1 Trade'));
   await run('await renderStats();');

@@ -2207,16 +2207,14 @@ async function renderLessons(){
     el.innerHTML='<div class="empty"><div class="empty-icon">💡</div><p>No lessons yet. Write one on the last step of a trade and it lands here.</p></div>';
     return;
   }
-  el.innerHTML=rows.map(({t,text})=>{
-    const isNT=t.isNoTrade;
-    const head=isNT
-      ? '<span class="nt-badge">🚫 No Trade</span>'
-      : '<span class="instr '+t.instrument+'">'+t.instrument+'</span> '+t.direction;
-    const tag=isNT?'<span class="badge nt">No Trade</span>':'<span class="badge '+rc(t.result)+'">'+(t.result||'–')+'</span>';
-    return '<div class="trade-item'+(isNT?' nt-item':'')+'" onclick="switchTab(\'list\');openDetail('+t.id+')">'+
-      '<div class="trade-head"><div class="trade-name">'+head+'<span style="color:var(--muted);font-weight:400"> · '+t.date+'</span></div>'+tag+'</div>'+
-      '<p style="margin:2px 0 0;font-size:14px;line-height:1.6;color:var(--text);max-width:68ch">'+Journal.esc(text.trim())+'</p></div>';
-  }).join('');
+  // Nur die Lektion selbst zaehlt hier -- kein Instrument-/Richtungs-/Ergebnis-Badge,
+  // das gehoert zur Trade-Identitaet und nicht zur Lesson. Datum bleibt als einzige
+  // Orientierung, damit ein Klick noch weiss, welchen Trade er oeffnet.
+  el.innerHTML=rows.map(({t,text})=>
+    '<div class="trade-item'+(t.isNoTrade?' nt-item':'')+'" onclick="switchTab(\'list\');openDetail('+t.id+')">'+
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+t.date+'</div>'+
+      '<p style="margin:0;font-size:14px;line-height:1.6;color:var(--text);max-width:68ch">'+Journal.esc(text.trim())+'</p></div>'
+  ).join('');
 }
 function renderNoTradeDetail(t){
   const rows=(k,v)=>v?'<span class="dk">'+k+'</span><span class="dv">'+v+'</span>':'';
