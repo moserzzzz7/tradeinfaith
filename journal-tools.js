@@ -39,9 +39,12 @@ const Journal = (() => {
     if (j?.execution?.entry==='Yes' && (grade(j.criteria,j.extras)==='Invalid' || ['chase','early'].includes(j.focus))) return null;
     return execution(j?.execution);
   }
+  const DISCIPLINE_WINDOW = 20; // recent form, not all-time: a rule break should hit the score, not vanish into a long history.
   function discipline(trades) {
     const measured = trades.filter(t => !t.isNoTrade && ['yes','partial','no'].includes(t.rulebased));
-    return measured.length ? Math.round(measured.reduce((sum,t) => sum + ({yes:100,partial:50,no:0}[t.rulebased]),0) / measured.length) : null;
+    if (!measured.length) return null;
+    const recent = measured.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.id||0)-(a.id||0)).slice(0, DISCIPLINE_WINDOW);
+    return Math.round(recent.reduce((sum,t) => sum + ({yes:100,partial:50,no:0}[t.rulebased]),0) / recent.length);
   }
   function realizedR(t) {
     const pnl = num(t.pnl), risk = num(t.journal?.planSnapshot?.initialRisk) ?? num(t.journal?.initialRisk);
