@@ -782,12 +782,16 @@
       <div style="font-size:13px;color:var(--muted);margin-top:4px;">Discipline over profit</div>
     </div>
     <div id="auth-error" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
-    <label style="font-size:12px;color:var(--muted);">Email</label>
-    <input id="auth-email" type="email" autocomplete="username" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
-    <label style="font-size:12px;color:var(--muted);">Password</label>
-    <input id="auth-password" type="password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
-    <button id="auth-signin-btn" onclick="handleSignIn()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Sign in</button>
-    <button id="auth-signup-btn" onclick="openSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Create account</button>
+    <!-- Echtes <form>: Passwort-Manager erkennen Login-Felder nur so zuverlaessig,
+         und Enter / Auto-Submit landet in handleSignIn statt ins Leere. -->
+    <form id="auth-form" onsubmit="event.preventDefault();handleSignIn();" novalidate>
+    <label for="auth-email" style="font-size:12px;color:var(--muted);">Email</label>
+    <input id="auth-email" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
+    <label for="auth-password" style="font-size:12px;color:var(--muted);">Password</label>
+    <input id="auth-password" name="password" type="password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
+    <button id="auth-signin-btn" type="submit" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Sign in</button>
+    <button id="auth-signup-btn" type="button" onclick="openSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Create account</button>
+    </form>
     <div id="auth-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
   </div>
 </div>
@@ -799,24 +803,26 @@
       <div style="font-size:13px;color:var(--muted);margin-top:4px;">TradeInFaith</div>
     </div>
     <div id="signup-error" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;"></div>
+    <form id="signup-form" onsubmit="event.preventDefault();handleSignUp();" novalidate>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
       <div>
         <label style="font-size:12px;color:var(--muted);">First name</label>
-        <input id="signup-firstname" type="text" autocomplete="given-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
+        <input id="signup-firstname" name="given-name" type="text" autocomplete="given-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
       </div>
       <div>
         <label style="font-size:12px;color:var(--muted);">Last name</label>
-        <input id="signup-lastname" type="text" autocomplete="family-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
+        <input id="signup-lastname" name="family-name" type="text" autocomplete="family-name" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:6px;">
       </div>
     </div>
     <label style="font-size:12px;color:var(--muted);">Username / Nickname</label>
-    <input id="signup-username" type="text" autocomplete="nickname" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
+    <input id="signup-username" name="nickname" type="text" autocomplete="nickname" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
     <label style="font-size:12px;color:var(--muted);">Email</label>
-    <input id="signup-email" type="email" autocomplete="username" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
+    <input id="signup-email" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
     <label style="font-size:12px;color:var(--muted);">Password</label>
-    <input id="signup-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
-    <button id="signup-submit-btn" onclick="handleSignUp()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Create account</button>
-    <button onclick="closeSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">← Back to sign in</button>
+    <input id="signup-password" name="new-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
+    <button id="signup-submit-btn" type="submit" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Create account</button>
+    <button type="button" onclick="closeSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">← Back to sign in</button>
+    </form>
     <div id="signup-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
   </div>
 </div>
@@ -1351,13 +1357,20 @@ function hideAuthError(){ document.getElementById('auth-error').style.display='n
 function showSignupError(msg){ const el=document.getElementById('signup-error'); el.textContent=msg; el.style.display='block'; }
 function hideSignupError(){ document.getElementById('signup-error').style.display='none'; }
 
+let _authBusy=false;
 async function handleSignIn(){
+  if(_authBusy) return;
   hideAuthError();
   const email=document.getElementById('auth-email').value.trim();
   const password=document.getElementById('auth-password').value;
   if(!email||!password){ showAuthError('Enter your email and password.'); return; }
-  const {error}=await sb.auth.signInWithPassword({email,password});
-  if(error){ showAuthError(error.message); return; }
+  const btn=document.getElementById('auth-signin-btn');
+  _authBusy=true; btn.disabled=true;
+  try{
+    const {error}=await sb.auth.signInWithPassword({email,password});
+    if(error){ showAuthError(error.message); return; }
+  }catch(e){ showAuthError('Sign in failed — check your connection.'); }
+  finally{ _authBusy=false; btn.disabled=false; }
 }
 
 function openSignupScreen(){
@@ -1382,11 +1395,17 @@ async function handleSignUp(){
   const password=document.getElementById('signup-password').value;
   if(!firstName||!lastName||!username||!email||!password){ showSignupError('Please fill in every field.'); return; }
   if(password.length<6){ showSignupError('Password must be at least 6 characters.'); return; }
-  const {error}=await sb.auth.signUp({email,password,options:{data:{
-    first_name:firstName, last_name:lastName, username, display_name:(firstName+' '+lastName).trim()
-  }}});
-  if(error){ showSignupError(error.message); return; }
-  document.getElementById('signup-hint').textContent='Account created. If confirmation is required, check your inbox — otherwise you are signed in already.';
+  if(_authBusy) return;
+  const btn=document.getElementById('signup-submit-btn');
+  _authBusy=true; btn.disabled=true;
+  try{
+    const {error}=await sb.auth.signUp({email,password,options:{data:{
+      first_name:firstName, last_name:lastName, username, display_name:(firstName+' '+lastName).trim()
+    }}});
+    if(error){ showSignupError(error.message); return; }
+    document.getElementById('signup-hint').textContent='Account created. If confirmation is required, check your inbox — otherwise you are signed in already.';
+  }catch(e){ showSignupError('Sign up failed — check your connection.'); }
+  finally{ _authBusy=false; btn.disabled=false; }
 }
 async function handleSignOut(){
   await sb.auth.signOut();
@@ -4602,6 +4621,12 @@ async function init(){
       currentUser=session.user;
       await startApp();
     } else if(event==='SIGNED_OUT'){
+      // Supabase meldet SIGNED_OUT auch dann, wenn es nur eine abgelaufene Session aus
+      // dem Storage raeumt -- z.B. beim Wechsel zum Passwort-Manager und zurueck
+      // (visibilitychange) oder im 30s-Refresh-Tick. Auf dem Login-Screen gibt es
+      // dann nichts zu tun; ein Reload wuerde nur die halb ausgefuellten Felder
+      // wegwerfen. Neu laden nur, wenn wirklich eine laufende App-Session endet.
+      if(!currentUser) return;
       currentUser=null; _cache=null;
       location.reload();
     }
@@ -4610,7 +4635,9 @@ async function init(){
 // Kommt die Seite aus dem Back-/Forward-Cache (kein echter Reload -- die Skripte
 // laufen dann nicht neu, das entfernte #intro-Overlay bleibt weg), einmal frisch
 // laden, damit die Startsequenz auch bei "zurueck" / erneutem Aufruf wieder laeuft.
-window.addEventListener('pageshow',function(e){ if(e.persisted) location.reload(); });
+// Auf dem Login-Screen aber nie: iOS/Android liefern pageshow auch beim Rueckweg aus
+// einer anderen App (Passwort-Manager), und ein Reload wuerde die Eingaben loeschen.
+window.addEventListener('pageshow',function(e){ if(e.persisted && currentUser) location.reload(); });
 Journal.init();
 startIntro();
 init();
