@@ -3986,16 +3986,9 @@ function buildRecapScenes(all,from,to,rule){
         '<div class="rc-bars">'+rcBarRow('Rule-based',rb,rated,'var(--green)',360)+rcBarRow('Partial',pa,rated,'var(--amber)',480)+rcBarRow('Deviated',dv,rated,'var(--red)',600)+'</div>'+
         rcA('<div class="rc-sub">'+(avgR!==null?'Average '+fmtR(avgR)+' over '+rs.length+' trade'+(rs.length!==1?'s':'')+' with risk logged':'No original risk logged, so no R')+(n-rated?' · '+(n-rated)+' not rated':'')+'</div>',800),4400));
     }
-    const setups=topCounts(trades.flatMap(conceptsOf),4);
-    if(setups.length){
-      scenes.push(recapScene('',rcA('<div class="rc-kicker">Most frequent setups</div>')+'<div class="rc-list">'+setups.map(([name,c],i)=>rcA('<div><span>'+esc(name)+'</span><b data-count="'+c+'" data-fmt="int">0</b></div>',160+i*180,'rc-from-left')).join('')+'</div>'+rcA('<div class="rc-sub">Concepts you tagged on your trades. Tags overlap.</div>',160+setups.length*180+120),4200));
-    }
-    const emos=topCounts(trades.map(t=>emoLabel(t.emotion)),1);
-    if(emos.length&&emos[0][1]>=2){
-      scenes.push(recapScene('',rcA('<div class="rc-kicker">Most logged feeling</div>')+rcA('<div class="rc-big" style="font-size:clamp(40px,9vw,96px)">'+esc(emos[0][0])+'</div>',140)+rcA('<div class="rc-sub">logged on '+emos[0][1]+' of '+n+' trades</div>',320),3400));
-    }
   }
-  // Ein Blick auf jeden Trade mit Bild oder Lesson: Bild oben, darunter Setup, Grund und Lesson.
+  // Ein Blick auf jeden Trade mit Bild oder Lesson: Bild oben, darunter Setup,
+  // Emotion, Grund und Lesson. Setups und Emotionen gibt es nur hier, am Trade.
   let firstImage=true;
   entries.forEach(t=>{
     const lesson=lessonOf(t);
@@ -4007,7 +4000,8 @@ function buildRecapScenes(all,from,to,rule){
     if(!t.screenshot&&!lesson) return;
     const c=rc(t.result);
     const head='<div class="rc-cap-head"><span class="instr '+esc(t.instrument||'')+'">'+esc(t.instrument||'')+'</span><b>'+esc(t.direction||'')+'</b><span class="trade-date">'+fmtDate(t.date)+'</span><span class="badge '+c+'">'+esc(t.result||'–')+'</span>'+pnlChip(t)+(t.grade?'<span class="badge" style="background:var(--accent-bg);color:var(--accent)">Grade '+esc(t.grade)+'</span>':'')+ruleTag(t)+'</div>';
-    const setup=(t.setup&&t.setup.length)?'<div class="rc-cap-setup"><b>Setup</b> '+esc(t.setup.join(', '))+(t.journal?.model?' · '+esc(t.journal.model):'')+'</div>':(t.journal?.model?'<div class="rc-cap-setup"><b>Model</b> '+esc(t.journal.model)+'</div>':'');
+    const setup=((t.setup&&t.setup.length)?'<div class="rc-cap-setup"><b>Setup</b> '+esc(t.setup.join(', '))+(t.journal?.model?' · '+esc(t.journal.model):'')+'</div>':(t.journal?.model?'<div class="rc-cap-setup"><b>Model</b> '+esc(t.journal.model)+'</div>':''))+
+      (t.emotion?'<div class="rc-cap-setup"><b>Feeling</b> '+esc(emoLabel(t.emotion))+'</div>':'');
     const why=(t.biggestFactor||t.why)?'<div class="rc-cap-why"><b>Why it '+(t.result==='Win'?'worked':t.result==='Loss'?'failed':'ended flat')+'</b> '+esc(t.biggestFactor||t.why)+'</div>':'';
     const rules=[t.bestRule?'<span class="meta-ok">'+ico('check')+esc(t.bestRule)+'</span>':'',t.worstMistake?'<span class="meta-bad">'+ico('x')+esc(t.worstMistake)+'</span>':''].filter(Boolean).join('');
     const les=lesson?rcA('<div class="rc-cap-lesson">'+ico('bulb')+'<span>'+esc(lesson)+'</span></div>',t.screenshot?900:400,'rc-pop'):'';

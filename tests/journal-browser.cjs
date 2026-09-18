@@ -193,6 +193,8 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   assert.equal(sc.filter(s=>s.hold&&s.cls==='rc-img-scene').length,1,'Image scenes wait for a click');
   assert.ok(sc.find(s=>s.cls==='rc-img-scene').text.includes('Click to continue'),'First image scene says click to continue');
   assert.ok(sc.some(s=>s.text.includes('No chasing.')),'Lessons of trades without a screenshot are still told');
+  assert.ok(!sc.some(s=>s.text.includes('Most frequent setups')||s.text.includes('Most logged feeling')),'No aggregate setup or feeling scenes');
+  assert.ok(sc.find(s=>s.cls==='rc-img-scene').text.includes('OB, CISD') && sc.find(s=>s.cls==='rc-img-scene').text.includes('Feeling') && sc.find(s=>s.cls==='rc-img-scene').text.includes('Neutral'),'Setup and feeling are shown on the trade itself');
   assert.ok(sc.some(s=>s.text.includes('Sat out.')),'No-trade day lessons are told');
   assert.equal(sc[sc.length-1].cls,'rc-end','Ends with the replay scene');
   const empty=JSON.parse(await run('JSON.stringify(buildRecapScenes(_cache,"2020-01-01","2020-01-07","").map(s=>s.html.replace(/<[^>]+>/g," ")))'));
