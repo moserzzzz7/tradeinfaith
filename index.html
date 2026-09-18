@@ -730,6 +730,21 @@
   #sec-settings .btn,#sec-settings .delete-btn{height:var(--ctl-h);padding:0 20px;font-size:13px;font-weight:600;line-height:1;display:inline-flex;align-items:center;justify-content:center}
   #sec-settings .subgrid .field .btn{margin-top:auto;width:100%}
   @keyframes auth-spin{to{transform:rotate(360deg)}}
+  /* Auth: statt einem zweiten Rechteck-Button nur eine Textzeile mit farbigem
+     Link. Consent-Zeile und Rechtliches-Fussnote teilen sich denselben Stil. */
+  .auth-alt{margin:16px 0 0;text-align:center;font-size:13px;color:var(--text)}
+  .auth-link{background:none;border:0;padding:0;margin:0;font:inherit;font-weight:600;color:var(--accent);cursor:pointer}
+  .auth-link:hover,.auth-link:focus-visible{text-decoration:underline;outline:none}
+  .auth-legal{margin-top:22px;text-align:center;font-size:11px;color:var(--muted)}
+  .auth-legal a{color:var(--muted);text-decoration:none}
+  .auth-legal a:hover{color:var(--text);text-decoration:underline}
+  .consent{display:flex;gap:10px;align-items:flex-start;margin:0 0 16px;font-size:12px;line-height:1.5;color:var(--muted);cursor:pointer}
+  .consent input[type=checkbox]{appearance:auto;-webkit-appearance:checkbox;width:15px;height:15px;flex:0 0 auto;margin:2px 0 0;padding:0;border:0;background:none;accent-color:var(--accent);cursor:pointer}
+  .consent a{color:var(--accent);text-decoration:none}
+  .consent a:hover{text-decoration:underline}
+  .legal-links{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px}
+  .legal-links a{color:var(--accent);text-decoration:none}
+  .legal-links a:hover{text-decoration:underline}
   /* ===== Start ===== */
   /* Kein eigener Ladebildschirm: nur eine leere Flaeche in Hintergrundfarbe, die
      verhindert, dass das Login-Formular aufblitzt, bevor die Session geprueft ist.
@@ -789,10 +804,11 @@
     <input id="auth-email" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
     <label for="auth-password" style="font-size:12px;color:var(--muted);">Password</label>
     <input id="auth-password" name="password" type="password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
-    <button id="auth-signin-btn" type="submit" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Sign in</button>
-    <button id="auth-signup-btn" type="button" onclick="openSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">Create account</button>
+    <button id="auth-signin-btn" type="submit" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;">Sign in</button>
+    <p class="auth-alt">Noch kein Konto? <button type="button" id="auth-signup-btn" class="auth-link" onclick="openSignupScreen()">Registrieren</button></p>
     </form>
     <div id="auth-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
+    <div class="auth-legal"><a href="legal.html#datenschutz" target="_blank" rel="noopener">Datenschutz</a> &middot; <a href="legal.html#nutzungsbedingungen" target="_blank" rel="noopener">Nutzungsbedingungen</a> &middot; <a href="legal.html#risikohinweis" target="_blank" rel="noopener">Risikohinweis</a></div>
   </div>
 </div>
 
@@ -819,9 +835,13 @@
     <label style="font-size:12px;color:var(--muted);">Email</label>
     <input id="signup-email" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 14px;">
     <label style="font-size:12px;color:var(--muted);">Password</label>
-    <input id="signup-password" name="new-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 18px;">
-    <button id="signup-submit-btn" type="submit" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Create account</button>
-    <button type="button" onclick="closeSignupScreen()" style="width:100%;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;">← Back to sign in</button>
+    <input id="signup-password" name="new-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin:6px 0 16px;">
+    <label class="consent" for="signup-consent">
+      <input type="checkbox" id="signup-consent" name="consent">
+      <span>Ich akzeptiere die <a href="legal.html#nutzungsbedingungen" target="_blank" rel="noopener">Nutzungsbedingungen</a> und habe die <a href="legal.html#datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a> sowie den <a href="legal.html#risikohinweis" target="_blank" rel="noopener">Trading-Risikohinweis</a> gelesen. Ich bin mindestens 16 Jahre alt.</span>
+    </label>
+    <button id="signup-submit-btn" type="submit" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;">Create account</button>
+    <p class="auth-alt">Bereits ein Konto? <button type="button" class="auth-link" onclick="closeSignupScreen()">Anmelden</button></p>
     </form>
     <div id="signup-hint" style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;"></div>
   </div>
@@ -1254,6 +1274,12 @@
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-title">Legal</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Operated by Gian Moser &middot; <a href="mailto:gian.moser@pm.me" style="color:var(--accent);text-decoration:none">gian.moser@pm.me</a></p>
+        <div class="legal-links"><a href="legal.html#datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a><a href="legal.html#nutzungsbedingungen" target="_blank" rel="noopener">Nutzungsbedingungen</a><a href="legal.html#risikohinweis" target="_blank" rel="noopener">Trading-Risikohinweis</a></div>
+      </div>
+
       <div class="card" style="border-color:rgba(248,113,113,.3)">
         <div class="card-title" style="color:var(--red)">Delete account</div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Permanently deletes your account along with every trade, playbook entry and review. This cannot be undone.</p>
@@ -1286,6 +1312,9 @@ const SUPABASE_URL='https://zllznocshaxabuyrkung.supabase.co';
 const SUPABASE_KEY='sb_publishable_vMcTzvgGwWd3sQ7zIhxIpA_csS_BBCN';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null;
+// Stand der Rechtstexte in legal.html. Wird bei der Registrierung mit dem
+// Zeitpunkt der Zustimmung in den User-Metadaten festgehalten (Nachweis).
+const LEGAL_VERSION='2026-09-18';
 
 // ---- Theme ----
 const THEME_KEY='tj_theme';
@@ -1395,12 +1424,15 @@ async function handleSignUp(){
   const password=document.getElementById('signup-password').value;
   if(!firstName||!lastName||!username||!email||!password){ showSignupError('Please fill in every field.'); return; }
   if(password.length<6){ showSignupError('Password must be at least 6 characters.'); return; }
+  const consent=document.getElementById('signup-consent');
+  if(!consent||!consent.checked){ showSignupError('Bitte akzeptiere die Nutzungsbedingungen und bestätige, dass du die Datenschutzerklärung und den Risikohinweis gelesen hast.'); consent&&consent.focus(); return; }
   if(_authBusy) return;
   const btn=document.getElementById('signup-submit-btn');
   _authBusy=true; btn.disabled=true;
   try{
     const {error}=await sb.auth.signUp({email,password,options:{data:{
-      first_name:firstName, last_name:lastName, username, display_name:(firstName+' '+lastName).trim()
+      first_name:firstName, last_name:lastName, username, display_name:(firstName+' '+lastName).trim(),
+      terms_accepted_at:new Date().toISOString(), terms_version:LEGAL_VERSION, privacy_version:LEGAL_VERSION, age_confirmed:true
     }}});
     if(error){ showSignupError(error.message); return; }
     document.getElementById('signup-hint').textContent='Account created. If confirmation is required, check your inbox — otherwise you are signed in already.';

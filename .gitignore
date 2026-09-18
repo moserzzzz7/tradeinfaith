@@ -2,3 +2,8 @@
 skills-lock.json
 .env
 trades-*.json
+
+# graphify: generated cache/output, contains a machine-local absolute Python path
+graphify-out/
+# Claude Code: per-session runtime lock, not project config
+.claude/scheduled_tasks.lock
