@@ -146,7 +146,7 @@
   .filter-count{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
   .filter-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
   .filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
-  .filter-presets{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border)}
+  .filter-presets{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border)}
   .badge{font-size:11px;font-weight:600;padding:3px 11px;border-radius:20px}
   .badge.win{background:var(--green-bg);color:var(--green)}
   .badge.loss{background:var(--red-bg);color:var(--red)}
@@ -460,6 +460,59 @@
   .lesson-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .btn-sm{padding:6px 11px;font-size:12px;font-weight:500;border-radius:7px;display:inline-flex;align-items:center;gap:6px}
   @media(max-width:760px){.rv-lists{grid-template-columns:1fr}.rv-tiles{grid-template-columns:1fr 1fr}.learn-tabs{gap:6px}.ltab{padding:10px 8px;font-size:12.5px;gap:6px}}
+
+  /* ===== Weekly recap (Story-Overlay) =====
+     Liegt ueber allem, nutzt die Theme-Tokens und wird beim Schliessen entfernt.
+     Die eine bewusst gesetzte Bewegung der App: Szenen gleiten ein, Zahlen springen auf. */
+  .rc-setup-row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+  .rc-setup-btns{display:flex;gap:8px;flex-wrap:wrap}
+  @media(max-width:760px){.rc-setup-row{grid-template-columns:1fr 1fr}.rc-setup-btns{grid-column:1/-1}}
+  #recap{position:fixed;inset:0;z-index:10060;background:var(--bg);color:var(--text);display:flex;flex-direction:column;user-select:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #recap .rc-top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0}
+  #recap .rc-close{cursor:pointer;width:36px;height:36px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:16px}
+  #recap .rc-close:hover{background:var(--surface2)}
+  #recap .rc-stage{flex:1;position:relative;overflow:hidden}
+  .rc-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px clamp(20px,6vw,80px) 56px;opacity:0;transform:translateY(18px);transition:opacity .5s var(--ease-out),transform .5s var(--ease-out);pointer-events:none}
+  .rc-scene.in{opacity:1;transform:none;pointer-events:auto}
+  .rc-scene.out{opacity:0;transform:translateY(-18px);transition-duration:.45s}
+  .rc-scene .rc-a{opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease-out) var(--d,0ms),transform .6s var(--ease-out) var(--d,0ms)}
+  .rc-scene.in .rc-a{opacity:1;transform:none}
+  .rc-scene .rc-a:has(>.rc-big){transform:translateY(10px) scale(.72)}
+  .rc-scene.in .rc-a:has(>.rc-big){transform:none}
+  .rc-kicker{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+  .rc-big{font-size:clamp(64px,15vw,168px);font-weight:800;letter-spacing:-.045em;line-height:.95}
+  .rc-line{font-size:clamp(22px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;max-width:24ch;line-height:1.22;margin:0 auto}
+  .rc-sub{font-size:15px;color:var(--muted);margin-top:18px;max-width:52ch;line-height:1.55}
+  .rc-row{display:flex;gap:clamp(22px,7vw,72px);margin-top:8px;flex-wrap:wrap;justify-content:center}
+  .rc-stat{display:flex;flex-direction:column;align-items:center}
+  .rc-stat b{font-size:clamp(48px,10vw,120px);font-weight:800;letter-spacing:-.045em;line-height:1}
+  .rc-stat span{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+  .rc-list{display:flex;flex-direction:column;gap:10px;margin-top:6px;width:min(460px,92vw)}
+  .rc-list .rc-a>div{display:flex;justify-content:space-between;gap:16px;font-size:clamp(17px,2.4vw,24px);font-weight:600;padding:12px 18px;border:1px solid var(--border2);border-radius:12px;background:var(--surface)}
+  .rc-list .rc-a>div span:last-child{color:var(--muted)}
+  .rc-img-scene{justify-content:flex-start;text-align:left;align-items:center;overflow-y:auto}
+  .rc-shot{display:block;max-height:52vh;max-width:min(1100px,100%);width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--border2);background:var(--surface);box-shadow:var(--shadow-pop)}
+  .rc-caption{margin-top:16px;width:min(900px,100%);font-size:14.5px;line-height:1.55}
+  .rc-cap-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:15px}
+  .rc-cap-head b{font-size:18px;font-weight:600}
+  .rc-cap-setup{color:var(--muted);margin-top:8px}
+  .rc-cap-setup b,.rc-cap-why b{color:var(--text);font-weight:600;margin-right:6px}
+  .rc-cap-why{margin-top:8px}
+  .rc-cap-rules{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13.5px}
+  .rc-cap-rules span{display:inline-flex;align-items:flex-start;gap:6px}
+  .rc-cap-lesson{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:10px 14px;border-left:3px solid var(--accent);background:var(--accent-bg);border-radius:0 8px 8px 0;font-size:15px;font-style:italic}
+  .rc-cap-lesson .ico{color:var(--accent);margin-top:3px;flex-shrink:0}
+  .rc-hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12.5px;color:var(--muted);animation:rcPulse 1.8s ease-in-out infinite;pointer-events:none}
+  .rc-hint.big{font-size:15px;font-weight:600;color:var(--text)}
+  @keyframes rcPulse{0%,100%{opacity:.45}50%{opacity:1}}
+  #recap .rc-progress{display:flex;gap:4px;padding:10px 18px 16px;flex-shrink:0}
+  .rc-seg{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
+  .rc-seg i{display:block;height:100%;width:0;background:var(--accent)}
+  .rc-seg.hold i{animation:rcPulse 1.4s ease-in-out infinite}
+  .rc-end-actions{display:flex;gap:10px;margin-top:28px;justify-content:center;flex-wrap:wrap}
+  #recap .rc-end-actions .btn{cursor:pointer}
+  @media(max-width:600px){.rc-row{gap:22px}.rc-scene{padding:12px 16px 48px}.rc-shot{max-height:44vh}.rc-caption{font-size:13.5px}.rc-cap-head b{font-size:16px}}
+  @media (prefers-reduced-motion:reduce){.rc-scene,.rc-scene .rc-a{transition:none}.rc-hint,.rc-seg.hold i{animation:none;opacity:1}}
 
   /* ===== Dock bar ===== */
   .app{display:flex;flex-direction:column;height:100vh}
@@ -961,19 +1014,12 @@
         </div>
         <div class="filter-panel" id="list-filter-panel" hidden>
           <div class="filter-grid">
-            <div class="field"><label for="lf-from">From</label><input type="date" id="lf-from" onchange="onListFilterChange()"></div>
-            <div class="field"><label for="lf-to">To</label><input type="date" id="lf-to" onchange="onListFilterChange()"></div>
+            <div class="field"><label for="lf-on">On (dd.mm.yyyy)</label><input type="date" id="lf-on" onchange="onListFilterChange()"></div>
             <div class="field"><label for="lf-instrument">Instrument</label><select id="lf-instrument" onchange="onListFilterChange()"><option value="">All</option><option value="MNQ">MNQ</option><option value="MES">MES</option></select></div>
             <div class="field"><label for="lf-emotion">Emotion</label><select id="lf-emotion" onchange="onListFilterChange()"><option value="">All</option></select></div>
             <div class="field"><label for="lf-mode">Environment</label><select id="lf-mode" onchange="onListFilterChange()"><option value="">All</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option><option value="Unknown">Not recorded</option></select></div>
           </div>
           <div class="filter-presets">
-            <span class="tag-group-label" style="margin:0">Period</span>
-            <button type="button" class="fchip" onclick="setListPeriod(7)">Last 7 days</button>
-            <button type="button" class="fchip" onclick="setListPeriod(30)">Last 30 days</button>
-            <button type="button" class="fchip" onclick="setListPeriod(90)">Last 90 days</button>
-            <button type="button" class="fchip" onclick="setListPeriod('week')">This week</button>
-            <button type="button" class="fchip" onclick="setListPeriod('month')">This month</button>
             <button type="button" class="link-btn" style="margin-left:auto" onclick="clearListFilters()">Clear filters</button>
           </div>
         </div>
@@ -2411,7 +2457,7 @@ async function renderRecentStrip(){
   el.innerHTML='<span class="recent-strip-lab">Last '+data.length+' trades</span><span class="recent-dots">'+dots+'</span><span class="recent-strip-wr">'+(dec.length?wr+'% win rate · '+w+'/'+dec.length+' decided':'No decided trades')+'</span>';
 }
 let listFilter='all';
-const listFilters={from:'',to:'',instrument:'',emotion:'',mode:''};
+const listFilters={on:'',instrument:'',emotion:'',mode:''};
 function setListFilter(f){ listFilter=f; document.querySelectorAll('#list-filters .fchip').forEach(c=>c.classList.toggle('active',c.dataset.f===f)); renderList(); }
 function toggleListFilters(){
   const panel=document.getElementById('list-filter-panel'), btn=document.getElementById('list-filter-toggle');
@@ -2421,26 +2467,16 @@ function toggleListFilters(){
   btn.classList.toggle('open',!panel.hidden);
 }
 function onListFilterChange(){
-  listFilters.from=Journal.value('lf-from'); listFilters.to=Journal.value('lf-to');
+  listFilters.on=Journal.value('lf-on');
   listFilters.instrument=Journal.value('lf-instrument'); listFilters.emotion=Journal.value('lf-emotion'); listFilters.mode=Journal.value('lf-mode');
-  if(listFilters.from&&listFilters.to&&listFilters.from>listFilters.to){ const x=listFilters.from; listFilters.from=listFilters.to; listFilters.to=x; document.getElementById('lf-from').value=listFilters.from; document.getElementById('lf-to').value=listFilters.to; }
   renderList();
 }
-function setListPeriod(p){
-  const today=new Date(); today.setHours(0,0,0,0);
-  let from, to=today;
-  if(p==='week'){ from=mondayOf(todayISO()); }
-  else if(p==='month'){ from=new Date(today.getFullYear(),today.getMonth(),1); }
-  else { from=addDays(today,-(Number(p)-1)); }
-  document.getElementById('lf-from').value=isoDate(from); document.getElementById('lf-to').value=isoDate(to);
-  onListFilterChange();
-}
 function clearListFilters(){
-  ['lf-from','lf-to','lf-instrument','lf-emotion','lf-mode'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  ['lf-on','lf-instrument','lf-emotion','lf-mode'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
   setListFilter('all');
   onListFilterChange();
 }
-function activeListFilterCount(){ return Object.values(listFilters).filter(Boolean).length-(listFilters.from&&listFilters.to?1:0); }
+function activeListFilterCount(){ return Object.values(listFilters).filter(Boolean).length; }
 function matchesListFilter(t){
   if(listFilter==='nt'&&!t.isNoTrade)return false;
   if(listFilter!=='all'&&listFilter!=='nt'){
@@ -2449,9 +2485,7 @@ function matchesListFilter(t){
     if(listFilter==='loss'&&t.result!=='Loss')return false;
     if(listFilter==='be'&&t.result!=='Breakeven')return false;
   }
-  const d=String(t.date||'');
-  if(listFilters.from&&(!d||d<listFilters.from))return false;
-  if(listFilters.to&&(!d||d>listFilters.to))return false;
+  if(listFilters.on&&String(t.date||'')!==listFilters.on)return false;
   if(listFilters.instrument&&t.instrument!==listFilters.instrument&&!(t.isNoTrade&&t.instrument==='Both'))return false;
   if(listFilters.emotion&&emoLabel(t.emotion)!==listFilters.emotion)return false;
   if(listFilters.mode&&(t.journal?.mode||'Unknown')!==listFilters.mode)return false;
@@ -3731,6 +3765,7 @@ async function renderWeekly(){
       '</div>'
       :'<p class="field-help" style="margin:0">Nothing logged between '+fmtDate(wk.start)+' and '+fmtDate(wk.end)+'. You can still write the review.</p>')+
     '</div>'+
+    recapSetupHTML(wk,all)+
     '<div class="card"><div class="card-title">Lessons of the week</div>'+
       (s.lessons.length||extra.length?
         s.lessons.map(l=>lessonRow(l,false)).join('')+
@@ -3821,6 +3856,173 @@ async function lessonToPlaybook(id){
   const f=t.journal?.focus, title=(f&&Journal.focus[f]&&f!=='other')?Journal.focus[f][0]:'Lesson from '+fmtDate(t.date);
   switchTab('playbook');
   openPlaybookForm({category:'rule',title,body:text+'\n\nFrom '+(t.isNoTrade?'a no-trade day':'a trade')+' on '+fmtDate(t.date)+'.'});
+}
+
+/* ===== Weekly recap =====
+   Bildschirmfuellende, automatisch ablaufende Story aus den echten Eintraegen eines
+   Zeitraums. Wird bei jedem Start neu aus den Daten gebaut und beim Schliessen
+   komplett aus dem DOM entfernt -- nichts wird gespeichert. Fehlende Werte werden
+   benannt, nie als 0 gezeigt. */
+let _recap=null, _recapRange=null;
+const RECAP_DUR=3600;
+function recapSetupHTML(wk,all){
+  const dated=all.map(t=>String(t.date||'')).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  const range=(_recapRange&&_recapRange.key===wk.key)?_recapRange:{from:wk.start,to:wk.end};
+  return '<div class="card rc-setup"><div class="card-title">Weekly recap</div>'+
+    '<p class="field-help" style="margin:0 0 14px">A short animated story of the period, built from your real entries the moment you press play. Nothing is saved.</p>'+
+    '<div class="rc-setup-row">'+
+      '<div class="field"><label for="rc-from">From</label><input type="date" id="rc-from" value="'+range.from+'" onchange="_recapRange={key:\''+wk.key+'\',from:this.value,to:Journal.value(\'rc-to\')}"></div>'+
+      '<div class="field"><label for="rc-to">To</label><input type="date" id="rc-to" value="'+range.to+'" onchange="_recapRange={key:\''+wk.key+'\',from:Journal.value(\'rc-from\'),to:this.value}"></div>'+
+      '<div class="rc-setup-btns">'+
+        '<button type="button" class="btn" onclick="recapUseWeek(\''+wk.start+'\',\''+wk.end+'\',\''+wk.key+'\')">This week</button>'+
+        (dated.length?'<button type="button" class="btn" onclick="recapUseWeek(\''+dated[0]+'\',\''+dated[dated.length-1]+'\',\''+wk.key+'\')">All trades</button>':'')+
+        '<button type="button" class="btn btn-primary" onclick="startRecap()">'+ico('eye')+'Watch weekly recap</button>'+
+      '</div>'+
+    '</div></div>';
+}
+function recapUseWeek(from,to,key){ _recapRange={key,from,to}; const f=document.getElementById('rc-from'), t=document.getElementById('rc-to'); if(f)f.value=from; if(t)t.value=to; }
+function recapSubject(from,to,all){
+  const dated=all.map(t=>String(t.date||'')).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  const allTrades=dated.length&&from<=dated[0]&&to>=dated[dated.length-1];
+  const weeks=Math.round((mondayOf(to)-mondayOf(from))/6048e5)+1;
+  const single=weekInfo(from).key===weekInfo(to).key;
+  if(single) return {label:weekInfo(from).label,lead:'This week',weeks:1};
+  if(allTrades) return {label:'All your trades',lead:'Across all your trades',weeks};
+  return {label:fmtDate(from)+' – '+fmtDate(to),lead:'In these '+weeks+' weeks',weeks};
+}
+function recapScene(cls,html,dur,hold){ return {cls:cls||'',html,dur:dur||RECAP_DUR,hold:!!hold}; }
+function rcA(html,delay){ return '<div class="rc-a" style="--d:'+(delay||0)+'ms">'+html+'</div>'; }
+function buildRecapScenes(all,from,to,rule){
+  const esc=Journal.esc, subj=recapSubject(from,to,all);
+  const entries=all.filter(t=>t.date>=from&&t.date<=to).sort((a,b)=>String(a.date).localeCompare(String(b.date))||(a.id||0)-(b.id||0));
+  const trades=entries.filter(t=>!t.isNoTrade), nt=entries.filter(t=>t.isNoTrade);
+  const scenes=[];
+  scenes.push(recapScene('',rcA('<div class="rc-kicker">Weekly recap</div>')+rcA('<div class="rc-line">'+esc(subj.label)+'</div>',120)+rcA('<div class="rc-sub">Built from your journal entries. Real numbers only.</div>',260),3000));
+  if(!entries.length){
+    scenes.push(recapScene('',rcA('<div class="rc-line">Nothing logged between '+fmtDate(from)+' and '+fmtDate(to)+'.</div>')+rcA('<div class="rc-sub">Pick another period to watch a recap.</div>',150),3500));
+    scenes.push(recapEndScene(rule,subj));
+    return scenes;
+  }
+  const n=trades.length;
+  scenes.push(recapScene('',rcA('<div class="rc-kicker">'+esc(subj.lead)+'</div>')+rcA('<div class="rc-big">'+n+'</div>',140)+rcA('<div class="rc-line">'+(n===1?'trade taken':'trades taken')+'</div>',300)+(nt.length?rcA('<div class="rc-sub">and '+nt.length+' no-trade day'+(nt.length!==1?'s':'')+' you chose to sit out</div>',440):''),3600));
+  if(n){
+    const wins=trades.filter(t=>t.result==='Win').length, losses=trades.filter(t=>t.result==='Loss').length, be=trades.filter(t=>t.result==='Breakeven').length, dec=wins+losses;
+    scenes.push(recapScene('',rcA('<div class="rc-kicker">How they ended</div>')+
+      '<div class="rc-row">'+rcA('<div class="rc-stat"><b style="color:var(--green)">'+wins+'</b><span>Win'+(wins!==1?'s':'')+'</span></div>',140)+rcA('<div class="rc-stat"><b style="color:var(--red)">'+losses+'</b><span>Loss'+(losses!==1?'es':'')+'</span></div>',280)+rcA('<div class="rc-stat"><b style="color:var(--muted)">'+be+'</b><span>Breakeven</span></div>',420)+'</div>'+
+      rcA('<div class="rc-sub">'+(dec?Math.round(wins/dec*100)+'% win rate over '+dec+' decided trade'+(dec!==1?'s':''):'No decided trades yet')+'</div>',560),3800));
+    const pnlTrades=trades.filter(hasPnl), net=pnlTrades.reduce((s,t)=>s+Number(t.pnl),0), missing=n-pnlTrades.length;
+    if(pnlTrades.length){
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">Net P&L</div>')+rcA('<div class="rc-big" style="color:'+(net>0?'var(--green)':net<0?'var(--red)':'var(--text)')+'">'+fmtUSD(net)+'</div>',140)+rcA('<div class="rc-sub">over '+pnlTrades.length+' trade'+(pnlTrades.length!==1?'s':'')+' with P&L'+(missing?' · '+missing+' without P&L not counted':'')+'</div>',320),3800));
+    } else {
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">Net P&L</div>')+rcA('<div class="rc-line">No P&L recorded for these trades.</div>',140)+rcA('<div class="rc-sub">Add the net result to a trade and it shows up here.</div>',300),3200));
+    }
+    const rb=trades.filter(t=>t.rulebased==='yes').length, pa=trades.filter(t=>t.rulebased==='partial').length, dv=trades.filter(t=>t.rulebased==='no').length;
+    if(rb+pa+dv){
+      const rs=trades.map(Journal.realizedR).filter(v=>v!==null), avgR=rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null;
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">Discipline</div>')+
+        '<div class="rc-row">'+rcA('<div class="rc-stat"><b style="color:var(--green)">'+rb+'</b><span>Rule-based</span></div>',140)+rcA('<div class="rc-stat"><b style="color:var(--amber)">'+pa+'</b><span>Partial</span></div>',280)+rcA('<div class="rc-stat"><b style="color:var(--red)">'+dv+'</b><span>Deviated</span></div>',420)+'</div>'+
+        rcA('<div class="rc-sub">'+(avgR!==null?'Average '+fmtR(avgR)+' over '+rs.length+' trade'+(rs.length!==1?'s':'')+' with risk logged':'No original risk logged, so no R')+(n-rb-pa-dv?' · '+(n-rb-pa-dv)+' not rated':'')+'</div>',560),3800));
+    }
+    const setups=topCounts(trades.flatMap(conceptsOf),4);
+    if(setups.length){
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">Most frequent setups</div>')+'<div class="rc-list">'+setups.map(([name,c],i)=>rcA('<div><span>'+esc(name)+'</span><span>'+c+'×</span></div>',140+i*120)).join('')+'</div>'+rcA('<div class="rc-sub">Concepts you tagged on your trades. Tags overlap.</div>',700),4000));
+    }
+    const emos=topCounts(trades.map(t=>emoLabel(t.emotion)),1);
+    if(emos.length&&emos[0][1]>=2){
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">Most logged feeling</div>')+rcA('<div class="rc-big" style="font-size:clamp(40px,9vw,96px)">'+esc(emos[0][0])+'</div>',140)+rcA('<div class="rc-sub">logged on '+emos[0][1]+' of '+n+' trades</div>',320),3400));
+    }
+  }
+  // Ein Blick auf jeden Trade mit Bild oder Lesson: Bild oben, darunter Setup, Grund und Lesson.
+  let firstImage=true;
+  entries.forEach(t=>{
+    const lesson=lessonOf(t);
+    if(t.isNoTrade){
+      if(!lesson) return;
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">No-trade day · '+fmtDate(t.date)+'</div>')+rcA('<div class="rc-line">“'+esc(lesson)+'”</div>',140)+(t.noTradeReasons&&t.noTradeReasons.length?rcA('<div class="rc-sub">Stayed out: '+esc(t.noTradeReasons.slice(0,3).join(', '))+'</div>',300):''),4000));
+      return;
+    }
+    if(!t.screenshot&&!lesson) return;
+    const c=rc(t.result);
+    const head='<div class="rc-cap-head"><span class="instr '+esc(t.instrument||'')+'">'+esc(t.instrument||'')+'</span><b>'+esc(t.direction||'')+'</b><span class="trade-date">'+fmtDate(t.date)+'</span><span class="badge '+c+'">'+esc(t.result||'–')+'</span>'+pnlChip(t)+(t.grade?'<span class="badge" style="background:var(--accent-bg);color:var(--accent)">Grade '+esc(t.grade)+'</span>':'')+ruleTag(t)+'</div>';
+    const setup=(t.setup&&t.setup.length)?'<div class="rc-cap-setup"><b>Setup</b> '+esc(t.setup.join(', '))+(t.journal?.model?' · '+esc(t.journal.model):'')+'</div>':(t.journal?.model?'<div class="rc-cap-setup"><b>Model</b> '+esc(t.journal.model)+'</div>':'');
+    const why=(t.biggestFactor||t.why)?'<div class="rc-cap-why"><b>Why it '+(t.result==='Win'?'worked':t.result==='Loss'?'failed':'ended flat')+'</b> '+esc(t.biggestFactor||t.why)+'</div>':'';
+    const rules=[t.bestRule?'<span class="meta-ok">'+ico('check')+esc(t.bestRule)+'</span>':'',t.worstMistake?'<span class="meta-bad">'+ico('x')+esc(t.worstMistake)+'</span>':''].filter(Boolean).join('');
+    const les=lesson?'<div class="rc-cap-lesson">'+ico('bulb')+'<span>'+esc(lesson)+'</span></div>':'';
+    if(t.screenshot){
+      const hint='<div class="rc-hint'+(firstImage?' big':'')+'">Click to continue</div>';
+      scenes.push(recapScene('rc-img-scene',rcA('<img class="rc-shot" src="'+t.screenshot+'" alt="Trade screenshot">')+rcA('<div class="rc-caption">'+head+setup+why+(rules?'<div class="rc-cap-rules">'+rules+'</div>':'')+les+'</div>',160)+hint,0,true));
+      firstImage=false;
+    } else {
+      scenes.push(recapScene('',rcA('<div class="rc-caption" style="text-align:left">'+head+setup+why+les+'</div>'),4200));
+    }
+  });
+  scenes.push(recapEndScene(rule,subj));
+  return scenes;
+}
+function recapEndScene(rule,subj){
+  return recapScene('rc-end',rcA('<div class="rc-kicker">That’s '+(subj.weeks===1?'your week':'your recap')+'</div>')+
+    (rule?rcA('<div class="rc-line">Your rule for next week</div>',140)+rcA('<div class="rc-sub" style="font-size:18px;color:var(--text)">“'+Journal.esc(rule)+'”</div>',300):rcA('<div class="rc-line">Write the one rule for next week in your review.</div>',140))+
+    rcA('<div class="rc-end-actions"><button type="button" class="btn" onclick="event.stopPropagation();recapReplay()">'+ico('refresh')+'Watch again</button><button type="button" class="btn btn-primary" onclick="event.stopPropagation();recapClose()">Close</button></div>',460),0,true);
+}
+async function startRecap(){
+  const from=Journal.value('rc-from'), to=Journal.value('rc-to');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)){ showToast('Pick a start and an end date.'); return; }
+  const a=from<=to?from:to, b=from<=to?to:from;
+  const all=await loadTrades();
+  const review=loadReviews().find(r=>r.weekStart===weekInfo(a).start&&weekInfo(a).key===weekInfo(b).key);
+  const rule=review?(review.answers||{}).rule:'';
+  recapClose();
+  const scenes=buildRecapScenes(all,a,b,rule);
+  const root=document.createElement('div'); root.id='recap'; root.setAttribute('role','dialog'); root.setAttribute('aria-label','Weekly recap');
+  root.innerHTML='<div class="rc-top"><span>'+Journal.esc(recapSubject(a,b,all).label)+'</span><button type="button" class="rc-close" aria-label="Close recap" onclick="event.stopPropagation();recapClose()">'+ico('x')+'</button></div>'+
+    '<div class="rc-stage"></div><div class="rc-progress">'+scenes.map(()=>'<div class="rc-seg"><i></i></div>').join('')+'</div>';
+  document.body.appendChild(root);
+  root.addEventListener('click',recapAdvance);
+  document.addEventListener('keydown',recapKeys,true);
+  _recap={scenes,i:-1,timer:null,root,current:null};
+  recapShow(0);
+}
+function recapKeys(e){
+  if(!_recap)return;
+  if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation(); recapClose(); }
+  else if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter'){ e.preventDefault(); recapAdvance(); }
+  else if(e.key==='ArrowLeft'){ e.preventDefault(); if(_recap.i>0)recapShow(_recap.i-1); }
+}
+function recapShow(i){
+  if(!_recap)return;
+  const r=_recap; clearTimeout(r.timer); r.timer=null;
+  if(i>=r.scenes.length)return;
+  const reduced=prefersReducedMotion();
+  const stage=r.root.querySelector('.rc-stage');
+  if(r.current){ const old=r.current; old.classList.remove('in'); old.classList.add('out'); setTimeout(()=>old.remove(),reduced?0:520); }
+  const s=r.scenes[i]; r.i=i;
+  const el=document.createElement('div'); el.className='rc-scene '+s.cls; el.innerHTML=s.html;
+  stage.appendChild(el); r.current=el;
+  if(reduced) el.classList.add('in'); else requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
+  r.root.querySelectorAll('.rc-seg').forEach((seg,k)=>{
+    const bar=seg.querySelector('i');
+    seg.classList.remove('on','done','hold');
+    bar.style.transition='none'; bar.style.width=k<i?'100%':'0';
+    if(k===i){
+      if(s.hold){ seg.classList.add('hold'); bar.style.width='100%'; }
+      else { seg.classList.add('on'); requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.transition='width '+s.dur+'ms linear'; bar.style.width='100%'; })); }
+    }
+  });
+  if(!s.hold) r.timer=setTimeout(()=>recapShow(i+1),s.dur);
+}
+function recapAdvance(){
+  if(!_recap)return;
+  const s=_recap.scenes[_recap.i];
+  if(s&&s.cls==='rc-end')return;      // Endbild: nur die Knoepfe reagieren
+  recapShow(_recap.i+1);
+}
+function recapReplay(){ if(_recap)recapShow(0); }
+function recapClose(){
+  if(!_recap)return;
+  clearTimeout(_recap.timer);
+  document.removeEventListener('keydown',recapKeys,true);
+  _recap.root.remove();
+  _recap=null;                        // Szenen und Bilder werden mit dem Overlay verworfen
 }
 
 function normLesson(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9äöüß ]+/g,' ').replace(/\s+/g,' ').trim(); }
