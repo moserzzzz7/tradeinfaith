@@ -14,8 +14,11 @@ modified by the test.
 
 Checks cover incomplete/contradictory scores, result-independent discipline,
 plan snapshots, draft restoration, successful and failed saves, historical field
-preservation, Learn rules, date/environment filters, and mobile overflow. PNGs
-for visual inspection are written to the temporary `tif-journal-qa` folder.
+preservation, Playbook rules and categories, the weekly review (summary, saved
+review, linked weekly rule), grouped trade lessons, the All-trades filters,
+stats KPIs with small-sample labels, USD/date formatting, section switching
+without overlap, and mobile overflow. PNGs for visual inspection are written to
+the temporary `tif-journal-qa` folder.
 
 Optional: point `TRADE_FIXTURE` at a local trade export to verify that opening and
 saving each historical trade preserves every original field. The test uses
