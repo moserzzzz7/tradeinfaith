@@ -118,7 +118,7 @@
   .img-preview{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-top:12px;display:none}
   .shot-thumb{width:96px;height:72px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border2);cursor:zoom-in;margin-bottom:16px;transition:opacity .15s}
   .shot-thumb:hover{opacity:.85}
-  #img-lightbox{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:30px;cursor:zoom-out}
+  #img-lightbox{display:none;position:fixed;inset:0;z-index:10100;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:30px;cursor:zoom-out}
   #img-lightbox.open{display:flex}
   #img-lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:var(--radius-sm);box-shadow:var(--shadow-pop)}
   #img-lightbox .lightbox-close{position:absolute;top:18px;right:22px;color:#fff;font-size:28px;line-height:1;cursor:pointer;opacity:.8}
@@ -509,7 +509,7 @@
   .rc-list .rc-a>div b{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
   .rc-list .rc-a>div b::after{content:'\00d7'}
   .rc-img-scene{justify-content:flex-start;text-align:left;align-items:center;overflow-y:auto}
-  .rc-shot{display:block;max-height:52vh;max-width:min(1100px,100%);width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--border2);background:var(--surface);box-shadow:var(--shadow-pop);transform:scale(1);transition:transform 7s ease-out}
+  .rc-shot{display:block;max-height:52vh;max-width:min(1100px,100%);width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--border2);background:var(--surface);box-shadow:var(--shadow-pop);transform:scale(1);transition:transform 7s ease-out;cursor:zoom-in}
   .rc-scene.in .rc-shot{transform:scale(1.04)}
   .rc-caption{margin-top:16px;width:min(900px,100%);font-size:14.5px;line-height:1.55}
   .rc-caption-lesson{margin-top:0}
@@ -549,7 +549,6 @@
     .rc-scene.in .rc-rule-card{animation:none}
     .rc-meter i,.rc-bar i{transition:none}
     .rc-hint,.rc-seg.hold i{animation:none;opacity:1}
-    #recap.rc-show-bg .rc-bg{opacity:0}
   }
 
   /* ===== Dock bar ===== */
@@ -4013,8 +4012,8 @@ function buildRecapScenes(all,from,to,rule){
     const rules=[t.bestRule?'<span class="meta-ok">'+ico('check')+esc(t.bestRule)+'</span>':'',t.worstMistake?'<span class="meta-bad">'+ico('x')+esc(t.worstMistake)+'</span>':''].filter(Boolean).join('');
     const les=lesson?rcA('<div class="rc-cap-lesson">'+ico('bulb')+'<span>'+esc(lesson)+'</span></div>',t.screenshot?900:400,'rc-pop'):'';
     if(t.screenshot){
-      const hint='<div class="rc-hint'+(firstImage?' big':'')+'">Click to continue</div>';
-      scenes.push(recapScene('rc-img-scene',rcA('<img class="rc-shot" src="'+t.screenshot+'" alt="Trade screenshot">')+rcA('<div class="rc-caption">'+head+setup+why+(rules?'<div class="rc-cap-rules">'+rules+'</div>':'')+'</div>',260,'rc-from-below')+(les?'<div class="rc-caption rc-caption-lesson">'+les+'</div>':'')+hint,0,true));
+      const hint='<div class="rc-hint'+(firstImage?' big':'')+'">Click to continue'+(firstImage?' · click the image to see it in full':'')+'</div>';
+      scenes.push(recapScene('rc-img-scene',rcA('<img class="rc-shot" src="'+t.screenshot+'" alt="Trade screenshot" title="Show full size" onclick="event.stopPropagation();openLightbox(this.src)">')+rcA('<div class="rc-caption">'+head+setup+why+(rules?'<div class="rc-cap-rules">'+rules+'</div>':'')+'</div>',260,'rc-from-below')+(les?'<div class="rc-caption rc-caption-lesson">'+les+'</div>':'')+hint,0,true));
       firstImage=false;
     } else {
       scenes.push(recapScene('',rcA('<div class="rc-caption" style="text-align:left">'+head+setup+why+'</div>')+(les?'<div class="rc-caption rc-caption-lesson">'+les+'</div>':''),4200));
@@ -4048,11 +4047,16 @@ async function startRecap(){
   root.addEventListener('click',recapAdvance);
   document.addEventListener('keydown',recapKeys,true);
   _recap={scenes,i:-1,timer:null,root,current:null,seq:0,rafs:new Set(),bgStop:null};
-  if(!prefersReducedMotion()) _recap.bgStop=startRecapCandles(root.querySelector('.rc-bg'));
+  // Der Kerzenchart bleibt hinter allen Szenen; bei reduced motion steht er still.
+  root.classList.add('rc-show-bg');
+  _recap.bgStop=startRecapCandles(root.querySelector('.rc-bg'),!prefersReducedMotion());
   recapShow(0);
 }
 function recapKeys(e){
   if(!_recap)return;
+  const lb=document.getElementById('img-lightbox');
+  if(e.key==='Escape'&&lb&&lb.classList.contains('open')){ e.preventDefault(); e.stopImmediatePropagation(); closeLightbox(); return; }
+  if(lb&&lb.classList.contains('open'))return;   // Vollbild offen: Tasten steuern nicht die Story
   if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation(); recapClose(); }
   else if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter'){ e.preventDefault(); recapAdvance(); }
   else if(e.key==='ArrowLeft'){ e.preventDefault(); if(_recap.i>0)recapShow(_recap.i-1); }
@@ -4090,7 +4094,6 @@ function recapShow(i){
   if(i>=r.scenes.length)return;
   const reduced=prefersReducedMotion(), seq=++r.seq;
   const stage=r.root.querySelector('.rc-stage');
-  r.root.classList.toggle('rc-show-bg',i===0);
   const show=()=>{
     if(!_recap||_recap.seq!==seq)return;
     const s=r.scenes[i]; r.i=i;
@@ -4132,8 +4135,9 @@ function recapClose(){
   _recap.root.remove();
   _recap=null;                        // Szenen und Bilder werden mit dem Overlay verworfen
 }
-// Ruhiger Kerzenchart hinter der Titelszene: wandert langsam nach links, gedeckte Farben.
-function startRecapCandles(cv){
+// Ruhiger Kerzenchart hinter allen Szenen: wandert langsam nach links, gedeckte Farben.
+// animate=false zeichnet ein einziges stehendes Bild (reduced motion).
+function startRecapCandles(cv,animate){
   if(!cv)return null;
   const ctx=cv.getContext('2d'); const dpr=Math.min(window.devicePixelRatio||1,2);
   let W=0,H=0,raf=null,off=0,candles=[],price=0;
@@ -4144,15 +4148,19 @@ function startRecapCandles(cv){
   function mk(){ const o=price; const c=Math.max(H*.2,Math.min(H*.8,o+(Math.random()-.48)*H*.06)); price=c; const w=Math.random()*H*.02; return {o,c,h:Math.min(o,c)-w,l:Math.max(o,c)+w}; }
   size(); price=H*.6;
   const N=Math.ceil(W/SLOT)+3; for(let i=0;i<N;i++)candles.push(mk());
-  window.addEventListener('resize',size);
-  function frame(){
-    off+=0.35; if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+  function draw(){
     ctx.clearRect(0,0,W,H);
     candles.forEach((k,i)=>{ const x=i*SLOT-off, col=k.c<k.o?UP:DN; ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(x+BODY/2,k.h); ctx.lineTo(x+BODY/2,k.l); ctx.stroke(); ctx.fillRect(x,Math.min(k.o,k.c),BODY,Math.max(2,Math.abs(k.c-k.o))); });
+  }
+  function onResize(){ size(); draw(); }
+  window.addEventListener('resize',onResize);
+  function frame(){
+    off+=0.35; if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+    draw();
     raf=requestAnimationFrame(frame);
   }
-  frame();
-  return ()=>{ cancelAnimationFrame(raf); window.removeEventListener('resize',size); };
+  if(animate===false) draw(); else frame();
+  return ()=>{ cancelAnimationFrame(raf); window.removeEventListener('resize',onResize); };
 }
 
 function normLesson(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9äöüß ]+/g,' ').replace(/\s+/g,' ').trim(); }
