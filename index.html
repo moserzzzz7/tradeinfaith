@@ -1636,6 +1636,57 @@ function fillSplashDiscipline(){
 
 function _spEsc(e){ if(e.key==='Escape')closeSplash(); }
 
+/* ===== Kerzen-Simulator fuer die Hintergrund-Charts =====
+   Ein kleiner Markt statt einer Sinuswelle: Phasen (Trend auf/ab, Range mit
+   Sweep der Range-Kanten, Impuls) mit zufaelliger Dauer, Volatilitaet, die sich
+   in Clustern aendert, Pullbacks in Trends, Rejection-Dochte, gelegentliche Gaps.
+   Preis liegt in [0,1]; die Charts mappen ihn auf 5..95 % der Hoehe. */
+function makeCandleSim(){
+  let p=0.35+Math.random()*0.3, vol=0.022, regime='range', left=0, rangeLo=0.4, rangeHi=0.6, dir=1;
+  function pickRegime(){
+    const r=Math.random();
+    if(p>0.8) regime=r<0.7?'down':'range';
+    else if(p<0.2) regime=r<0.7?'up':'range';
+    else regime=r<0.3?'up':r<0.58?'down':r<0.86?'range':'impulse';
+    left=regime==='impulse'?3+Math.floor(Math.random()*4):8+Math.floor(Math.random()*26);
+    if(regime==='range'){ const w=0.12+Math.random()*0.18; rangeLo=Math.max(0.05,p-w/2); rangeHi=Math.min(0.95,p+w/2); }
+    if(regime==='impulse') dir=p>0.5?(Math.random()<0.7?-1:1):(Math.random()<0.7?1:-1);
+    vol=regime==='impulse'?0.045:regime==='range'?0.014:0.024;
+  }
+  pickRegime();
+  return function next(){
+    if(left--<=0) pickRegime();
+    vol=Math.max(0.008,Math.min(0.06,vol*0.92+0.08*(0.012+Math.random()*0.03)));
+    let drift=0;
+    if(regime==='up') drift=0.5*vol;
+    else if(regime==='down') drift=-0.5*vol;
+    else if(regime==='impulse') drift=dir*vol*1.8;
+    else {
+      const mid=(rangeLo+rangeHi)/2; drift=(mid-p)*0.18;
+      if(left===0&&Math.random()<0.6) drift=(p>mid?1:-1)*(rangeHi-rangeLo)*0.7;   // Sweep der Kante, dann neue Phase
+    }
+    if((regime==='up'||regime==='down')&&Math.random()<0.28) drift=-drift*0.8;   // Pullback
+    const o=p;
+    let c=Math.max(0.03,Math.min(0.97,o+drift+(Math.random()-0.5)*vol*1.6));
+    if(c>0.88&&regime!=='down') left=Math.min(left,2);
+    if(c<0.12&&regime!=='up') left=Math.min(left,2);
+    const up=c>o;
+    const wickTop=Math.random()*vol*(up?0.6:1.3)+(Math.random()<0.1?vol*2:0);
+    const wickBot=Math.random()*vol*(up?1.3:0.6)+(Math.random()<0.1?vol*2:0);
+    const h=Math.min(0.99,Math.max(o,c)+wickTop), l=Math.max(0.01,Math.min(o,c)-wickBot);
+    p=c+(Math.random()<0.06?(Math.random()-0.5)*vol*0.8:0);                       // kleines Gap
+    return {o,c,h,l};
+  };
+}
+// Preis (0..1) -> y-Pixel im Band 5..95 % der Hoehe (y waechst nach unten)
+function candleY(v,H){ return H*0.95-v*H*0.9; }
+function drawCandle(ctx,k,x,BODY,H,col){
+  const yo=candleY(k.o,H), yc=candleY(k.c,H), yh=candleY(k.h,H), yl=candleY(k.l,H);
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=Math.max(1,BODY*0.12);
+  ctx.beginPath(); ctx.moveTo(x+BODY/2,yh); ctx.lineTo(x+BODY/2,yl); ctx.stroke();
+  ctx.fillRect(x,Math.min(yo,yc),BODY,Math.max(1.5,Math.abs(yc-yo)));
+}
+
 let _spRaf=null, _spRestart=null, _spShown=false;
 // Aufbauzeit des Hintergrund-Charts, von links bis die Breite steht. Der Discipline-
 // Balken laedt sich in der halben Zeit auf: er ist fertig, waehrend der Chart noch
@@ -1644,15 +1695,13 @@ const SP_BUILD_MS=2800;
 function startSplashCanvas(){
   const cv=document.getElementById('splash-canvas'); if(!cv)return;
   const ctx=cv.getContext('2d');
-  let W=0,H=0,LO=0,HI=0,MID=0,SPAN=0,dpr=Math.min(window.devicePixelRatio||1,2);
-  // Band zwischen 20% und 80% der Hoehe aktiv bespielen -- oben und unten bleiben je
-  // 20% Sicherheitsabstand. Wird in size() mitgezogen, damit es bei Fensteraenderung
-  // nicht auf der alten Hoehe haengen bleibt.
+  let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
+  // Kerzen leben im Preisraum 0..1 und werden auf 5..95 % der Hoehe gemappt --
+  // bei Fensteraenderung passt sich der Chart an, ohne neu zu wuerfeln.
   function size(){
     if(!cv.isConnected)return;
     W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr;
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    LO=H*0.20; HI=H*0.80; MID=(LO+HI)/2; SPAN=HI-LO;
   }
   size(); window.addEventListener('resize',size);
   const SLOT=22, BODY=11;
@@ -1666,21 +1715,7 @@ function startSplashCanvas(){
     COL_UP=cs.getPropertyValue('--green').trim()||COL_UP;
     COL_DN=cs.getPropertyValue('--red').trim()||COL_DN;
   }
-  let candles=[];
-  // Ein reiner Random Walk haengt zu lange um die Mitte, deshalb laeuft eine langsame
-  // Welle als Zielkurs darunter; das Rauschen obendrauf macht die einzelnen Kerzen
-  // unregelmaessig. Startpunkt unten, Welle zieht zuerst nach oben: der Chart beginnt
-  // unten links und steigt -- derselbe Eindruck wie beim Intro-Chart davor.
-  let price=HI, phase=-Math.PI/2;
-  function mk(){
-    const o=price;
-    phase+=0.085;
-    const target=MID+Math.sin(phase)*SPAN*0.46;
-    const c=Math.max(LO,Math.min(HI,o+(target-o)*0.35+(Math.random()-0.5)*SPAN*0.16));
-    price=c;
-    const w=Math.random()*H*0.03;
-    return {o:o,c:c,h:Math.min(o,c)-w,l:Math.max(o,c)+w};
-  }
+  let candles=[], mk=makeCandleSim();
   // Aufbau: der Chart startet leer und waechst von links nach, bis er die Breite
   // fuellt. Danach laeuft er wie gehabt langsam weiter und rueckt rechts nach.
   // Der Startzeitpunkt wird beim Reveal neu gesetzt (restartSplashBuild) --
@@ -1688,7 +1723,7 @@ function startSplashCanvas(){
   // 2.8s spaeter zu sehen; ohne das waere der Chart beim Erscheinen laengst voll.
   const NMAX=Math.ceil(window.innerWidth/SLOT)+3;
   let off=0, t0=performance.now();
-  _spRestart=()=>{ candles=[]; price=HI; phase=-Math.PI/2; off=0; t0=performance.now(); };
+  _spRestart=()=>{ candles=[]; mk=makeCandleSim(); off=0; t0=performance.now(); };
 
   function frame(){
     const soll=Math.min(NMAX,Math.floor((performance.now()-t0)/(SP_BUILD_MS/NMAX)));
@@ -1701,14 +1736,7 @@ function startSplashCanvas(){
     }
     colors();
     ctx.clearRect(0,0,W,H);
-    candles.forEach((k,i)=>{
-      const x=i*SLOT-off, up=k.c<k.o;
-      const col=up?COL_UP:COL_DN;
-      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.4;
-      ctx.beginPath(); ctx.moveTo(x+BODY/2,k.h); ctx.lineTo(x+BODY/2,k.l); ctx.stroke();
-      const top=Math.min(k.o,k.c), hgt=Math.max(2,Math.abs(k.c-k.o));
-      ctx.fillRect(x,top,BODY,hgt);
-    });
+    candles.forEach((k,i)=>drawCandle(ctx,k,i*SLOT-off,BODY,H,k.c>k.o?COL_UP:COL_DN));
     _spRaf=requestAnimationFrame(frame);
   }
   frame();
@@ -4134,17 +4162,16 @@ function recapClose(){
 function startRecapCandles(cv,animate){
   if(!cv)return null;
   const ctx=cv.getContext('2d'); const dpr=Math.min(window.devicePixelRatio||1,2);
-  let W=0,H=0,raf=null,off=0,candles=[],price=0;
-  const SLOT=26,BODY=12;
+  let W=0,H=0,raf=null,off=0,candles=[];
+  const SLOT=26,BODY=12, mk=makeCandleSim();
   const cs=getComputedStyle(document.documentElement);
   const UP=cs.getPropertyValue('--green').trim()||'#0f8a5f', DN=cs.getPropertyValue('--red').trim()||'#c23b3b';
   function size(){ W=cv.clientWidth||window.innerWidth; H=cv.clientHeight||window.innerHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
-  function mk(){ const o=price; const c=Math.max(H*.2,Math.min(H*.8,o+(Math.random()-.48)*H*.06)); price=c; const w=Math.random()*H*.02; return {o,c,h:Math.min(o,c)-w,l:Math.max(o,c)+w}; }
-  size(); price=H*.6;
+  size();
   const N=Math.ceil(W/SLOT)+3; for(let i=0;i<N;i++)candles.push(mk());
   function draw(){
     ctx.clearRect(0,0,W,H);
-    candles.forEach((k,i)=>{ const x=i*SLOT-off, col=k.c<k.o?UP:DN; ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(x+BODY/2,k.h); ctx.lineTo(x+BODY/2,k.l); ctx.stroke(); ctx.fillRect(x,Math.min(k.o,k.c),BODY,Math.max(2,Math.abs(k.c-k.o))); });
+    candles.forEach((k,i)=>drawCandle(ctx,k,i*SLOT-off,BODY,H,k.c>k.o?UP:DN));
   }
   function onResize(){ size(); draw(); }
   window.addEventListener('resize',onResize);
