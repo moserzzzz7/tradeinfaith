@@ -463,36 +463,56 @@
 
   /* ===== Weekly recap (Story-Overlay) =====
      Liegt ueber allem, nutzt die Theme-Tokens und wird beim Schliessen entfernt.
-     Die eine bewusst gesetzte Bewegung der App: Szenen gleiten ein, Zahlen springen auf. */
+     Bewegung ist hier Absicht: Szenen kommen von rechts unten (300ms), Bloecke
+     folgen gestaffelt, Zahlen zaehlen, Balken wachsen, Bilder zoomen leicht.
+     Keine Drehungen, keine Dauereffekte, kein Ton. */
   .rc-setup-row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
   .rc-setup-btns{display:flex;gap:8px;flex-wrap:wrap}
   @media(max-width:760px){.rc-setup-row{grid-template-columns:1fr 1fr}.rc-setup-btns{grid-column:1/-1}}
   #recap{position:fixed;inset:0;z-index:10060;background:var(--bg);color:var(--text);display:flex;flex-direction:column;user-select:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  #recap .rc-top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0}
+  #recap .rc-bg{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .6s ease;pointer-events:none}
+  #recap.rc-show-bg .rc-bg{opacity:.16}
+  #recap .rc-top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0;position:relative}
   #recap .rc-close{cursor:pointer;width:36px;height:36px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:16px}
   #recap .rc-close:hover{background:var(--surface2)}
   #recap .rc-stage{flex:1;position:relative;overflow:hidden}
-  .rc-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px clamp(20px,6vw,80px) 56px;opacity:0;transform:translateY(18px);transition:opacity .5s var(--ease-out),transform .5s var(--ease-out);pointer-events:none}
+  .rc-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px clamp(20px,6vw,80px) 56px;opacity:0;transform:translate(26px,26px);transition:opacity .3s var(--ease-out),transform .3s var(--ease-out);pointer-events:none}
   .rc-scene.in{opacity:1;transform:none;pointer-events:auto}
-  .rc-scene.out{opacity:0;transform:translateY(-18px);transition-duration:.45s}
-  .rc-scene .rc-a{opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease-out) var(--d,0ms),transform .6s var(--ease-out) var(--d,0ms)}
+  .rc-scene.out{opacity:0;transform:translate(-10px,-10px);transition-duration:.24s}
+  .rc-scene .rc-a{opacity:0;transform:translateY(22px);transition:opacity .55s var(--ease-out) var(--d,0ms),transform .55s var(--ease-out) var(--d,0ms)}
+  .rc-scene .rc-a.rc-from-left{transform:translateX(-28px)}
+  .rc-scene .rc-a.rc-from-below{transform:translateY(40px)}
+  .rc-scene .rc-a.rc-pop{transform:translateY(12px) scale(.96)}
   .rc-scene.in .rc-a{opacity:1;transform:none}
-  .rc-scene .rc-a:has(>.rc-big){transform:translateY(10px) scale(.72)}
-  .rc-scene.in .rc-a:has(>.rc-big){transform:none}
+  .rc-title .rc-title-line{transition-duration:.7s}
   .rc-kicker{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
-  .rc-big{font-size:clamp(64px,15vw,168px);font-weight:800;letter-spacing:-.045em;line-height:.95}
+  .rc-big{font-size:clamp(64px,15vw,168px);font-weight:800;letter-spacing:-.045em;line-height:.95;font-variant-numeric:tabular-nums}
   .rc-line{font-size:clamp(22px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;max-width:24ch;line-height:1.22;margin:0 auto}
   .rc-sub{font-size:15px;color:var(--muted);margin-top:18px;max-width:52ch;line-height:1.55}
-  .rc-row{display:flex;gap:clamp(22px,7vw,72px);margin-top:8px;flex-wrap:wrap;justify-content:center}
+  .rc-row{display:flex;gap:clamp(14px,3vw,28px);margin-top:8px;flex-wrap:wrap;justify-content:center}
   .rc-stat{display:flex;flex-direction:column;align-items:center}
-  .rc-stat b{font-size:clamp(48px,10vw,120px);font-weight:800;letter-spacing:-.045em;line-height:1}
+  .rc-stat.rc-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:22px clamp(22px,4vw,44px) 18px;min-width:150px}
+  .rc-stat b{font-size:clamp(48px,10vw,120px);font-weight:800;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums}
   .rc-stat span{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+  .rc-score{display:flex;flex-direction:column;align-items:center;margin-bottom:22px}
+  .rc-score-num{font-size:clamp(56px,11vw,120px);font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+  .rc-score-num small{font-size:clamp(16px,2.4vw,24px);font-weight:600;color:var(--muted);letter-spacing:0;margin-left:6px}
+  .rc-meter{width:min(360px,80vw);height:8px;border-radius:4px;background:var(--surface3);overflow:hidden;margin-top:14px}
+  .rc-meter i,.rc-bar i{display:block;height:100%;width:0;border-radius:inherit;transition:width .9s cubic-bezier(.3,.8,.2,1)}
+  .rc-bars{width:min(460px,92vw);display:flex;flex-direction:column;gap:10px}
+  .rc-bar-row{display:flex;align-items:center;gap:12px}
+  .rc-bar-label{width:92px;text-align:left;font-size:14px;font-weight:600;flex-shrink:0}
+  .rc-bar{flex:1;height:12px;border-radius:6px;background:var(--surface3);overflow:hidden}
+  .rc-bar-row b{width:36px;text-align:right;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
   .rc-list{display:flex;flex-direction:column;gap:10px;margin-top:6px;width:min(460px,92vw)}
-  .rc-list .rc-a>div{display:flex;justify-content:space-between;gap:16px;font-size:clamp(17px,2.4vw,24px);font-weight:600;padding:12px 18px;border:1px solid var(--border2);border-radius:12px;background:var(--surface)}
-  .rc-list .rc-a>div span:last-child{color:var(--muted)}
+  .rc-list .rc-a>div{display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:clamp(17px,2.4vw,24px);font-weight:600;padding:12px 18px;border:1px solid var(--border2);border-radius:12px;background:var(--surface)}
+  .rc-list .rc-a>div b{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+  .rc-list .rc-a>div b::after{content:'\00d7'}
   .rc-img-scene{justify-content:flex-start;text-align:left;align-items:center;overflow-y:auto}
-  .rc-shot{display:block;max-height:52vh;max-width:min(1100px,100%);width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--border2);background:var(--surface);box-shadow:var(--shadow-pop)}
+  .rc-shot{display:block;max-height:52vh;max-width:min(1100px,100%);width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--border2);background:var(--surface);box-shadow:var(--shadow-pop);transform:scale(1);transition:transform 7s ease-out}
+  .rc-scene.in .rc-shot{transform:scale(1.04)}
   .rc-caption{margin-top:16px;width:min(900px,100%);font-size:14.5px;line-height:1.55}
+  .rc-caption-lesson{margin-top:0}
   .rc-cap-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:15px}
   .rc-cap-head b{font-size:18px;font-weight:600}
   .rc-cap-setup{color:var(--muted);margin-top:8px}
@@ -500,19 +520,37 @@
   .rc-cap-why{margin-top:8px}
   .rc-cap-rules{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13.5px}
   .rc-cap-rules span{display:inline-flex;align-items:flex-start;gap:6px}
-  .rc-cap-lesson{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:10px 14px;border-left:3px solid var(--accent);background:var(--accent-bg);border-radius:0 8px 8px 0;font-size:15px;font-style:italic}
+  .rc-cap-lesson{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 16px;border-left:3px solid var(--accent);background:var(--accent-bg);border-radius:0 10px 10px 0;font-size:16px;font-style:italic;line-height:1.5}
   .rc-cap-lesson .ico{color:var(--accent);margin-top:3px;flex-shrink:0}
   .rc-hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12.5px;color:var(--muted);animation:rcPulse 1.8s ease-in-out infinite;pointer-events:none}
   .rc-hint.big{font-size:15px;font-weight:600;color:var(--text)}
   @keyframes rcPulse{0%,100%{opacity:.45}50%{opacity:1}}
-  #recap .rc-progress{display:flex;gap:4px;padding:10px 18px 16px;flex-shrink:0}
+  .rc-rule-card{width:min(720px,92vw);background:var(--surface);border:1px solid var(--accent-border);border-radius:18px;padding:26px 30px;margin-top:6px;box-shadow:var(--shadow-card)}
+  .rc-scene.in .rc-rule-card{animation:rcGlow 1.5s ease-out .55s 1}
+  .rc-rule-card.rc-rule-empty{border-color:var(--border2)}
+  .rc-scene.in .rc-rule-card.rc-rule-empty{animation:none}
+  .rc-rule-lab{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .rc-rule-text{font-size:clamp(19px,2.8vw,28px);font-weight:600;line-height:1.35;letter-spacing:-.01em}
+  @keyframes rcGlow{0%{box-shadow:0 0 0 0 rgba(52,84,209,0)}35%{box-shadow:0 0 0 6px rgba(52,84,209,.18),0 0 42px rgba(52,84,209,.35)}100%{box-shadow:0 0 0 0 rgba(52,84,209,0)}}
+  :root[data-theme="dark"] .rc-scene.in .rc-rule-card{animation-name:rcGlowDark}
+  @keyframes rcGlowDark{0%{box-shadow:0 0 0 0 rgba(91,124,250,0)}35%{box-shadow:0 0 0 6px rgba(91,124,250,.22),0 0 46px rgba(91,124,250,.45)}100%{box-shadow:0 0 0 0 rgba(91,124,250,0)}}
+  #recap .rc-progress{display:flex;gap:4px;padding:10px 18px 16px;flex-shrink:0;position:relative}
   .rc-seg{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
   .rc-seg i{display:block;height:100%;width:0;background:var(--accent)}
   .rc-seg.hold i{animation:rcPulse 1.4s ease-in-out infinite}
   .rc-end-actions{display:flex;gap:10px;margin-top:28px;justify-content:center;flex-wrap:wrap}
   #recap .rc-end-actions .btn{cursor:pointer}
-  @media(max-width:600px){.rc-row{gap:22px}.rc-scene{padding:12px 16px 48px}.rc-shot{max-height:44vh}.rc-caption{font-size:13.5px}.rc-cap-head b{font-size:16px}}
-  @media (prefers-reduced-motion:reduce){.rc-scene,.rc-scene .rc-a{transition:none}.rc-hint,.rc-seg.hold i{animation:none;opacity:1}}
+  @media(max-width:600px){.rc-row{gap:10px}.rc-stat.rc-card{min-width:0;padding:16px 14px 12px;flex:1 1 0}.rc-scene{padding:12px 16px 48px}.rc-shot{max-height:44vh}.rc-caption{font-size:13.5px}.rc-cap-head b{font-size:16px}.rc-bar-label{width:76px;font-size:13px}}
+  /* Reduced motion: nur einfache Einblendungen, keine Bewegung, kein Zoom, kein Glow, kein Hintergrundchart */
+  @media (prefers-reduced-motion:reduce){
+    .rc-scene,.rc-scene.out,.rc-scene .rc-a{transform:none!important;transition:opacity .2s ease!important}
+    .rc-scene .rc-a{transition-delay:0ms!important}
+    .rc-shot,.rc-scene.in .rc-shot{transform:none;transition:none}
+    .rc-scene.in .rc-rule-card{animation:none}
+    .rc-meter i,.rc-bar i{transition:none}
+    .rc-hint,.rc-seg.hold i{animation:none;opacity:1}
+    #recap.rc-show-bg .rc-bg{opacity:0}
+  }
 
   /* ===== Dock bar ===== */
   .app{display:flex;flex-direction:column;height:100vh}
@@ -3862,9 +3900,12 @@ async function lessonToPlaybook(id){
    Bildschirmfuellende, automatisch ablaufende Story aus den echten Eintraegen eines
    Zeitraums. Wird bei jedem Start neu aus den Daten gebaut und beim Schliessen
    komplett aus dem DOM entfernt -- nichts wird gespeichert. Fehlende Werte werden
-   benannt, nie als 0 gezeigt. */
+   benannt, nie als 0 gezeigt.
+   Bewegung: Zahlen zaehlen hoch, Balken wachsen, Screenshots zoomen leicht, Szenen
+   kommen von rechts unten -- die alte Szene ist vorher schon weg (kein Ghosting).
+   Bei prefers-reduced-motion bleiben nur einfache Einblendungen. */
 let _recap=null, _recapRange=null;
-const RECAP_DUR=3600;
+const RECAP_DUR=3600, RECAP_OUT_MS=240;
 function recapSetupHTML(wk,all){
   const dated=all.map(t=>String(t.date||'')).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
   const range=(_recapRange&&_recapRange.key===wk.key)?_recapRange:{from:wk.start,to:wk.end};
@@ -3891,41 +3932,64 @@ function recapSubject(from,to,all){
   return {label:fmtDate(from)+' – '+fmtDate(to),lead:'In these '+weeks+' weeks',weeks};
 }
 function recapScene(cls,html,dur,hold){ return {cls:cls||'',html,dur:dur||RECAP_DUR,hold:!!hold}; }
-function rcA(html,delay){ return '<div class="rc-a" style="--d:'+(delay||0)+'ms">'+html+'</div>'; }
+// Ein animierter Block: --d ist die Verzoegerung, cls eine Bewegungsvariante (rc-from-left, rc-pop)
+function rcA(html,delay,cls){ return '<div class="rc-a'+(cls?' '+cls:'')+'" style="--d:'+(delay||0)+'ms">'+html+'</div>'; }
+// Zaehlende Zahl: startet bei 0 und laeuft hoch, sobald die Szene steht
+function rcNum(cls,value,fmt,style){
+  const tag=(cls==='b'||cls==='span')?cls:'div', attr=tag==='div'?' class="'+cls+'"':'';
+  return '<'+tag+attr+(style?' style="'+style+'"':'')+' data-count="'+value+'" data-fmt="'+fmt+'">'+rcFmt(0,fmt)+'</'+tag+'>';
+}
+function rcFmt(v,fmt){
+  if(fmt==='usd') return fmtUSD(Math.round(v));
+  if(fmt==='score') return (v/10).toFixed(1);
+  if(fmt==='pct') return Math.round(v)+'%';
+  return String(Math.round(v));
+}
+function rcBarRow(label,count,total,col,delay){
+  const pct=total?Math.round(count/total*100):0;
+  return rcA('<div class="rc-bar-row"><span class="rc-bar-label">'+label+'</span><div class="rc-bar"><i data-w="'+pct+'%" style="background:'+col+'"></i></div><b data-count="'+count+'" data-fmt="int" style="color:'+col+'">0</b></div>',delay,'rc-from-left');
+}
 function buildRecapScenes(all,from,to,rule){
   const esc=Journal.esc, subj=recapSubject(from,to,all);
   const entries=all.filter(t=>t.date>=from&&t.date<=to).sort((a,b)=>String(a.date).localeCompare(String(b.date))||(a.id||0)-(b.id||0));
   const trades=entries.filter(t=>!t.isNoTrade), nt=entries.filter(t=>t.isNoTrade);
   const scenes=[];
-  scenes.push(recapScene('',rcA('<div class="rc-kicker">Weekly recap</div>')+rcA('<div class="rc-line">'+esc(subj.label)+'</div>',120)+rcA('<div class="rc-sub">Built from your journal entries. Real numbers only.</div>',260),3000));
+  scenes.push(recapScene('rc-title',rcA('<div class="rc-kicker">Weekly recap</div>')+rcA('<div class="rc-line rc-title-line">'+esc(subj.label)+'</div>',120)+rcA('<div class="rc-sub">Built from your journal entries. Real numbers only.</div>',280),3200));
   if(!entries.length){
     scenes.push(recapScene('',rcA('<div class="rc-line">Nothing logged between '+fmtDate(from)+' and '+fmtDate(to)+'.</div>')+rcA('<div class="rc-sub">Pick another period to watch a recap.</div>',150),3500));
     scenes.push(recapEndScene(rule,subj));
     return scenes;
   }
   const n=trades.length;
-  scenes.push(recapScene('',rcA('<div class="rc-kicker">'+esc(subj.lead)+'</div>')+rcA('<div class="rc-big">'+n+'</div>',140)+rcA('<div class="rc-line">'+(n===1?'trade taken':'trades taken')+'</div>',300)+(nt.length?rcA('<div class="rc-sub">and '+nt.length+' no-trade day'+(nt.length!==1?'s':'')+' you chose to sit out</div>',440):''),3600));
+  scenes.push(recapScene('',rcA('<div class="rc-kicker">'+esc(subj.lead)+'</div>')+rcA(rcNum('rc-big',n,'int'),120)+rcA('<div class="rc-line">'+(n===1?'trade taken':'trades taken')+'</div>',300)+(nt.length?rcA('<div class="rc-sub">and '+nt.length+' no-trade day'+(nt.length!==1?'s':'')+' you chose to sit out</div>',460):''),3800));
   if(n){
     const wins=trades.filter(t=>t.result==='Win').length, losses=trades.filter(t=>t.result==='Loss').length, be=trades.filter(t=>t.result==='Breakeven').length, dec=wins+losses;
     scenes.push(recapScene('',rcA('<div class="rc-kicker">How they ended</div>')+
-      '<div class="rc-row">'+rcA('<div class="rc-stat"><b style="color:var(--green)">'+wins+'</b><span>Win'+(wins!==1?'s':'')+'</span></div>',140)+rcA('<div class="rc-stat"><b style="color:var(--red)">'+losses+'</b><span>Loss'+(losses!==1?'es':'')+'</span></div>',280)+rcA('<div class="rc-stat"><b style="color:var(--muted)">'+be+'</b><span>Breakeven</span></div>',420)+'</div>'+
-      rcA('<div class="rc-sub">'+(dec?Math.round(wins/dec*100)+'% win rate over '+dec+' decided trade'+(dec!==1?'s':''):'No decided trades yet')+'</div>',560),3800));
+      '<div class="rc-row">'+
+        rcA('<div class="rc-stat rc-card">'+rcNum('b',wins,'int','color:var(--green)')+'<span>Win'+(wins!==1?'s':'')+'</span></div>',120)+
+        rcA('<div class="rc-stat rc-card">'+rcNum('b',losses,'int','color:var(--red)')+'<span>Loss'+(losses!==1?'es':'')+'</span></div>',220)+
+        rcA('<div class="rc-stat rc-card">'+rcNum('b',be,'int','color:var(--muted)')+'<span>Breakeven</span></div>',320)+
+      '</div>'+
+      rcA('<div class="rc-sub">'+(dec?Math.round(wins/dec*100)+'% win rate over '+dec+' decided trade'+(dec!==1?'s':''):'No decided trades yet')+'</div>',560),3900));
     const pnlTrades=trades.filter(hasPnl), net=pnlTrades.reduce((s,t)=>s+Number(t.pnl),0), missing=n-pnlTrades.length;
     if(pnlTrades.length){
-      scenes.push(recapScene('',rcA('<div class="rc-kicker">Net P&L</div>')+rcA('<div class="rc-big" style="color:'+(net>0?'var(--green)':net<0?'var(--red)':'var(--text)')+'">'+fmtUSD(net)+'</div>',140)+rcA('<div class="rc-sub">over '+pnlTrades.length+' trade'+(pnlTrades.length!==1?'s':'')+' with P&L'+(missing?' · '+missing+' without P&L not counted':'')+'</div>',320),3800));
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">Net P&L</div>')+rcA(rcNum('rc-big',net,'usd','color:'+(net>0?'var(--green)':net<0?'var(--red)':'var(--text)')),120)+rcA('<div class="rc-sub">over '+pnlTrades.length+' trade'+(pnlTrades.length!==1?'s':'')+' with P&L'+(missing?' · '+missing+' without P&L not counted':'')+'</div>',420),4000));
     } else {
       scenes.push(recapScene('',rcA('<div class="rc-kicker">Net P&L</div>')+rcA('<div class="rc-line">No P&L recorded for these trades.</div>',140)+rcA('<div class="rc-sub">Add the net result to a trade and it shows up here.</div>',300),3200));
     }
-    const rb=trades.filter(t=>t.rulebased==='yes').length, pa=trades.filter(t=>t.rulebased==='partial').length, dv=trades.filter(t=>t.rulebased==='no').length;
-    if(rb+pa+dv){
+    const rb=trades.filter(t=>t.rulebased==='yes').length, pa=trades.filter(t=>t.rulebased==='partial').length, dv=trades.filter(t=>t.rulebased==='no').length, rated=rb+pa+dv;
+    if(rated){
+      const score=Journal.discipline(trades);
       const rs=trades.map(Journal.realizedR).filter(v=>v!==null), avgR=rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null;
+      const col=score===null?'var(--muted)':score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
       scenes.push(recapScene('',rcA('<div class="rc-kicker">Discipline</div>')+
-        '<div class="rc-row">'+rcA('<div class="rc-stat"><b style="color:var(--green)">'+rb+'</b><span>Rule-based</span></div>',140)+rcA('<div class="rc-stat"><b style="color:var(--amber)">'+pa+'</b><span>Partial</span></div>',280)+rcA('<div class="rc-stat"><b style="color:var(--red)">'+dv+'</b><span>Deviated</span></div>',420)+'</div>'+
-        rcA('<div class="rc-sub">'+(avgR!==null?'Average '+fmtR(avgR)+' over '+rs.length+' trade'+(rs.length!==1?'s':'')+' with risk logged':'No original risk logged, so no R')+(n-rb-pa-dv?' · '+(n-rb-pa-dv)+' not rated':'')+'</div>',560),3800));
+        (score!==null?rcA('<div class="rc-score"><div class="rc-score-num" style="color:'+col+'">'+rcNum('span',score,'score')+'<small>/ 10</small></div><div class="rc-meter"><i data-w="'+score+'%" style="background:'+col+'"></i></div></div>',120):'')+
+        '<div class="rc-bars">'+rcBarRow('Rule-based',rb,rated,'var(--green)',360)+rcBarRow('Partial',pa,rated,'var(--amber)',480)+rcBarRow('Deviated',dv,rated,'var(--red)',600)+'</div>'+
+        rcA('<div class="rc-sub">'+(avgR!==null?'Average '+fmtR(avgR)+' over '+rs.length+' trade'+(rs.length!==1?'s':'')+' with risk logged':'No original risk logged, so no R')+(n-rated?' · '+(n-rated)+' not rated':'')+'</div>',800),4400));
     }
     const setups=topCounts(trades.flatMap(conceptsOf),4);
     if(setups.length){
-      scenes.push(recapScene('',rcA('<div class="rc-kicker">Most frequent setups</div>')+'<div class="rc-list">'+setups.map(([name,c],i)=>rcA('<div><span>'+esc(name)+'</span><span>'+c+'×</span></div>',140+i*120)).join('')+'</div>'+rcA('<div class="rc-sub">Concepts you tagged on your trades. Tags overlap.</div>',700),4000));
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">Most frequent setups</div>')+'<div class="rc-list">'+setups.map(([name,c],i)=>rcA('<div><span>'+esc(name)+'</span><b data-count="'+c+'" data-fmt="int">0</b></div>',160+i*180,'rc-from-left')).join('')+'</div>'+rcA('<div class="rc-sub">Concepts you tagged on your trades. Tags overlap.</div>',160+setups.length*180+120),4200));
     }
     const emos=topCounts(trades.map(t=>emoLabel(t.emotion)),1);
     if(emos.length&&emos[0][1]>=2){
@@ -3938,7 +4002,7 @@ function buildRecapScenes(all,from,to,rule){
     const lesson=lessonOf(t);
     if(t.isNoTrade){
       if(!lesson) return;
-      scenes.push(recapScene('',rcA('<div class="rc-kicker">No-trade day · '+fmtDate(t.date)+'</div>')+rcA('<div class="rc-line">“'+esc(lesson)+'”</div>',140)+(t.noTradeReasons&&t.noTradeReasons.length?rcA('<div class="rc-sub">Stayed out: '+esc(t.noTradeReasons.slice(0,3).join(', '))+'</div>',300):''),4000));
+      scenes.push(recapScene('',rcA('<div class="rc-kicker">No-trade day · '+fmtDate(t.date)+'</div>')+rcA('<div class="rc-line">“'+esc(lesson)+'”</div>',140,'rc-pop')+(t.noTradeReasons&&t.noTradeReasons.length?rcA('<div class="rc-sub">Stayed out: '+esc(t.noTradeReasons.slice(0,3).join(', '))+'</div>',320):''),4000));
       return;
     }
     if(!t.screenshot&&!lesson) return;
@@ -3947,13 +4011,13 @@ function buildRecapScenes(all,from,to,rule){
     const setup=(t.setup&&t.setup.length)?'<div class="rc-cap-setup"><b>Setup</b> '+esc(t.setup.join(', '))+(t.journal?.model?' · '+esc(t.journal.model):'')+'</div>':(t.journal?.model?'<div class="rc-cap-setup"><b>Model</b> '+esc(t.journal.model)+'</div>':'');
     const why=(t.biggestFactor||t.why)?'<div class="rc-cap-why"><b>Why it '+(t.result==='Win'?'worked':t.result==='Loss'?'failed':'ended flat')+'</b> '+esc(t.biggestFactor||t.why)+'</div>':'';
     const rules=[t.bestRule?'<span class="meta-ok">'+ico('check')+esc(t.bestRule)+'</span>':'',t.worstMistake?'<span class="meta-bad">'+ico('x')+esc(t.worstMistake)+'</span>':''].filter(Boolean).join('');
-    const les=lesson?'<div class="rc-cap-lesson">'+ico('bulb')+'<span>'+esc(lesson)+'</span></div>':'';
+    const les=lesson?rcA('<div class="rc-cap-lesson">'+ico('bulb')+'<span>'+esc(lesson)+'</span></div>',t.screenshot?900:400,'rc-pop'):'';
     if(t.screenshot){
       const hint='<div class="rc-hint'+(firstImage?' big':'')+'">Click to continue</div>';
-      scenes.push(recapScene('rc-img-scene',rcA('<img class="rc-shot" src="'+t.screenshot+'" alt="Trade screenshot">')+rcA('<div class="rc-caption">'+head+setup+why+(rules?'<div class="rc-cap-rules">'+rules+'</div>':'')+les+'</div>',160)+hint,0,true));
+      scenes.push(recapScene('rc-img-scene',rcA('<img class="rc-shot" src="'+t.screenshot+'" alt="Trade screenshot">')+rcA('<div class="rc-caption">'+head+setup+why+(rules?'<div class="rc-cap-rules">'+rules+'</div>':'')+'</div>',260,'rc-from-below')+(les?'<div class="rc-caption rc-caption-lesson">'+les+'</div>':'')+hint,0,true));
       firstImage=false;
     } else {
-      scenes.push(recapScene('',rcA('<div class="rc-caption" style="text-align:left">'+head+setup+why+les+'</div>'),4200));
+      scenes.push(recapScene('',rcA('<div class="rc-caption" style="text-align:left">'+head+setup+why+'</div>')+(les?'<div class="rc-caption rc-caption-lesson">'+les+'</div>':''),4200));
     }
   });
   scenes.push(recapEndScene(rule,subj));
@@ -3961,8 +4025,12 @@ function buildRecapScenes(all,from,to,rule){
 }
 function recapEndScene(rule,subj){
   return recapScene('rc-end',rcA('<div class="rc-kicker">That’s '+(subj.weeks===1?'your week':'your recap')+'</div>')+
-    (rule?rcA('<div class="rc-line">Your rule for next week</div>',140)+rcA('<div class="rc-sub" style="font-size:18px;color:var(--text)">“'+Journal.esc(rule)+'”</div>',300):rcA('<div class="rc-line">Write the one rule for next week in your review.</div>',140))+
-    rcA('<div class="rc-end-actions"><button type="button" class="btn" onclick="event.stopPropagation();recapReplay()">'+ico('refresh')+'Watch again</button><button type="button" class="btn btn-primary" onclick="event.stopPropagation();recapClose()">Close</button></div>',460),0,true);
+    (rule?rcA('<div class="rc-rule-card"><div class="rc-rule-lab">Your rule for next week</div><div class="rc-rule-text">“'+Journal.esc(rule)+'”</div></div>',160,'rc-from-below')
+         :rcA('<div class="rc-rule-card rc-rule-empty"><div class="rc-rule-lab">No rule yet</div><div class="rc-rule-text">Write the one rule for next week in your review.</div></div>',160,'rc-from-below'))+
+    '<div class="rc-end-actions">'+
+      rcA('<button type="button" class="btn" onclick="event.stopPropagation();recapReplay()">'+ico('refresh')+'Watch again</button>',700)+
+      rcA('<button type="button" class="btn btn-primary" onclick="event.stopPropagation();recapClose()">Continue review</button>',850)+
+    '</div>',0,true);
 }
 async function startRecap(){
   const from=Journal.value('rc-from'), to=Journal.value('rc-to');
@@ -3974,12 +4042,13 @@ async function startRecap(){
   recapClose();
   const scenes=buildRecapScenes(all,a,b,rule);
   const root=document.createElement('div'); root.id='recap'; root.setAttribute('role','dialog'); root.setAttribute('aria-label','Weekly recap');
-  root.innerHTML='<div class="rc-top"><span>'+Journal.esc(recapSubject(a,b,all).label)+'</span><button type="button" class="rc-close" aria-label="Close recap" onclick="event.stopPropagation();recapClose()">'+ico('x')+'</button></div>'+
+  root.innerHTML='<canvas class="rc-bg" aria-hidden="true"></canvas><div class="rc-top"><span>'+Journal.esc(recapSubject(a,b,all).label)+'</span><button type="button" class="rc-close" aria-label="Close recap" onclick="event.stopPropagation();recapClose()">'+ico('x')+'</button></div>'+
     '<div class="rc-stage"></div><div class="rc-progress">'+scenes.map(()=>'<div class="rc-seg"><i></i></div>').join('')+'</div>';
   document.body.appendChild(root);
   root.addEventListener('click',recapAdvance);
   document.addEventListener('keydown',recapKeys,true);
-  _recap={scenes,i:-1,timer:null,root,current:null};
+  _recap={scenes,i:-1,timer:null,root,current:null,seq:0,rafs:new Set(),bgStop:null};
+  if(!prefersReducedMotion()) _recap.bgStop=startRecapCandles(root.querySelector('.rc-bg'));
   recapShow(0);
 }
 function recapKeys(e){
@@ -3988,27 +4057,64 @@ function recapKeys(e){
   else if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter'){ e.preventDefault(); recapAdvance(); }
   else if(e.key==='ArrowLeft'){ e.preventDefault(); if(_recap.i>0)recapShow(_recap.i-1); }
 }
+// Zahl hochzaehlen (ease-out, ~1.1s). Endwert wird exakt formatiert, damit Cents stimmen.
+function rcCount(el,to,fmt,reduced){
+  const finalText=fmt==='usd'?fmtUSD(to):rcFmt(to,fmt);
+  if(reduced||!Number.isFinite(to)){ el.textContent=finalText; return; }
+  const dur=fmt==='usd'?1400:fmt==='score'?1200:1000, t0=performance.now(), r=_recap;
+  let raf=null;
+  const step=now=>{
+    const p=Math.min(1,(now-t0)/dur), ev=1-Math.pow(1-p,3);
+    el.textContent=p<1?rcFmt(to*ev,fmt):finalText;
+    if(p<1){ raf=requestAnimationFrame(step); if(r)r.rafs.add(raf); }
+  };
+  raf=requestAnimationFrame(step); if(r)r.rafs.add(raf);
+}
+// Effekte, die erst mit stehender Szene starten: Zaehler und wachsende Balken
+function recapEnter(el,reduced){
+  el.querySelectorAll('[data-count]').forEach((n,k)=>{
+    const to=Number(n.dataset.count), fmt=n.dataset.fmt||'int';
+    const delay=reduced?0:Number((n.closest('.rc-a')||{}).style?.getPropertyValue('--d').replace('ms','')||0);
+    if(reduced) rcCount(n,to,fmt,true); else setTimeout(()=>{ if(_recap&&_recap.root.contains(n)) rcCount(n,to,fmt,false); },delay+150);
+  });
+  el.querySelectorAll('[data-w]').forEach(bar=>{
+    if(reduced){ bar.style.transition='none'; bar.style.width=bar.dataset.w; return; }
+    const delay=Number((bar.closest('.rc-a')||{}).style?.getPropertyValue('--d').replace('ms','')||0);
+    setTimeout(()=>{ if(_recap&&_recap.root.contains(bar)) bar.style.width=bar.dataset.w; },delay+200);
+  });
+}
 function recapShow(i){
   if(!_recap)return;
   const r=_recap; clearTimeout(r.timer); r.timer=null;
+  r.rafs.forEach(cancelAnimationFrame); r.rafs.clear();
   if(i>=r.scenes.length)return;
-  const reduced=prefersReducedMotion();
+  const reduced=prefersReducedMotion(), seq=++r.seq;
   const stage=r.root.querySelector('.rc-stage');
-  if(r.current){ const old=r.current; old.classList.remove('in'); old.classList.add('out'); setTimeout(()=>old.remove(),reduced?0:520); }
-  const s=r.scenes[i]; r.i=i;
-  const el=document.createElement('div'); el.className='rc-scene '+s.cls; el.innerHTML=s.html;
-  stage.appendChild(el); r.current=el;
-  if(reduced) el.classList.add('in'); else requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
-  r.root.querySelectorAll('.rc-seg').forEach((seg,k)=>{
-    const bar=seg.querySelector('i');
-    seg.classList.remove('on','done','hold');
-    bar.style.transition='none'; bar.style.width=k<i?'100%':'0';
-    if(k===i){
-      if(s.hold){ seg.classList.add('hold'); bar.style.width='100%'; }
-      else { seg.classList.add('on'); requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.transition='width '+s.dur+'ms linear'; bar.style.width='100%'; })); }
-    }
-  });
-  if(!s.hold) r.timer=setTimeout(()=>recapShow(i+1),s.dur);
+  r.root.classList.toggle('rc-show-bg',i===0);
+  const show=()=>{
+    if(!_recap||_recap.seq!==seq)return;
+    const s=r.scenes[i]; r.i=i;
+    const el=document.createElement('div'); el.className='rc-scene '+s.cls; el.innerHTML=s.html;
+    stage.appendChild(el); r.current=el;
+    if(reduced) el.classList.add('in'); else requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
+    recapEnter(el,reduced);
+    r.root.querySelectorAll('.rc-seg').forEach((seg,k)=>{
+      const bar=seg.querySelector('i');
+      seg.classList.remove('on','done','hold');
+      bar.style.transition='none'; bar.style.width=k<i?'100%':'0';
+      if(k===i){
+        if(s.hold){ seg.classList.add('hold'); bar.style.width='100%'; }
+        else { seg.classList.add('on'); requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.transition='width '+s.dur+'ms linear'; bar.style.width='100%'; })); }
+      }
+    });
+    if(!s.hold) r.timer=setTimeout(()=>recapShow(i+1),s.dur);
+  };
+  // Erst geht die alte Szene komplett raus, dann kommt die neue -- nie beide zugleich.
+  if(r.current){
+    const old=r.current; r.current=null;
+    old.classList.remove('in'); old.classList.add('out');
+    setTimeout(()=>{ old.remove(); show(); },reduced?0:RECAP_OUT_MS);
+  } else show();
 }
 function recapAdvance(){
   if(!_recap)return;
@@ -4020,9 +4126,33 @@ function recapReplay(){ if(_recap)recapShow(0); }
 function recapClose(){
   if(!_recap)return;
   clearTimeout(_recap.timer);
+  _recap.rafs.forEach(cancelAnimationFrame);
+  if(_recap.bgStop)_recap.bgStop();
   document.removeEventListener('keydown',recapKeys,true);
   _recap.root.remove();
   _recap=null;                        // Szenen und Bilder werden mit dem Overlay verworfen
+}
+// Ruhiger Kerzenchart hinter der Titelszene: wandert langsam nach links, gedeckte Farben.
+function startRecapCandles(cv){
+  if(!cv)return null;
+  const ctx=cv.getContext('2d'); const dpr=Math.min(window.devicePixelRatio||1,2);
+  let W=0,H=0,raf=null,off=0,candles=[],price=0;
+  const SLOT=26,BODY=12;
+  const cs=getComputedStyle(document.documentElement);
+  const UP=cs.getPropertyValue('--green').trim()||'#0f8a5f', DN=cs.getPropertyValue('--red').trim()||'#c23b3b';
+  function size(){ W=cv.clientWidth||window.innerWidth; H=cv.clientHeight||window.innerHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  function mk(){ const o=price; const c=Math.max(H*.2,Math.min(H*.8,o+(Math.random()-.48)*H*.06)); price=c; const w=Math.random()*H*.02; return {o,c,h:Math.min(o,c)-w,l:Math.max(o,c)+w}; }
+  size(); price=H*.6;
+  const N=Math.ceil(W/SLOT)+3; for(let i=0;i<N;i++)candles.push(mk());
+  window.addEventListener('resize',size);
+  function frame(){
+    off+=0.35; if(off>=SLOT){ off-=SLOT; candles.shift(); candles.push(mk()); }
+    ctx.clearRect(0,0,W,H);
+    candles.forEach((k,i)=>{ const x=i*SLOT-off, col=k.c<k.o?UP:DN; ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(x+BODY/2,k.h); ctx.lineTo(x+BODY/2,k.l); ctx.stroke(); ctx.fillRect(x,Math.min(k.o,k.c),BODY,Math.max(2,Math.abs(k.c-k.o))); });
+    raf=requestAnimationFrame(frame);
+  }
+  frame();
+  return ()=>{ cancelAnimationFrame(raf); window.removeEventListener('resize',size); };
 }
 
 function normLesson(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9äöüß ]+/g,' ').replace(/\s+/g,' ').trim(); }
