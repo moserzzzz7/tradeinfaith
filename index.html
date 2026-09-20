@@ -541,16 +541,6 @@
   .rc-end-actions{display:flex;gap:10px;margin-top:28px;justify-content:center;flex-wrap:wrap}
   #recap .rc-end-actions .btn{cursor:pointer}
   @media(max-width:600px){.rc-row{gap:10px}.rc-stat.rc-card{min-width:0;padding:16px 14px 12px;flex:1 1 0}.rc-scene{padding:12px 16px 48px}.rc-shot{max-height:44vh}.rc-caption{font-size:13.5px}.rc-cap-head b{font-size:16px}.rc-bar-label{width:76px;font-size:13px}}
-  /* Reduced motion: nur einfache Einblendungen, keine Bewegung, kein Zoom, kein Glow, kein Hintergrundchart */
-  @media (prefers-reduced-motion:reduce){
-    .rc-scene,.rc-scene.out,.rc-scene .rc-a{transform:none!important;transition:opacity .2s ease!important}
-    .rc-scene .rc-a{transition-delay:0ms!important}
-    .rc-shot,.rc-scene.in .rc-shot{transform:none;transition:none}
-    .rc-scene.in .rc-rule-card{animation:none}
-    .rc-meter i,.rc-bar i{transition:none}
-    .rc-hint,.rc-seg.hold i{animation:none;opacity:1}
-  }
-
   /* ===== Dock bar ===== */
   .app{display:flex;flex-direction:column;height:100vh}
   #dockwrap{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 22px 0;position:relative;z-index:40;flex-shrink:0}
@@ -571,8 +561,6 @@
   #dock-right{display:flex;align-items:center;gap:10px;flex:1 1 0;justify-content:flex-end}
   .dock-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center;transition:all .15s}
   .dock-btn:hover{background:var(--surface2);color:var(--text)}
-  /* Reduced Motion: Icon-Lift bleibt, nur ohne animierten Uebergang */
-  @media (prefers-reduced-motion:reduce){.dock-ico{transition:filter .15s}}
   @media (max-width:520px){.dock-ico svg{width:18px;height:18px}}
 
   /* ===== Intro ===== */
@@ -758,16 +746,6 @@
   .screen-in{animation:screenIn .25s var(--ease-out) both}
   @keyframes screenIn{from{opacity:0}to{opacity:1}}
 
-  /* ===== Reduced motion =====
-     Alles, was sich bewegt, steht still: Seitenwechsel, Splash, Intro, Balken,
-     Zaehler. Zustaende bleiben sichtbar, nur der Weg dorthin entfaellt. */
-  @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
-    .al-spin{animation:none!important;opacity:1}
-    .section.sec-in{animation:none}
-    .dock-ico{transition:none}
-    #fparts{display:none}
-  }
 </style>
 <link rel="stylesheet" href="journal-tools.css">
 <script src="journal-tools.js"></script>
@@ -896,29 +874,17 @@
         </div>
         <div class="wz-track"><div class="wz-fill" id="wz-fill"></div></div>
         <div class="wz-panel active" id="wz-1">
-          <p class="journal-intro">Before the entry: set your model, your plan and your limits. Add details only when they explain a decision.</p>
-          <details class="journal-details"><summary>Read my weekly rule before the entry</summary><div id="j-rules" class="journal-actions"></div><p id="j-current-rule"></p><input id="j-rule-id" type="hidden"></details>
+          <div id="j-plan-rule" class="weekly-rule-line" hidden><strong>Weekly rule</strong><span id="j-current-rule"></span></div>
+          <input id="j-rule-id" type="hidden">
           <div class="card journal-fields">
-            <div class="subgrid"><div class="field"><label for="f-date">Date</label><input id="f-date" type="date"  placeholder=""></div><div class="journal-check"><label for="j-mode">Environment</label><select id="j-mode"><option value="">Select…</option><option value="Live">Live</option><option value="Demo">Demo</option><option value="Replay">Replay</option></select></div></div>
-            <div class="subgrid"><div class="field"><label>Instrument</label><div class="seg" data-field="instrument" role="group" aria-label="Instrument"><button type="button" class="opt sel" data-v="MNQ" onclick="choice('instrument',this);Journal.update()">MNQ</button><button type="button" class="opt" data-v="MES" onclick="choice('instrument',this);Journal.update()">MES</button></div></div><div class="field"><label>Direction</label><div class="seg" data-field="direction" role="group" aria-label="Direction"><button type="button" class="opt sel" data-v="Long" onclick="choice('direction',this);Journal.update()">Long</button><button type="button" class="opt" data-v="Short" onclick="choice('direction',this);Journal.update()">Short</button></div></div></div>
-            <div class="field"><label for="j-model">My model / version</label><input id="j-model" type="text"  placeholder="e.g. HTF + sweep + IFVG/CISD · v1"></div>
-            <button class="btn" type="button" onclick="Journal.reuseModel()">Reuse my last model and management rule</button>
+            <div class="grid3"><div class="field"><label for="f-date">Date</label><input id="f-date" type="date"></div><div class="field"><label>Instrument</label><div class="seg" data-field="instrument" role="group" aria-label="Instrument"><button type="button" class="opt sel" data-v="MNQ" onclick="choice('instrument',this);Journal.update()">MNQ</button><button type="button" class="opt" data-v="MES" onclick="choice('instrument',this);Journal.update()">MES</button></div></div><div class="field"><label>Direction</label><div class="seg" data-field="direction" role="group" aria-label="Direction"><button type="button" class="opt sel" data-v="Long" onclick="choice('direction',this);Journal.update()">Long</button><button type="button" class="opt" data-v="Short" onclick="choice('direction',this);Journal.update()">Short</button></div></div></div>
             <div class="field"><label>HTF Bias</label><div class="seg" data-field="htfbias" role="group" aria-label="HTF Bias"><button type="button" class="opt" data-v="Bullish" onclick="choice('htfbias',this);Journal.update()">Bullish</button><button type="button" class="opt" data-v="Bearish" onclick="choice('htfbias',this);Journal.update()">Bearish</button><button type="button" class="opt" data-v="Neutral" onclick="choice('htfbias',this);Journal.update()">Neutral</button></div></div>
-            <div class="field"><label for="f-exp">My if-then plan · one sentence</label><textarea id="f-exp" rows="2" placeholder="If [level / condition], then enter only after [trigger] inside [zone]; target [level]."></textarea></div>
-            <div class="subgrid"><div class="field"><label for="j-invalidation">No trade / idea invalid when …</label><input id="j-invalidation" type="text"  placeholder="A specific level or a missing condition"></div><div class="field"><label for="j-management">Exit / breakeven only when …</label><input id="j-management" type="text"  placeholder="The management trigger I set beforehand"></div></div>
-            <details class="journal-details"><summary>Bias reasoning and news window</summary><div class="journal-fields"><div class="field"><label for="f-bwhy">Bias — why?</label><textarea id="f-bwhy" rows="2" placeholder="HTF + zone + target; the counter-argument is …"></textarea></div><div class="field"><label for="f-ext">News / time window</label><textarea id="f-ext" rows="2" placeholder="Event, time with time zone and my blackout window"></textarea></div></div></details>
+            <div class="field"><label for="f-bwhy">Bias – why?</label><textarea id="f-bwhy" rows="2"></textarea></div>
+            <div class="field"><label for="f-exp">Plan in one sentence</label><textarea id="f-exp" rows="2" placeholder="If …, then …"></textarea></div>
           </div>
-          <div class="card">
-            <h3 class="card-title">Setup quality · per my playbook</h3>
-            <p class="field-help" id="j-setup-standard-hint">Define your standard setup in Settings to turn this into a real comparison. Until then the points stay generic.</p>
-            <div class="journal-check"><label for="j-context">HTF context, target and counter-argument are clear</label><select id="j-context"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
-            <div class="journal-check"><label for="j-trigger">Required confirmation from my model was present at entry</label><select id="j-trigger"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
-            <div class="journal-check"><label for="j-conditions">Entry zone, risk, time window and news rules were met</label><select id="j-conditions"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
-            <div class="journal-check"><label for="j-extras">Extra features defined in advance</label><select id="j-extras"><option value="">Select…</option><option value="all">All present</option><option value="some">Optional one missing</option><option value="limited">Allowed limitation</option></select></div>
-            <p class="field-help" id="j-extras-def" hidden></p>
-            <div class="journal-score"><span>Setup</span><strong id="j-grade">Not graded yet</strong></div><p class="field-help" id="j-grade-help"></p>
-            <div class="field"><label for="j-grade-reason">Only if limited: what is missing?</label><input id="j-grade-reason" type="text"  placeholder="Otherwise the criteria above are enough."></div>
-            <details class="journal-details"><summary>ICT tags and chart evidence</summary><div class="journal-fields">          <div id="setup-tags">
+          <div class="card journal-fields">
+            <h3 class="card-title">ICT tags</h3>
+            <div id="setup-tags">
             <div class="tag-group"><div class="tag-group-label">Liquidity</div><div class="tag-wrap">
               <button class="tag" onclick="toggleTag(this)">Liquidity Sweep</button><button class="tag" onclick="toggleTag(this)">Stop Hunt</button><button class="tag" onclick="toggleTag(this)">Judas Swing</button>
             </div></div>
@@ -936,56 +902,46 @@
               <button class="tag" onclick="toggleTag(this)">SMT Divergence</button><button class="tag" onclick="toggleTag(this)">OTE</button><button class="tag" onclick="toggleTag(this)">Silver Bullet</button>
             </div></div>
           </div>
-<div class="field"><label for="f-conf">Confirmation — optional detail</label><textarea id="f-conf" rows="2" placeholder="Level, timeframe, candle close. What was there BEFORE the entry?"></textarea></div></div></details>
           </div>
           <div class="card journal-fields">
-            <h3 class="card-title">Lock the risk beforehand</h3>
-            <div class="subgrid"><div class="field"><label for="j-risk">Original money risk ($)</label><input id="j-risk" type="number" step="0.01" placeholder="For realized R"></div><div class="field"><label for="f-contracts">Contracts</label><input id="f-contracts" type="number" step="0.01" placeholder="Count"></div></div>
-            <details class="journal-details"><summary>Entry, stop and target for the planned R:R</summary><div class="journal-fields"><div class="field"><label for="f-entry">Planned entry</label><input id="f-entry" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-sl">Original stop loss</label><input id="f-sl" type="number" step="0.01" placeholder=""></div><div class="field"><label for="f-tp">Take profit</label><input id="f-tp" type="number" step="0.01" placeholder=""></div><div class="journal-score"><span>Planned R:R</span><strong id="rr-label">—</strong></div><p id="rr-detail" class="field-help"></p></div></details>
-            <button class="btn" type="button" id="j-freeze" onclick="Journal.freezePlan()">Lock this plan</button><p id="j-plan-status" class="field-help" aria-live="polite"></p>
+            <h3 class="card-title">Risk</h3>
+            <div class="grid3"><div class="field"><label for="j-risk">Risk ($)</label><input id="j-risk" type="number" min="0" step="0.01"></div><div class="field"><label for="j-profit-target">Profit target ($)</label><input id="j-profit-target" type="number" min="0" step="0.01"></div><div class="field"><label for="f-contracts">Contracts</label><input id="f-contracts" type="number" min="0" step="1"></div></div>
+            <div class="planned-rr">Planned R:R <strong id="rr-label">—</strong></div><p id="rr-detail" class="field-help"></p>
           </div>
-          <div class="wz-nav"><button class="btn" onclick="saveTradeDraftNow()">Save draft</button><button class="btn btn-primary" onclick="nextStep()">Next: outcome</button></div>
+          <div hidden aria-hidden="true"><input id="j-mode" value="Live"><input id="j-model"><input id="j-context"><input id="j-trigger"><input id="j-conditions"><input id="j-extras"><input id="j-invalidation"><input id="j-management"><input id="j-grade-reason"><input id="j-pressure"><input id="j-psych-trigger"><input id="j-action"><input id="f-entry"><input id="f-sl"><input id="f-tp"><input id="f-conf"><input id="f-ext"><input id="f-factor"><input id="f-bestrule"><input id="f-mistake"></div>
+          <div class="wz-nav"><button class="btn" onclick="saveTradeDraftNow()">Save draft</button><button class="btn btn-primary" onclick="nextStep()">Next</button></div>
         </div>
         <div class="wz-panel" id="wz-2">
-          <p class="journal-intro">After the exit: the result and three decisions. A profit does not change your execution grade.</p>
           <div class="card journal-fields">
             <div class="field"><label>Result</label><div class="seg" data-field="result" role="group" aria-label="Result"><button type="button" class="opt" data-v="Win" onclick="choice('result',this);Journal.update()">Win</button><button type="button" class="opt" data-v="Loss" onclick="choice('result',this);Journal.update()">Loss</button><button type="button" class="opt" data-v="Breakeven" onclick="choice('result',this);Journal.update()">Breakeven</button></div></div>
-            <div class="field"><label for="f-pnl">Net P&L ($) · after fees</label><input id="f-pnl" type="number" step="0.01" placeholder="e.g. 240 or −150"></div>
-            <div class="journal-check"><label for="j-exec-entry">Entry by my full rules?</label><select id="j-exec-entry"><option value="">Select…</option><option value="Yes">Yes</option><option value="Partial">Partial</option><option value="No">No</option></select></div>
-            <div class="journal-check"><label for="j-exec-risk">Stop and position size inside my risk plan?</label><select id="j-exec-risk"><option value="">Select…</option><option value="Yes">Yes</option><option value="Partial">Partial</option><option value="No">No</option></select></div>
-            <div class="journal-check"><label for="j-exec-exit">Management / exit as set beforehand?</label><select id="j-exec-exit"><option value="">Select…</option><option value="Yes">Yes</option><option value="Partial">Partial</option><option value="No">No</option></select></div>
-            <div class="journal-score"><span>Execution Score</span><strong id="j-score">—</strong></div><p id="j-score-help" class="field-help"></p>
+            <div class="field"><label for="f-pnl">Net P&amp;L ($)</label><input id="f-pnl" type="number" step="0.01"></div>
+            <div class="journal-check"><label>Entry as planned?</label><div class="seg yn" data-journal-input="j-exec-entry"><button type="button" class="opt" data-v="Yes" onclick="Journal.choose('j-exec-entry','Yes',this)">Yes</button><button type="button" class="opt" data-v="No" onclick="Journal.choose('j-exec-entry','No',this)">No</button></div><input id="j-exec-entry" type="hidden"></div>
+            <div class="journal-check"><label>Stop and size as planned?</label><div class="seg yn" data-journal-input="j-exec-risk"><button type="button" class="opt" data-v="Yes" onclick="Journal.choose('j-exec-risk','Yes',this)">Yes</button><button type="button" class="opt" data-v="No" onclick="Journal.choose('j-exec-risk','No',this)">No</button></div><input id="j-exec-risk" type="hidden"></div>
+            <div class="journal-check"><label>Exit as planned?</label><div class="seg yn" data-journal-input="j-exec-exit"><button type="button" class="opt" data-v="Yes" onclick="Journal.choose('j-exec-exit','Yes',this)">Yes</button><button type="button" class="opt" data-v="No" onclick="Journal.choose('j-exec-exit','No',this)">No</button></div><input id="j-exec-exit" type="hidden"></div>
           </div>
           <div class="card journal-fields">
-            <h3 class="card-title">Psychology · what influenced my decision?</h3>
-            <div class="journal-check"><label for="j-pressure">Strongest influence</label><select id="j-pressure"><option value="">Select…</option><option value="none">No noticeable pressure</option><option value="fomo">FOMO / missed something</option><option value="funded">Funded / payout</option><option value="fear">Fear of losing</option><option value="revenge">Making a loss back</option><option value="other">Other influence</option></select></div>
-            <div id="j-pressure-detail" class="journal-fields" hidden><div class="field"><label for="j-psych-trigger">Trigger · a few words</label><input id="j-psych-trigger" type="text"  placeholder="e.g. first opposing candle; thought: losing the account"></div><div class="field"><label for="j-action">What I actually did</label><input id="j-action" type="text"  placeholder="e.g. left the stop alone / closed early"></div></div>
-            <details class="journal-details"><summary>More mindset notes / emotion</summary><div class="journal-fields"><div class="emo-wrap">
-            <button type="button" class="emo" data-emo="😊 Good" onclick="toggleEmo(this)">Good</button><button type="button" class="emo" data-emo="😌 Calm" onclick="toggleEmo(this)">Calm</button><button type="button" class="emo" data-emo="🧘 Patient" onclick="toggleEmo(this)">Patient</button><button type="button" class="emo" data-emo="🎯 Focused" onclick="toggleEmo(this)">Focused</button><button type="button" class="emo" data-emo="💪 Disciplined" onclick="toggleEmo(this)">Disciplined</button><button type="button" class="emo" data-emo="😶 Neutral" onclick="toggleEmo(this)">Neutral</button><button type="button" class="emo" data-emo="😤 Impatient" onclick="toggleEmo(this)">Impatient</button><button type="button" class="emo" data-emo="😰 Anxious" onclick="toggleEmo(this)">Anxious</button><button type="button" class="emo" data-emo="🤩 Overconfident" onclick="toggleEmo(this)">Overconfident</button><button type="button" class="emo" data-emo="😓 FOMO" onclick="toggleEmo(this)">FOMO</button><button type="button" class="emo" data-emo="😩 Revenge" onclick="toggleEmo(this)">Revenge</button>
-          </div><div class="field"><label for="f-mind">Mindset notes</label><textarea id="f-mind" rows="2" placeholder="Thought → urge → what I actually did."></textarea></div></div></details>
+            <h3 class="card-title">Psychology</h3>
+            <div class="emo-wrap" id="psychology-chips">
+              <button type="button" class="emo" data-emo="Calm" onclick="toggleEmo(this)">Calm</button><button type="button" class="emo" data-emo="Focused" onclick="toggleEmo(this)">Focused</button><button type="button" class="emo" data-emo="Patient" onclick="toggleEmo(this)">Patient</button><button type="button" class="emo" data-emo="Impatient" onclick="toggleEmo(this)">Impatient</button><button type="button" class="emo" data-emo="FOMO" onclick="toggleEmo(this)">FOMO</button><button type="button" class="emo" data-emo="Fear" onclick="toggleEmo(this)">Fear</button><button type="button" class="emo" data-emo="Revenge" onclick="toggleEmo(this)">Revenge</button><button type="button" class="emo" data-emo="Overconfident" onclick="toggleEmo(this)">Overconfident</button><button type="button" class="emo" data-emo="Payout pressure" onclick="toggleEmo(this)">Payout pressure</button><button type="button" class="emo" data-emo="No pressure" onclick="toggleEmo(this)">No pressure</button>
+            </div>
+            <div class="field"><label for="f-mind">What went on in my head? What did I do?</label><textarea id="f-mind" rows="3"></textarea></div>
           </div>
           <details id="j-legacy" class="journal-details" hidden><summary>Check earlier ratings</summary><p id="j-legacy-note" class="field-help"></p><div class="journal-fields"><div class="field"><label>Previous setup grade</label><div class="seg" data-field="grade" role="group" aria-label="Previous setup grade"><button type="button" class="opt" data-v="A+" onclick="choice('grade',this);Journal.update()">A+</button><button type="button" class="opt" data-v="A" onclick="choice('grade',this);Journal.update()">A</button><button type="button" class="opt" data-v="B" onclick="choice('grade',this);Journal.update()">B</button><button type="button" class="opt" data-v="Invalid" onclick="choice('grade',this);Journal.update()">Not in playbook</button></div></div><div class="field"><label>Matches playbook?</label><div class="seg" data-field="matchesPlaybook" role="group" aria-label="Matches playbook?"><button type="button" class="opt" data-v="Yes" onclick="choice('matchesPlaybook',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('matchesPlaybook',this);Journal.update()">No</button></div></div><div class="field"><label>Would a pro take this?</label><div class="seg" data-field="proWouldTake" role="group" aria-label="Would a pro take this?"><button type="button" class="opt" data-v="Yes" onclick="choice('proWouldTake',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('proWouldTake',this);Journal.update()">No</button><button type="button" class="opt" data-v="Unsure" onclick="choice('proWouldTake',this);Journal.update()">Unsure</button></div></div><div class="field"><label>To plan?</label><div class="seg" data-field="toPlan" role="group" aria-label="To plan?"><button type="button" class="opt" data-v="Yes" onclick="choice('toPlan',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="Partial" onclick="choice('toPlan',this);Journal.update()">Partial</button><button type="button" class="opt" data-v="No" onclick="choice('toPlan',this);Journal.update()">No</button></div></div><div class="field"><label>Chased the entry?</label><div class="seg" data-field="chased" role="group" aria-label="Chased the entry?"><button type="button" class="opt" data-v="Yes" onclick="choice('chased',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('chased',this);Journal.update()">No</button></div></div><div class="field"><label>Patient?</label><div class="seg" data-field="patience" role="group" aria-label="Patient?"><button type="button" class="opt" data-v="Yes" onclick="choice('patience',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('patience',this);Journal.update()">No</button></div></div><div class="field"><label>Confirmation present?</label><div class="seg" data-field="confirmation" role="group" aria-label="Confirmation present?"><button type="button" class="opt" data-v="Yes" onclick="choice('confirmation',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('confirmation',this);Journal.update()">No</button></div></div><div class="field"><label>Followed rules?</label><div class="seg" data-field="rulebased" role="group" aria-label="Followed rules?"><button type="button" class="opt" data-v="yes" onclick="choice('rulebased',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="partial" onclick="choice('rulebased',this);Journal.update()">Partial</button><button type="button" class="opt" data-v="no" onclick="choice('rulebased',this);Journal.update()">No</button></div></div><div class="field"><label>Previous execution 1–5</label><div class="rate" data-field="execQuality"><button type="button" class="dot" onclick="rate('execQuality',this)">1</button><button type="button" class="dot" onclick="rate('execQuality',this)">2</button><button type="button" class="dot" onclick="rate('execQuality',this)">3</button><button type="button" class="dot" onclick="rate('execQuality',this)">4</button><button type="button" class="dot" onclick="rate('execQuality',this)">5</button></div></div><div class="field"><label>Focus</label><div class="rate" data-field="preFocus"><button type="button" class="dot" onclick="rate('preFocus',this)">1</button><button type="button" class="dot" onclick="rate('preFocus',this)">2</button><button type="button" class="dot" onclick="rate('preFocus',this)">3</button><button type="button" class="dot" onclick="rate('preFocus',this)">4</button><button type="button" class="dot" onclick="rate('preFocus',this)">5</button></div></div><div class="field"><label>Patience</label><div class="rate" data-field="prePatience"><button type="button" class="dot" onclick="rate('prePatience',this)">1</button><button type="button" class="dot" onclick="rate('prePatience',this)">2</button><button type="button" class="dot" onclick="rate('prePatience',this)">3</button><button type="button" class="dot" onclick="rate('prePatience',this)">4</button><button type="button" class="dot" onclick="rate('prePatience',this)">5</button></div></div><div class="field"><label>Energy</label><div class="rate" data-field="preEnergy"><button type="button" class="dot" onclick="rate('preEnergy',this)">1</button><button type="button" class="dot" onclick="rate('preEnergy',this)">2</button><button type="button" class="dot" onclick="rate('preEnergy',this)">3</button><button type="button" class="dot" onclick="rate('preEnergy',this)">4</button><button type="button" class="dot" onclick="rate('preEnergy',this)">5</button></div></div><div class="field"><label>Doubts?</label><div class="seg" data-field="doubts" role="group" aria-label="Doubts?"><button type="button" class="opt" data-v="Yes" onclick="choice('doubts',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('doubts',this);Journal.update()">No</button></div></div><div class="field"><label>Deviated?</label><div class="seg" data-field="deviated" role="group" aria-label="Deviated?"><button type="button" class="opt" data-v="Yes" onclick="choice('deviated',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('deviated',this);Journal.update()">No</button></div></div><div class="field"><label>Satisfied?</label><div class="seg" data-field="satisfied" role="group" aria-label="Satisfied?"><button type="button" class="opt" data-v="Yes" onclick="choice('satisfied',this);Journal.update()">Yes</button><button type="button" class="opt" data-v="No" onclick="choice('satisfied',this);Journal.update()">No</button></div></div></div><span id="exec-num" hidden></span><span id="exec-fill" hidden></span><span id="setq-label" hidden></span><span id="setq-fill" hidden></span></details>
-          <div class="wz-nav"><button class="btn" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Next: the lesson</button></div>
+          <div class="wz-nav"><button class="btn" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Next</button></div>
         </div>
         <div class="wz-panel" id="wz-3">
           <div class="card journal-fields">
-            <h3 class="card-title">One lesson is enough</h3>
-            <div class="journal-check"><label for="j-focus">What do I take away?</label><select id="j-focus"><option value="">Select…</option><option value="repeat">Executed cleanly</option><option value="chase">Chased the entry</option><option value="early">Entered too early</option><option value="risk">Changed the risk</option><option value="exit">Unplanned exit / breakeven</option><option value="pressure">Funded / payout pressure</option><option value="context">Missed HTF / ES</option><option value="other">Other observation</option></select></div>
-            <button class="btn" type="button" onclick="Journal.suggestLesson()">Insert a matching sentence as a starting point</button>
-            <div class="field"><label for="f-lesson">Next time this comes up …</label><textarea id="f-lesson" rows="2" placeholder="If [trigger], then [action I can check]. A rule that works may stay the same."></textarea></div>
-            <p class="field-help">Adapt the suggestion to your playbook. A single win or loss is not a new strategy rule.</p>
-            <button id="j-to-learn" class="btn" type="button" onclick="Journal.toLearn()">Save as a weekly rule in the Playbook</button>
-            <details class="journal-details"><summary>Deep review · only if something still needs explaining</summary><div class="journal-fields"><div class="field"><label for="f-factor">Biggest factor observed</label><textarea id="f-factor" rows="2" placeholder="What is evidenced? What is only my guess?"></textarea></div><div class="field"><label for="f-bestrule">Rule I followed well</label><textarea id="f-bestrule" rows="2" placeholder="Which concrete decision should I repeat?"></textarea></div><div class="field"><label for="f-mistake">Most important deviation</label><textarea id="f-mistake" rows="2" placeholder="&quot;No rule broken&quot; is a valid answer."></textarea></div></div></details>
+            <div class="field"><label>What do I take away?</label><div class="seg lesson-chips" data-journal-input="j-focus"><button type="button" class="opt" data-v="repeat" onclick="Journal.chooseFocus('repeat',this)">Clean trade</button><button type="button" class="opt" data-v="early" onclick="Journal.chooseFocus('early',this)">Too early</button><button type="button" class="opt" data-v="chase" onclick="Journal.chooseFocus('chase',this)">Chased entry</button><button type="button" class="opt" data-v="risk" onclick="Journal.chooseFocus('risk',this)">Changed risk</button><button type="button" class="opt" data-v="exit" onclick="Journal.chooseFocus('exit',this)">Exited unplanned</button><button type="button" class="opt" data-v="pressure" onclick="Journal.chooseFocus('pressure',this)">Pressure</button><button type="button" class="opt" data-v="context" onclick="Journal.chooseFocus('context',this)">Missed context</button><button type="button" class="opt" data-v="other" onclick="Journal.chooseFocus('other',this)">Other</button></div><input id="j-focus" type="hidden"></div>
+            <div class="field"><label for="f-lesson">My lesson for next time</label><textarea id="f-lesson" rows="3" placeholder="Next time: If …, then …"></textarea></div>
+            <label class="small-check"><input id="j-save-rule" type="checkbox"> Also save as weekly rule</label>
           </div>
-          <div class="card"><h3 class="card-title">Check my weekly rule</h3><p class="field-help">Pick a weekly rule in the plan step; here you only rate how you executed it.</p>
-            <div class="journal-check"><label for="j-rule-check">Did I follow that rule on this trade?</label><select id="j-rule-check"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option><option value="NA">Not applicable</option></select></div>
+          <div class="card weekly-follow" id="j-rule-follow" hidden><span id="j-rule-text"></span><div><span>Followed it?</span><div class="seg yn" data-journal-input="j-rule-check"><button type="button" class="opt" data-v="Yes" onclick="Journal.choose('j-rule-check','Yes',this)">Yes</button><button type="button" class="opt" data-v="No" onclick="Journal.choose('j-rule-check','No',this)">No</button></div><input id="j-rule-check" type="hidden"></div>
           </div>
-          <details class="journal-details"><summary>Attach a screenshot · optional</summary>          <div class="upload-zone" id="screenshot-zone" onclick="document.getElementById('f-img').click()" style="position:relative">
+          <div class="upload-zone" id="screenshot-zone" onclick="document.getElementById('f-img').click()" style="position:relative">
             <div id="screenshot-hint"><span data-ico="image"></span> Click to upload · or <kbd class="kbd">Ctrl+V</kbd> to paste · or <button type="button" class="inline-btn" onclick="event.stopPropagation();autoGrabClipboard()"><span data-ico="paste"></span>Load last screenshot from clipboard</button></div>
           </div>
           <input type="file" id="f-img" accept="image/*" style="display:none" onchange="handleImg(this)">
           <img id="img-prev" class="img-preview">
-</details>
           <p class="journal-notice" id="j-save-check" aria-live="polite"></p>
           <div class="wz-nav"><button class="btn" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="saveTrade()">Save trade</button></div>
         </div>
@@ -1496,6 +1452,14 @@ function fmtDateShort(iso){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||
 function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 // Emotionen werden mit Emoji-Praefix gespeichert ("\uD83D\uDE0A Good"); angezeigt wird nur das Wort.
 function emoLabel(e){ return String(e||'').replace(/^[^A-Za-z]+\s*/,''); }
+function psychologyValues(t){
+  if(Array.isArray(t?.journal?.psychology)&&t.journal.psychology.length)return [...new Set(t.journal.psychology.map(emoLabel).filter(Boolean))];
+  const out=[];
+  if(t?.emotion)out.push(emoLabel(t.emotion));
+  const pressure={none:'No pressure',fomo:'FOMO',funded:'Payout pressure',fear:'Fear',revenge:'Revenge'}[t?.journal?.pressure];
+  if(pressure)out.push(pressure);
+  return [...new Set(out.filter(Boolean))];
+}
 // Kleine Stichproben ehrlich kennzeichnen, statt sie wie belastbare Zahlen zu zeigen.
 function sampleNote(n){ return n<=0?'no data':n<=2?'very limited data':n<=5?'early indication':''; }
 function samplePill(n){ const s=n>0?sampleNote(n):''; return s?'<span class="hint-pill">'+s+'</span>':''; }
@@ -1587,7 +1551,7 @@ function buildDock(){
 
 // Dock-Hover-Magnification: Icon unter dem Cursor 1.20, direkte Nachbarn ~1.08,
 // danach weicher Auslauf. Skaliert nur das Icon, Labels bleiben stehen.
-// Laeuft auch bei "reduced motion" -- dort nur ohne Uebergang (CSS).
+// Laeuft immer mit Uebergang.
 const DOCK_MAG=0.20;
 function initDockMagnify(dock){
   const items=[...dock.querySelectorAll('.dock-item')];
@@ -1810,9 +1774,7 @@ function closeSplash(tab,fromEl){
   }
   sp.classList.add('sp-dive','gone');
   document.removeEventListener('keydown',_spEsc);
-  const reduced=prefersReducedMotion();
-  if(reduced){ stopSplashCanvas(); sp.remove(); }
-  else setTimeout(()=>{ stopSplashCanvas(); sp.remove(); },300);
+  setTimeout(()=>{ stopSplashCanvas(); sp.remove(); },300);
   // Splash blendet aus, waehrend der Inhalt gleichzeitig hereingleitet (force=true,
   // damit die Einblendung auch beim schon aktiven Log-Tab laeuft)
   switchTab(tab||'log',true);
@@ -1820,7 +1782,6 @@ function closeSplash(tab,fromEl){
 
 // Abschnittswechsel: der alte Abschnitt verschwindet sofort, der neue blendet
 // allein kurz ein. Es gibt keinen Moment, in dem beide sichtbar sind.
-function prefersReducedMotion(){ try{ return window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
 function clearSecAnim(s){ s.classList.remove('sec-in'); }
 
 // Reihenfolge ist bewusst: .sec-in setzen, dann rendern. Beides laeuft im selben Task,
@@ -1835,15 +1796,13 @@ function swapSection(next,render,force){
 
   clearSecAnim(next);
   next.classList.add('active');
-  if(!prefersReducedMotion()){
-    void next.offsetWidth;               // Reflow -> Animation startet auch bei force neu
-    next.classList.add('sec-in');
-    // Sicherheitsnetz: falls animationend ausbleibt (gedrosselter/inaktiver Tab), wird
-    // sec-in trotzdem entfernt -- der Abschnitt darf nie unsichtbar haengen bleiben.
-    const fertig=()=>next.classList.remove('sec-in');
-    next.addEventListener('animationend',fertig,{once:true});
-    setTimeout(fertig,300);
-  }
+  void next.offsetWidth;               // Reflow -> Animation startet auch bei force neu
+  next.classList.add('sec-in');
+  // Sicherheitsnetz: falls animationend ausbleibt (gedrosselter/inaktiver Tab), wird
+  // sec-in trotzdem entfernt -- der Abschnitt darf nie unsichtbar haengen bleiben.
+  const fertig=()=>next.classList.remove('sec-in');
+  next.addEventListener('animationend',fertig,{once:true});
+  setTimeout(fertig,300);
   if(render)render();
 }
 
@@ -1876,7 +1835,17 @@ function refreshActiveTab(){
 }
 
 function toggleTag(b){ b.classList.toggle('sel'); scheduleTradeDraft(); }
-function toggleEmo(b){ document.querySelectorAll('.emo').forEach(e=>e.classList.remove('sel')); b.classList.toggle('sel'); scheduleTradeDraft(); }
+function toggleEmo(b){
+  b.classList.toggle('sel');
+  if(editingTradeId!==null)form.psychologyDirty=true;
+  const pressureValues=['FOMO','Fear','Revenge','Payout pressure'];
+  if(b.classList.contains('sel')&&emoValue(b)==='No pressure')document.querySelectorAll('#psychology-chips .emo').forEach(e=>{if(pressureValues.includes(emoValue(e)))e.classList.remove('sel');});
+  if(b.classList.contains('sel')&&pressureValues.includes(emoValue(b)))document.querySelectorAll('#psychology-chips .emo[data-emo="No pressure"]').forEach(e=>e.classList.remove('sel'));
+  const pressureMap={'No pressure':'none',FOMO:'fomo','Payout pressure':'funded',Fear:'fear',Revenge:'revenge'};
+  const pressure=getPsychology().map(item=>pressureMap[item]).find(Boolean)||'';
+  const field=document.getElementById('j-pressure'); if(field)field.value=pressure;
+  scheduleTradeDraft(); Journal.update();
+}
 function toggleTf(btn,concept){ btn.classList.toggle('sel'); const row=document.getElementById('tf-'+concept); if(btn.classList.contains('sel')) row.classList.add('open'); else row.classList.remove('open'); scheduleTradeDraft(); }
 function toggleChip(b){ b.classList.toggle('sel'); scheduleTradeDraft(); }
 
@@ -1895,7 +1864,8 @@ function getSetup(){
 }
 // Gespeichert wird der historische Wert mit Emoji-Praefix (data-emo), angezeigt nur das Wort.
 function emoValue(btn){ return btn.dataset.emo||btn.textContent.trim(); }
-function getEmo(){ const s=document.querySelector('.emo.sel'); return s?emoValue(s):''; }
+function getPsychology(){ return [...document.querySelectorAll('#psychology-chips .emo.sel')].map(emoValue); }
+function getEmo(){ return getPsychology()[0]||''; }
 function handleImg(i){ const f=i.files[0]; if(!f)return; loadImgFile(f); }
 
 function setScreenshotPreview(src){
@@ -2042,6 +2012,7 @@ function quickToFull(){
     set('f-date',document.getElementById('q-date').value);
     if(pnl!==null) set('f-pnl',pnl);
     if(risk>0) set('j-risk',risk);
+    if(tp>=0) set('j-profit-target',tp);
     scheduleTradeDraft(); Journal.update();
   }
   showToast('Amounts carried over — add the plan, execution and lesson.');
@@ -2131,9 +2102,9 @@ function clearTradeEditRecovery(){ const k=tradeEditRecoveryKey(); if(k){ try{ l
 function draftStatus(text){ const el=document.getElementById('trade-draft-status'); if(el)el.textContent=text; }
 function collectTradeDraft(){
   const fields={};
-  document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard textarea,#trade-wizard select').forEach(el=>{ if(el.id)fields[el.id]=el.value; });
+  document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard textarea,#trade-wizard select').forEach(el=>{ if(el.id)fields[el.id]=el.type==='checkbox'?el.checked:el.value; });
   const setupButtons=[...document.querySelectorAll('#setup-tags button')];
-  return {v:TRADE_DRAFT_VERSION,savedAt:Date.now(),layout:3,step:curStep,form:{...form},fields,selectedSetupIndexes:setupButtons.map((button,index)=>button.classList.contains('sel')?index:-1).filter(index=>index>=0),emotion:getEmo()};
+  return {v:TRADE_DRAFT_VERSION,savedAt:Date.now(),layout:3,step:curStep,form:{...form},fields,selectedSetupIndexes:setupButtons.map((button,index)=>button.classList.contains('sel')?index:-1).filter(index=>index>=0),psychology:getPsychology(),emotion:getEmo()};
 }
 function saveTradeDraftNow(){
   if(_tradeDraftSuspended)return;
@@ -2179,7 +2150,7 @@ function restoreTradeDraft(){
 function applyTradeDraft(draft){
   clearForm();
   if (draft.v===2 && draft.layout!==3 && draft.step>1) draft={...draft,step:draft.step===5?3:draft.step===4||draft.step===3?2:1};
-  Object.entries(draft.fields||{}).forEach(([id,value])=>{ const el=document.getElementById(id); if(el&&el.type!=='file')el.value=value; });
+  Object.entries(draft.fields||{}).forEach(([id,value])=>{ const el=document.getElementById(id); if(!el||el.type==='file')return; if(el.type==='checkbox')el.checked=Boolean(value); else el.value=value; });
   Object.entries(draft.form||{}).forEach(([field,value])=>{
     const seg=[...document.querySelectorAll('#trade-wizard .seg')].find(el=>el.dataset.field===field);
     const opt=seg&&[...seg.querySelectorAll('.opt')].find(el=>el.dataset.v===String(value));
@@ -2196,8 +2167,9 @@ function applyTradeDraft(draft){
     else if(button.classList.contains('tf-chip'))toggleChip(button);
     else toggleTag(button);
   });
-  if(draft.emotion){ const emotion=[...document.querySelectorAll('#trade-wizard .emo')].find(el=>emoValue(el)===draft.emotion||el.textContent.trim()===draft.emotion); if(emotion)toggleEmo(emotion); }
-  updateExec(); updateSetupQ(); updateRR(); Journal.update(); Journal.renderRules();
+  const psychology=Array.isArray(draft.psychology)?draft.psychology:(draft.emotion?[draft.emotion]:[]);
+  psychology.forEach(saved=>{ const emotion=[...document.querySelectorAll('#psychology-chips .emo')].find(el=>emoLabel(emoValue(el))===emoLabel(saved)); if(emotion)emotion.classList.add('sel'); });
+  Journal.syncChoices(); updateExec(); updateSetupQ(); updateRR(); Journal.update(); Journal.renderRules();
   goStep(Math.max(1,Math.min(STEPS,Number(draft.step)||1)),true);
 }
 function discardTradeDraft(){
@@ -2273,9 +2245,11 @@ function tradeToDraft(t){
   });
   Object.assign(fields,Journal.restoreFields(t));
   wForm.journalPlanSnapshot=t.journal?.planSnapshot||null;
+  wForm.journalVersion=t.journal?.version||null;
+  wForm.psychologyDirty=false;
   wForm.journalSetupAssessed=t.journal?.setupAssessed||false;
   wForm.journalExecutionAssessed=t.journal?.executionAssessed||false;
-  return {v:TRADE_DRAFT_VERSION,layout:3,step:1,form:wForm,fields,selectedSetupIndexes:sel,emotion:t.emotion||''};
+  return {v:TRADE_DRAFT_VERSION,layout:3,step:1,form:wForm,fields,selectedSetupIndexes:sel,psychology:psychologyValues(t),emotion:t.emotion||''};
 }
 
 function enterEditUI(t){
@@ -2399,51 +2373,27 @@ function choice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.
 function rate(field,btn){ const grp=btn.parentElement; const dots=[...grp.querySelectorAll('.dot')]; const idx=dots.indexOf(btn); dots.forEach((d,i)=>d.classList.toggle('on',i<=idx)); form[field]=idx+1; if(field==='execQuality')updateExec(); scheduleTradeDraft(); }
 function execScoreCalc(){ let s=0; s+=form.toPlan==='Yes'?30:form.toPlan==='Partial'?15:0; s+=form.chased==='No'?20:0; s+=form.patience==='Yes'?20:0; s+=form.confirmation==='Yes'?15:0; s+=form.execQuality?Math.round(form.execQuality/5*15):0; return Math.min(100,s); }
 function updateExec(){ const sc=execScoreCalc(); const col=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)'; const f=document.getElementById('exec-fill'),n=document.getElementById('exec-num'); if(f){f.style.width=sc+'%';f.style.background=col;} if(n){n.textContent=sc;n.style.color=col;} }
-// Punktwert je Kontrakt und Indexpunkt -- Micro-Futures: MNQ 2 $, MES 5 $.
-// Nur fuer die Anzeige des geplanten Risikos in Dollar; der R:R-Wert selbst
-// haengt nicht daran und bleibt richtig, falls die Werte mal nicht stimmen.
-const POINT_VALUE={MNQ:2,MES:5};
 function rrNum(id){ const el=document.getElementById(id); if(!el||el.value==='')return null; const n=parseFloat(el.value); return isNaN(n)?null:n; }
-function rrPts(p){ return String(+p.toFixed(2)); }
-
-// Eine Rechnung fuer Anzeige UND gespeicherten Wert. Getrennt gerechnet laufen die
-// beiden auseinander -- dann warnt die Oberflaeche vor vertauschtem Stop, waehrend
-// im Trade trotzdem ein sauber aussehendes 1:3 landet und die Auswertung vergiftet.
-// Geprueft wird gegen die Richtung: beim Long liegt der Stop unter dem Einstieg und
-// das Ziel darueber, beim Short umgekehrt.
 function rrCalc(){
-  const e=rrNum('f-entry'), sl=rrNum('f-sl'), tp=rrNum('f-tp'), dir=form.direction||'Long';
-  if(e===null||sl===null) return {state:'incomplete'};
-  const risk=Math.abs(e-sl);
-  if(!risk) return {state:'no-risk'};
-  if((dir==='Long'&&sl>e)||(dir==='Short'&&sl<e)) return {state:'stop-side',dir:dir,risk:risk};
-  if(tp===null) return {state:'no-target',risk:risk};
-  if((dir==='Long'&&tp<e)||(dir==='Short'&&tp>e)) return {state:'target-side',dir:dir,risk:risk};
-  const reward=Math.abs(tp-e);
-  return {state:'ok',risk:risk,reward:reward,rr:reward/risk};
+  const risk=rrNum('j-risk'), reward=rrNum('j-profit-target');
+  if(risk===null||reward===null)return {state:'incomplete'};
+  if(risk<=0)return {state:'no-risk'};
+  if(reward<0)return {state:'no-target'};
+  return {state:'ok',risk,reward,rr:reward/risk};
 }
 
 function updateRR(){
   const lab=document.getElementById('rr-label'), det=document.getElementById('rr-detail');
   if(!lab||!det)return;
   const set=(text,color,note)=>{ lab.textContent=text; lab.style.color=color; det.textContent=note; };
-  const qty=parseInt((document.getElementById('f-contracts')||{}).value||'0',10)||0;
-  const pv=POINT_VALUE[form.instrument||'MNQ']||0;
-  const cash=p=> (qty&&pv) ? ' ($'+Math.round(p*pv*qty)+')' : '';
-  const c=rrCalc(), low=d=>d==='Long'?'long':'short';
-  if(c.state==='incomplete') return set('—','var(--muted)','Fill in entry and stop for the risk, add a target for the ratio.');
-  if(c.state==='no-risk')    return set('—','var(--red)','Stop sits on your entry — there is no risk to measure.');
-  if(c.state==='stop-side')  return set('!','var(--red)','On a '+low(c.dir)+', the stop belongs '+(c.dir==='Long'?'below':'above')+' your entry. Please check these prices; no R:R is calculated.');
-  if(c.state==='no-target')  return set('—','var(--muted)','Risk '+rrPts(c.risk)+' pts'+cash(c.risk)+' — add a target to get the ratio.');
-  if(c.state==='target-side')return set('!','var(--red)','On a '+low(c.dir)+', the target belongs '+(c.dir==='Long'?'above':'below')+' your entry. Please check these prices; no R:R is calculated.');
+  const c=rrCalc();
+  if(c.state==='incomplete')return set('—','var(--muted)','');
+  if(c.state==='no-risk')return set('—','var(--red)','Risk must be above zero.');
+  if(c.state==='no-target')return set('—','var(--red)','Profit target cannot be negative.');
   const col=c.rr>=2?'var(--green)':c.rr>=1?'var(--amber)':'var(--red)';
-  set('1 : '+c.rr.toFixed(1),col,
-    'Risk '+rrPts(c.risk)+' pts'+cash(c.risk)+' · target '+rrPts(c.reward)+' pts'+cash(c.reward)+
-    (c.rr<1?' — you are risking more than you stand to make.':''));
+  set('1 : '+c.rr.toFixed(2),col,'');
 }
 
-// Nur ein stimmiges Verhaeltnis wird gespeichert; widerspruechliche Eingaben
-// ergeben null statt einer Zahl, die spaeter als echt durchgeht.
 function plannedRR(){ const c=rrCalc(); return c.state==='ok' ? +c.rr.toFixed(2) : null; }
 
 function updateSetupQ(){ const map={'A+':100,'A':80,'B':60}; let s=map[form.grade]||0; if(s&&form.matchesPlaybook==='No')s-=15; if(s&&form.proWouldTake==='No')s-=15; s=Math.max(0,s); const col=s>=90?'var(--green)':s>=70?'var(--accent)':'var(--amber)'; const f=document.getElementById('setq-fill'),l=document.getElementById('setq-label'); if(f){f.style.width=s+'%';f.style.background=col;} if(l){l.textContent=form.grade?('Grade '+form.grade):'—';l.style.color=form.grade?col:'var(--muted)';} }
@@ -2461,6 +2411,7 @@ async function saveTrade(){
   const saveBtn=document.querySelector('#wz-3 .wz-nav .btn-primary');
   if(saveBtn) saveBtn.disabled=true;
   try{
+    const saveWeeklyRule=Boolean(document.getElementById('j-save-rule')?.checked);
     const data=[...(await loadTrades())];
     const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
     let pnlVal=g('f-pnl')!==''?parseFloat(g('f-pnl')):null;
@@ -2494,6 +2445,22 @@ async function saveTrade(){
       // Sobald wieder ein Feld existiert, greift der Schutz für diesen Key nicht mehr.
       const patch={...t,journal:{...(data[idx].journal||{}),...t.journal}};
       const original=data[idx];
+      if(g('j-profit-target')==='' && original.plannedRR!==undefined) delete patch.plannedRR;
+      const originalJournal=original.journal||{};
+      if(!Object.prototype.hasOwnProperty.call(originalJournal,'profitTarget')&&g('j-profit-target')==='')delete patch.journal.profitTarget;
+      if(!Object.prototype.hasOwnProperty.call(originalJournal,'psychology')&&JSON.stringify(patch.journal.psychology||[])===JSON.stringify(psychologyValues(original)))delete patch.journal.psychology;
+      if(!Object.prototype.hasOwnProperty.call(originalJournal,'mode')&&!g('j-mode'))delete patch.journal.mode;
+      if(!Object.prototype.hasOwnProperty.call(originalJournal,'version')&&!form.journalVersion)delete patch.journal.version;
+      // Removed controls are compatibility-only. A no-op edit must keep their
+      // exact historical values, including nulls and distinct legacy aliases.
+      ['entry','stopLoss','takeProfit','confirmations','externalFactors','news','biggestFactor','bestRule','worstMistake','why'].forEach(key=>delete patch[key]);
+      if(!form.psychologyDirty){
+        delete patch.emotion;
+        if(Object.prototype.hasOwnProperty.call(originalJournal,'pressure'))patch.journal.pressure=originalJournal.pressure;
+        else delete patch.journal.pressure;
+        if(Object.prototype.hasOwnProperty.call(originalJournal,'psychology'))patch.journal.psychology=originalJournal.psychology;
+        else delete patch.journal.psychology;
+      }
       // Distinct historical aliases contain information; a no-op edit must not merge them.
       if(g('f-factor')===(original.biggestFactor||original.why||'')) delete patch.why;
       if(g('f-lesson')===(original.lesson||original.better||'')) delete patch.better;
@@ -2523,11 +2490,13 @@ async function saveTrade(){
         try{ const k=tradeEditRecoveryKey(); if(k)localStorage.setItem(k,JSON.stringify({id:editingTradeId,draft:collectTradeDraft(),shotCleared:getImg()===''})); }catch(e){}
         showToast('Save failed — your changes stay in the form'); return;
       }
+      if(saveWeeklyRule)await Journal.toLearn(true);
       finishEdit();
       showToast('Trade updated ✓');
     } else {
       data.unshift(t);
       if(!await saveTrades(data)){ saveTradeDraftNow(); showToast('Save failed · the draft is kept'); return; }
+      if(saveWeeklyRule)await Journal.toLearn(true);
       _tradeDraftSuspended=true;
       try{ clearTradeDraft(); clearForm(); goStep(1,true); }
       finally{ _tradeDraftSuspended=false; }
@@ -2542,13 +2511,14 @@ function clearForm(){
   // Nur den Trade-Wizard leeren -- #sec-log enthaelt auch das No-Trade-Formular,
   // dessen angefangene Eingaben hier sonst mitgeloescht wuerden.
   form={};
-  document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard select,#trade-wizard textarea').forEach(el=>{ el.tagName==='SELECT'?(el.selectedIndex=0):(el.value=''); });
+  document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard select,#trade-wizard textarea').forEach(el=>{ if(el.type==='checkbox')el.checked=false; else if(el.tagName==='SELECT')el.selectedIndex=0; else el.value=''; });
   document.querySelectorAll('#trade-wizard .tag,#trade-wizard .emo,#trade-wizard .tf-chip,#trade-wizard .opt,#trade-wizard .dot').forEach(b=>b.classList.remove('sel','on'));
   document.querySelectorAll('#trade-wizard .tf-row').forEach(r=>r.classList.remove('open'));
   // restore default segmented selections
   const di=document.querySelector('#trade-wizard .seg[data-field="instrument"] .opt[data-v="MNQ"]'); if(di)di.classList.add('sel');
   const dd=document.querySelector('#trade-wizard .seg[data-field="direction"] .opt[data-v="Long"]'); if(dd)dd.classList.add('sel');
   form.instrument='MNQ'; form.direction='Long';
+  document.getElementById('j-mode').value='Live';
   const p=document.getElementById('img-prev'); p.src=''; p.style.display='none';
   document.getElementById('f-img').value='';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
@@ -2603,14 +2573,14 @@ function matchesListFilter(t){
   }
   if(listFilters.on&&String(t.date||'')!==listFilters.on)return false;
   if(listFilters.instrument&&t.instrument!==listFilters.instrument&&!(t.isNoTrade&&t.instrument==='Both'))return false;
-  if(listFilters.emotion&&emoLabel(t.emotion)!==listFilters.emotion)return false;
+  if(listFilters.emotion&&!psychologyValues(t).includes(listFilters.emotion))return false;
   if(listFilters.mode&&(t.journal?.mode||'Unknown')!==listFilters.mode)return false;
   return true;
 }
 function fillEmotionOptions(all){
   const sel=document.getElementById('lf-emotion'); if(!sel)return;
   const cur=sel.value;
-  const names=[...new Set(all.map(t=>emoLabel(t.emotion)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const names=[...new Set(all.flatMap(t=>psychologyValues(t)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   sel.innerHTML='<option value="">All</option>'+names.map(n=>'<option value="'+Journal.esc(n)+'">'+Journal.esc(n)+'</option>').join('');
   if(names.includes(cur))sel.value=cur; else if(cur){ listFilters.emotion=''; }
 }
@@ -2637,10 +2607,11 @@ async function renderList(){
     const bare=!isNT && t.quickCapture && !t.executionScore && !(t.setup&&t.setup.length) && !t.grade && !t.rulebased;
     const badge=isNT?'<span class="nt-badge">'+ico('ban')+'No trade</span>':'<span class="instr '+Journal.esc(t.instrument||'')+'">'+Journal.esc(t.instrument||'')+'</span><span>'+Journal.esc(t.direction||'')+'</span>';
     const mode=t.journal?.mode?'<span class="meta-mode">'+Journal.esc(t.journal.mode)+'</span>':'';
+    const psychology=psychologyValues(t);
     const meta=isNT
       ?(t.noTradeReasons&&t.noTradeReasons.length?'<span>'+Journal.esc(t.noTradeReasons.slice(0,2).join(', '))+'</span>':'<span>Discipline day</span>')+(t.emotion?'<span>'+Journal.esc(emoLabel(t.emotion))+'</span>':'')
       :(bare?'<span>Quick capture · open to add plan and lesson</span>'+mode
-        :((t.setup&&t.setup.length?'<span>'+Journal.esc(t.setup.slice(0,3).join(', '))+(t.setup.length>3?'…':'')+'</span>':'')+(t.emotion?'<span>'+Journal.esc(emoLabel(t.emotion))+'</span>':'')+mode+ruleTag(t)));
+        :((t.setup&&t.setup.length?'<span>'+Journal.esc(t.setup.slice(0,3).join(', '))+(t.setup.length>3?'…':'')+'</span>':'')+(psychology.length?'<span>'+Journal.esc(psychology.join(', '))+'</span>':'')+mode+ruleTag(t)));
     return '<div class="trade-item'+(isNT?' nt-item':'')+'" role="button" tabindex="0" onclick="openDetail('+t.id+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openDetail('+t.id+')}">'+
       '<div class="trade-head"><div class="trade-name">'+badge+'<span class="trade-date">'+fmtDate(t.date)+'</span></div>'+
       '<span class="trade-right"><span class="badge '+(isNT?'nt':rc(t.result))+'">'+Journal.esc(t.result||'–')+'</span>'+(isNT?'':pnlChip(t))+'<span class="learn-chev">'+ico('right')+'</span></span></div>'+
@@ -2682,7 +2653,7 @@ async function openDetail(id){
        +(t.plannedRR?'  ·  1 : '+t.plannedRR.toFixed(1):'')) : '';
   const setupRows=[row('Concepts',(t.setup&&t.setup.length)?t.setup.join(', '):''),row('Confirmations',t.confirmations),row('Grade',t.grade),row('Contracts',t.contracts),row('Entry / stop / target',rrRow),row('Matches playbook',yn(t.matchesPlaybook)),row('Pro would take',t.proWouldTake)].filter(Boolean).join('');
   const execRows=[row('To plan',yn(t.toPlan)),row('Chased entry',yn(t.chased)),row('Patience',yn(t.patience)),row('Confirmation',yn(t.confirmationPresent)),row('Execution',stars(t.execQuality)),row('Followed rules',t.rulebased==='yes'?'Yes':t.rulebased==='no'?'No':t.rulebased==='partial'?'Partial':''),row('External/News',t.externalFactors||t.news)].filter(Boolean).join('');
-  const psyRows=[row('Focus',stars(t.preFocus)),row('Patience',stars(t.prePatience)),row('Energy',stars(t.preEnergy)),row('Mental state',t.preState),row('Doubts',yn(t.doubts)),row('Deviated',yn(t.deviated)),row('Satisfied',yn(t.satisfied)),row('Emotion',emoLabel(t.emotion)),row('Notes',t.mindset)].filter(Boolean).join('');
+  const psyRows=[row('Focus',stars(t.preFocus)),row('Patience',stars(t.prePatience)),row('Energy',stars(t.preEnergy)),row('Mental state',t.preState),row('Doubts',yn(t.doubts)),row('Deviated',yn(t.deviated)),row('Satisfied',yn(t.satisfied)),row('Psychology',psychologyValues(t).join(', ')),row('Notes',t.mindset)].filter(Boolean).join('');
   const revRows=[row('Biggest factor',t.biggestFactor||t.why),row('Best rule',t.bestRule),row('Worst mistake',t.worstMistake),row('Key lesson & adjustment',t.lesson)].filter(Boolean).join('');
   const gradeBadge = t.grade?'<span class="badge" style="background:var(--accent-bg);color:var(--accent)">Grade '+Journal.esc(t.grade)+'</span>':'';
   const execBadge = (t.executionScore!==undefined&&t.executionScore!==null&&t.executionScore!=='')?'<span class="badge" style="background:var(--green-bg);color:var(--green)">Exec '+t.executionScore+'</span>':'';
@@ -2705,7 +2676,7 @@ async function openDetail(id){
 function closeDetail(){ document.getElementById('detail-view').classList.remove('open'); document.getElementById('list-view').classList.remove('hidden'); }
 async function deleteTrade(id){ if(!confirm('Delete?'))return; const d=(await loadTrades()).filter(t=>t.id!==id); if(!await saveTrades(d)){showToast('Delete failed');return;} closeDetail(); renderList(); showToast('Deleted'); }
 
-function animateCount(el,target,dur,suffix){ if(!el)return; dur=dur||700; suffix=suffix||''; if(prefersReducedMotion()){ el.textContent=Math.round(target)+suffix; return; } const t0=performance.now(); function step(now){ const p=Math.min(1,(now-t0)/dur); const ev=1-Math.pow(1-p,3); el.textContent=Math.round(target*ev)+suffix; if(p<1)requestAnimationFrame(step); } requestAnimationFrame(step); }
+function animateCount(el,target,dur,suffix){ if(!el)return; dur=dur||700; suffix=suffix||''; const t0=performance.now(); function step(now){ const p=Math.min(1,(now-t0)/dur); const ev=1-Math.pow(1-p,3); el.textContent=Math.round(target*ev)+suffix; if(p<1)requestAnimationFrame(step); } requestAnimationFrame(step); }
 
 function disciplineScore(data){ return Journal.discipline(data); }
 
@@ -3066,7 +3037,7 @@ async function renderStats(){
 
   // animations
   el.querySelectorAll('.count').forEach(c=>animateCount(c,+c.dataset.to,700,c.dataset.suffix||''));
-  const pl=el.querySelector('.perf-line'); if(pl&&!prefersReducedMotion()){ const len=pl.getTotalLength(); pl.style.strokeDasharray=len; pl.style.strokeDashoffset=len; pl.style.transition='stroke-dashoffset .7s cubic-bezier(.3,.8,.2,1)'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ pl.style.strokeDashoffset='0'; })); }
+  const pl=el.querySelector('.perf-line'); if(pl){ const len=pl.getTotalLength(); pl.style.strokeDasharray=len; pl.style.strokeDashoffset=len; pl.style.transition='stroke-dashoffset .7s cubic-bezier(.3,.8,.2,1)'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ pl.style.strokeDashoffset='0'; })); }
   const pa=el.querySelector('.perf-area'); if(pa) requestAnimationFrame(()=>requestAnimationFrame(()=>{ pa.style.opacity='1'; }));
   el.querySelectorAll('.donut-seg').forEach(sg=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ sg.style.strokeDasharray=sg.dataset.len+' '+sg.dataset.gap; })));
   el.querySelectorAll('.sbar-fill,.mbar-fill,.disc-meter>i,.pt-prog>i').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
@@ -3097,15 +3068,14 @@ async function renderReview(){
   // Emotion -> Ergebnis: bisher nur als Textzeile in den Faith-Insights, hier als
   // quantifizierte Tabelle -- passt in die Muster-Ansicht und zum Disziplin-Fokus
   // der Cockpit-Aenderungen.
-  const EMO_ORDER=['😊 Good','😌 Calm','🧘 Patient','🎯 Focused','💪 Disciplined','😶 Neutral','😤 Impatient','😰 Anxious','🤩 Overconfident','😓 FOMO','😩 Revenge'];
+  const EMO_ORDER=['Calm','Focused','Patient','Impatient','FOMO','Fear','Revenge','Overconfident','Payout pressure','No pressure','Good','Disciplined','Neutral','Anxious'];
   const emoStats={};
-  data.forEach(t=>{
-    if(!t.emotion)return;
-    const e=emoStats[t.emotion]||(emoStats[t.emotion]={w:0,l:0,n:0,pnl:0,hp:0});
+  data.forEach(t=>psychologyValues(t).forEach(name=>{
+    const e=emoStats[name]||(emoStats[name]={w:0,l:0,n:0,pnl:0,hp:0});
     e.n++;
     if(t.result==='Win')e.w++; else if(t.result==='Loss')e.l++;
     if(hasPnl(t)){ e.pnl+=pnlOf(t); e.hp++; }
-  });
+  }));
   const emoArr=Object.entries(emoStats).map(([name,e])=>({name,...e,dec:e.w+e.l,wr:(e.w+e.l)?Math.round(e.w/(e.w+e.l)*100):0,avg:e.hp?e.pnl/e.hp:null}))
     .sort((a,b)=>{ const ia=EMO_ORDER.indexOf(a.name), ib=EMO_ORDER.indexOf(b.name); return (ia<0?99:ia)-(ib<0?99:ib); });
   let emoHtml;
@@ -3397,7 +3367,7 @@ function faithInsights(data){
   const small=n=>sampleNote(n)?' ('+n+' trades, '+sampleNote(n)+')':' ('+n+' trades)';
   if(rbWR!==null && dvWR!==null && rbWR>dvWR) out.push('Observed so far: '+rbWR+'% wins when you followed your rules'+small(rbW+rbL)+' vs '+dvWR+'% when you deviated'+small(dvW+dvL)+'. A pattern to keep watching, not proof.');
   else if(rbWR!==null && (rbW+rbL)>=3) out.push('Your rule-based trades won '+rbWR+'% of the time'+small(rbW+rbL)+'. The process is what you control.');
-  const emoLoss={}; data.filter(t=>t.result==='Loss'&&t.emotion).forEach(t=>emoLoss[t.emotion]=(emoLoss[t.emotion]||0)+1);
+  const emoLoss={}; data.filter(t=>t.result==='Loss').forEach(t=>psychologyValues(t).forEach(name=>emoLoss[name]=(emoLoss[name]||0)+1));
   const topEL=Object.entries(emoLoss).sort((a,b)=>b[1]-a[1])[0];
   const lossesTotal=data.filter(t=>t.result==='Loss').length;
   if(topEL && topEL[1]>=2) out.push(topEL[1]+' of your '+lossesTotal+' losses were logged while feeling '+emoLabel(topEL[0])+'. Worth noticing that state before the next entry.');
@@ -3414,7 +3384,7 @@ function faithInsights(data){
 function timelineHtml(t){
   const steps=[
     {icon:'trend',label:'Trade',val:((t.instrument||'')+' '+(t.direction||'')).trim()||'—'},
-    {icon:'smile',label:'Emotion',val:emoLabel(t.emotion)||'—'},
+    {icon:'smile',label:'Psychology',val:psychologyValues(t).join(', ')||'—'},
     {icon:'scale',label:'Decision',val:t.rulebased==='yes'?'Followed rules':t.rulebased==='no'?'Deviated':t.rulebased==='partial'?'Partial':'Not rated'},
     {icon:'target',label:'Result',val:(t.result||'—')+(hasPnl(t)?' · '+fmtUSD(t.pnl):'')},
     {icon:'bulb',label:'Lesson',val:(t.lesson||t.better||t.why||'—')}
@@ -3425,7 +3395,7 @@ function timelineHtml(t){
 function revealInto(id,item){
   const el=document.getElementById(id); if(!el) return;
   const words=item.text.split(' ');
-  const stagger=prefersReducedMotion()?0:0.05;
+  const stagger=0.05;
   el.innerHTML='<p class="verse-text">'+words.map((w,i)=>'<span class="vw" style="transition-delay:'+(i*stagger).toFixed(2)+'s">'+w+'</span>').join(' ')+'</p><p class="verse-ref">'+(item.isQuote?'✦ ':'— ')+item.ref+'</p>';
   requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.querySelectorAll('.vw').forEach(s=>s.classList.add('show')); const r=el.querySelector('.verse-ref'); if(r)r.classList.add('show'); }));
 }
@@ -3801,7 +3771,7 @@ function weekSummary(all,wk){
   const rs=trades.map(Journal.realizedR).filter(v=>v!==null);
   const rb=trades.filter(t=>t.rulebased==='yes').length, partial=trades.filter(t=>t.rulebased==='partial').length, dev=trades.filter(t=>t.rulebased==='no').length;
   const setups=topCounts(trades.flatMap(conceptsOf));
-  const emotions=topCounts(trades.map(t=>emoLabel(t.emotion)));
+  const emotions=topCounts(trades.flatMap(t=>psychologyValues(t)));
   const mistakes=topCounts(trades.flatMap(t=>{
     const out=[]; const f=t.journal?.focus;
     if(f && f!=='repeat' && f!=='other' && Journal.focus[f]) out.push(Journal.focus[f][0]);
@@ -3980,8 +3950,7 @@ async function lessonToPlaybook(id){
    komplett aus dem DOM entfernt -- nichts wird gespeichert. Fehlende Werte werden
    benannt, nie als 0 gezeigt.
    Bewegung: Zahlen zaehlen hoch, Balken wachsen, Screenshots zoomen leicht, Szenen
-   kommen von rechts unten -- die alte Szene ist vorher schon weg (kein Ghosting).
-   Bei prefers-reduced-motion bleiben nur einfache Einblendungen. */
+   kommen von rechts unten -- die alte Szene ist vorher schon weg (kein Ghosting). */
 let _recap=null, _recapRange=null;
 const RECAP_DUR=3600, RECAP_OUT_MS=240;
 function recapSetupHTML(wk,all){
@@ -4080,7 +4049,7 @@ function buildRecapScenes(all,from,to,rule){
     const c=rc(t.result);
     const head='<div class="rc-cap-head"><span class="instr '+esc(t.instrument||'')+'">'+esc(t.instrument||'')+'</span><b>'+esc(t.direction||'')+'</b><span class="trade-date">'+fmtDate(t.date)+'</span><span class="badge '+c+'">'+esc(t.result||'–')+'</span>'+pnlChip(t)+(t.grade?'<span class="badge" style="background:var(--accent-bg);color:var(--accent)">Grade '+esc(t.grade)+'</span>':'')+ruleTag(t)+'</div>';
     const setup=((t.setup&&t.setup.length)?'<div class="rc-cap-setup"><b>Setup</b> '+esc(t.setup.join(', '))+(t.journal?.model?' · '+esc(t.journal.model):'')+'</div>':(t.journal?.model?'<div class="rc-cap-setup"><b>Model</b> '+esc(t.journal.model)+'</div>':''))+
-      (t.emotion?'<div class="rc-cap-setup"><b>Feeling</b> '+esc(emoLabel(t.emotion))+'</div>':'');
+      (psychologyValues(t).length?'<div class="rc-cap-setup"><b>Psychology</b> '+esc(psychologyValues(t).join(', '))+'</div>':'');
     const why=(t.biggestFactor||t.why)?'<div class="rc-cap-why"><b>Why it '+(t.result==='Win'?'worked':t.result==='Loss'?'failed':'ended flat')+'</b> '+esc(t.biggestFactor||t.why)+'</div>':'';
     const rules=[t.bestRule?'<span class="meta-ok">'+ico('check')+esc(t.bestRule)+'</span>':'',t.worstMistake?'<span class="meta-bad">'+ico('x')+esc(t.worstMistake)+'</span>':''].filter(Boolean).join('');
     const les=lesson?rcA('<div class="rc-cap-lesson">'+ico('bulb')+'<span>'+esc(lesson)+'</span></div>',t.screenshot?900:400,'rc-pop'):'';
@@ -4120,9 +4089,9 @@ async function startRecap(){
   root.addEventListener('click',recapAdvance);
   document.addEventListener('keydown',recapKeys,true);
   _recap={scenes,i:-1,timer:null,root,current:null,seq:0,rafs:new Set(),bgStop:null};
-  // Der Kerzenchart bleibt hinter allen Szenen; bei reduced motion steht er still.
+  // Der Kerzenchart bleibt hinter allen Szenen in Bewegung.
   root.classList.add('rc-show-bg');
-  _recap.bgStop=startRecapCandles(root.querySelector('.rc-bg'),!prefersReducedMotion());
+  _recap.bgStop=startRecapCandles(root.querySelector('.rc-bg'),true);
   recapShow(0);
 }
 function recapKeys(e){
@@ -4135,9 +4104,9 @@ function recapKeys(e){
   else if(e.key==='ArrowLeft'){ e.preventDefault(); if(_recap.i>0)recapShow(_recap.i-1); }
 }
 // Zahl hochzaehlen (ease-out, ~1.1s). Endwert wird exakt formatiert, damit Cents stimmen.
-function rcCount(el,to,fmt,reduced){
+function rcCount(el,to,fmt){
   const finalText=fmt==='usd'?fmtUSD(to):rcFmt(to,fmt);
-  if(reduced||!Number.isFinite(to)){ el.textContent=finalText; return; }
+  if(!Number.isFinite(to)){ el.textContent=finalText; return; }
   const dur=fmt==='usd'?1400:fmt==='score'?1200:1000, t0=performance.now(), r=_recap;
   let raf=null;
   const step=now=>{
@@ -4148,14 +4117,13 @@ function rcCount(el,to,fmt,reduced){
   raf=requestAnimationFrame(step); if(r)r.rafs.add(raf);
 }
 // Effekte, die erst mit stehender Szene starten: Zaehler und wachsende Balken
-function recapEnter(el,reduced){
+function recapEnter(el){
   el.querySelectorAll('[data-count]').forEach((n,k)=>{
     const to=Number(n.dataset.count), fmt=n.dataset.fmt||'int';
-    const delay=reduced?0:Number((n.closest('.rc-a')||{}).style?.getPropertyValue('--d').replace('ms','')||0);
-    if(reduced) rcCount(n,to,fmt,true); else setTimeout(()=>{ if(_recap&&_recap.root.contains(n)) rcCount(n,to,fmt,false); },delay+150);
+    const delay=Number((n.closest('.rc-a')||{}).style?.getPropertyValue('--d').replace('ms','')||0);
+    setTimeout(()=>{ if(_recap&&_recap.root.contains(n)) rcCount(n,to,fmt); },delay+150);
   });
   el.querySelectorAll('[data-w]').forEach(bar=>{
-    if(reduced){ bar.style.transition='none'; bar.style.width=bar.dataset.w; return; }
     const delay=Number((bar.closest('.rc-a')||{}).style?.getPropertyValue('--d').replace('ms','')||0);
     setTimeout(()=>{ if(_recap&&_recap.root.contains(bar)) bar.style.width=bar.dataset.w; },delay+200);
   });
@@ -4165,15 +4133,15 @@ function recapShow(i){
   const r=_recap; clearTimeout(r.timer); r.timer=null;
   r.rafs.forEach(cancelAnimationFrame); r.rafs.clear();
   if(i>=r.scenes.length)return;
-  const reduced=prefersReducedMotion(), seq=++r.seq;
+  const seq=++r.seq;
   const stage=r.root.querySelector('.rc-stage');
   const show=()=>{
     if(!_recap||_recap.seq!==seq)return;
     const s=r.scenes[i]; r.i=i;
     const el=document.createElement('div'); el.className='rc-scene '+s.cls; el.innerHTML=s.html;
     stage.appendChild(el); r.current=el;
-    if(reduced) el.classList.add('in'); else requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
-    recapEnter(el,reduced);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
+    recapEnter(el);
     r.root.querySelectorAll('.rc-seg').forEach((seg,k)=>{
       const bar=seg.querySelector('i');
       seg.classList.remove('on','done','hold');
@@ -4189,7 +4157,7 @@ function recapShow(i){
   if(r.current){
     const old=r.current; r.current=null;
     old.classList.remove('in'); old.classList.add('out');
-    setTimeout(()=>{ old.remove(); show(); },reduced?0:RECAP_OUT_MS);
+    setTimeout(()=>{ old.remove(); show(); },RECAP_OUT_MS);
   } else show();
 }
 function recapAdvance(){
@@ -4209,7 +4177,6 @@ function recapClose(){
   _recap=null;                        // Szenen und Bilder werden mit dem Overlay verworfen
 }
 // Ruhiger Kerzenchart hinter allen Szenen: wandert langsam nach links, gedeckte Farben.
-// animate=false zeichnet ein einziges stehendes Bild (reduced motion).
 function startRecapCandles(cv,animate){
   if(!cv)return null;
   const ctx=cv.getContext('2d'); const dpr=Math.min(window.devicePixelRatio||1,2);
@@ -4460,8 +4427,7 @@ function _introTarget(){
 function startIntro(){
   const box=document.getElementById('intro');
   if(!box || _introDone) return;
-  // Reduced motion: die Kamerafahrt entfaellt komplett, die App steht sofort da.
-  if(!introEnabled() || prefersReducedMotion()){ _introDone=true; box.remove(); return; }
+  if(!introEnabled()){ _introDone=true; box.remove(); return; }
   const stage=document.getElementById('intro-stage');
 
   _introSkipFn=function(e){

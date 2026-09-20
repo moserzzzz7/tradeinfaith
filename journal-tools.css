@@ -18,6 +18,17 @@
 .journal-score{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:14px 0 6px}
 .journal-score strong{font-size:22px}
 .journal-notice{padding:14px 16px;border-left:3px solid var(--accent);background:var(--accent-bg);margin:12px 0 18px;font-size:13px;line-height:1.6;max-width:90ch}
+.weekly-rule-line{display:flex;gap:10px;align-items:baseline;padding:10px 14px;margin-bottom:16px;border-left:3px solid var(--accent);background:var(--accent-bg);font-size:13px}
+.weekly-rule-line strong{white-space:nowrap;color:var(--accent)}
+.planned-rr{font-size:12px;color:var(--muted)}
+.planned-rr strong{margin-left:6px;color:var(--text)}
+.small-check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer}
+.small-check input{appearance:auto;-webkit-appearance:checkbox;width:15px;height:15px;flex:0 0 auto;padding:0;accent-color:var(--accent)}
+.weekly-follow{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.weekly-follow>span{font-size:13px;white-space:pre-wrap}
+.weekly-follow>div{display:flex;align-items:center;gap:10px;flex-shrink:0;font-size:12px;color:var(--muted)}
+.lesson-chips .opt{padding:8px 13px!important;font-size:12px!important}
+#wz-3>.upload-zone{margin-bottom:16px}
 .journal-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
 .journal-rule{padding:16px 0;border-bottom:1px solid var(--border)}
 .journal-rule p{white-space:pre-wrap;max-width:75ch;margin:6px 0}
@@ -32,10 +43,9 @@
 #detail-el pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:13px}
 .wz-step{background:none;border:0;color:inherit;font:inherit;cursor:pointer}
 #trade-wizard .wz-name{text-transform:none;letter-spacing:0}
-#trade-wizard .wz-panel.active{animation:none}
 #trade-wizard .wz-step:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 #trade-wizard [hidden]{display:none!important}
-@media(max-width:560px){.journal-check{grid-template-columns:1fr;gap:6px}.journal-check select{width:100%}.journal-summary{grid-template-columns:1fr}.journal-summary dd{margin-bottom:8px}.journal-score strong{font-size:18px}}
+@media(max-width:560px){.journal-check{grid-template-columns:1fr;gap:6px}.journal-check select{width:100%}.journal-summary{grid-template-columns:1fr}.journal-summary dd{margin-bottom:8px}.journal-score strong{font-size:18px}.weekly-follow{align-items:flex-start;flex-direction:column}.weekly-follow>div{align-items:flex-start;flex-direction:column}.weekly-rule-line{align-items:flex-start;flex-direction:column;gap:2px}}
 #sec-playbook .btn-row{flex-wrap:wrap}
 /* Quick-capture teilt die ruhige Schrift des Wizards, liegt aber ausserhalb
    von #trade-wizard und wuerde sonst die globalen Grossbuchstaben-Labels erben. */

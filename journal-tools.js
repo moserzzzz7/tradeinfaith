@@ -7,14 +7,14 @@ const Journal = (() => {
     ['conditions', 'Entry zone, risk, time window and news rules were met']
   ];
   const focus = {
-    repeat: ['Executed cleanly', 'When my full trigger is there, I repeat the planned sequence.'],
-    chase: ['Chased the entry', 'Once price has left my entry zone, I skip the entry.'],
-    early: ['Entered too early', 'As long as my required confirmation is missing, I send no order.'],
-    risk: ['Changed the risk', 'Before the order I check stop and position size against my risk limit.'],
-    exit: ['Unplanned exit / breakeven', 'Before I move the exit, I check the exit reason I set beforehand.'],
-    pressure: ['Funded / payout pressure', 'When my account target drives the decision, I pause and re-read the original plan.'],
-    context: ['Missed HTF / ES', 'Before the order I check the HTF and correlation levels my model requires.'],
-    other: ['Other observation', '']
+    repeat: ['Clean trade', 'Next time: If my setup is clear, then I follow the same plan.'],
+    chase: ['Chased entry', 'Next time: If price has left my entry zone, then I skip the trade.'],
+    early: ['Too early', 'Next time: If my entry signal is missing, then I wait.'],
+    risk: ['Changed risk', 'Next time: If I place an order, then I keep the planned risk.'],
+    exit: ['Exited unplanned', 'Next time: If I want to exit early, then I check my plan first.'],
+    pressure: ['Pressure', 'Next time: If pressure drives the decision, then I pause and read my plan.'],
+    context: ['Missed context', 'Next time: If the wider context is unclear, then I do not enter.'],
+    other: ['Other', 'Next time: If this happens again, then I follow my written rule.']
   };
   const pressures = {
     none: 'No noticeable pressure', fomo: 'FOMO / missed something', funded: 'Funded / payout',
@@ -36,7 +36,6 @@ const Journal = (() => {
     return Math.round(keys.reduce((sum,key) => sum + ({entry:40,risk:40,exit:20}[key]) * ({Yes:1,Partial:0.5,No:0}[checks[key]]), 0));
   }
   function scoreFor(j) {
-    if (j?.execution?.entry==='Yes' && (grade(j.criteria,j.extras)==='Invalid' || ['chase','early'].includes(j.focus))) return null;
     return execution(j?.execution);
   }
   const DISCIPLINE_WINDOW = 20; // recent form, not all-time: a rule break should hit the score, not vanish into a long history.
@@ -63,13 +62,16 @@ const Journal = (() => {
   }
   function checks(prefix, keys) { return Object.fromEntries(keys.map(key => [key,value(prefix+key)])); }
   function current() {
+    const psychology=typeof getPsychology==='function'?getPsychology():[];
+    const pressureMap={'No pressure':'none',FOMO:'fomo','Payout pressure':'funded',Fear:'fear',Revenge:'revenge'};
+    const selectedPressure=psychology.map(item=>pressureMap[item]).find(Boolean)||'';
     return {
-      version:1, model:value('j-model'), mode:value('j-mode'),
+      version:form.journalVersion||2, model:value('j-model'), mode:value('j-mode')||(editingTradeId===null?'Live':''),
       criteria:checks('j-',criteria.map(([key])=>key)), extras:value('j-extras'),
       invalidation:value('j-invalidation'), management:value('j-management'),
-      initialRisk:num(value('j-risk')), setupReason:value('j-grade-reason'),
+      initialRisk:num(value('j-risk')), profitTarget:num(value('j-profit-target')), setupReason:value('j-grade-reason'),
       execution:checks('j-exec-',['entry','risk','exit']),
-      pressure:value('j-pressure'), trigger:value('j-psych-trigger'), action:value('j-action'),
+      psychology, pressure:selectedPressure||value('j-pressure'), trigger:value('j-psych-trigger'), action:value('j-action'),
       focus:value('j-focus'), ruleId:value('j-rule-id'), ruleCheck:value('j-rule-check'),
       planSnapshot:form.journalPlanSnapshot || null
     };
@@ -110,7 +112,7 @@ const Journal = (() => {
   function restoreFields(t) {
     const j = t.journal || {};
     const fields = {'j-model':j.model,'j-mode':j.mode,'j-extras':j.extras,'j-invalidation':j.invalidation,
-      'j-management':j.management,'j-risk':j.initialRisk,'j-grade-reason':j.setupReason,
+      'j-management':j.management,'j-risk':j.initialRisk,'j-profit-target':j.profitTarget,'j-grade-reason':j.setupReason,
       'j-pressure':j.pressure,'j-psych-trigger':j.trigger,'j-action':j.action,'j-focus':j.focus,
       'j-rule-id':j.ruleId,'j-rule-check':j.ruleCheck};
     criteria.forEach(([key]) => fields['j-'+key]=j.criteria?.[key]);
@@ -119,73 +121,39 @@ const Journal = (() => {
   }
   function update() {
     const j=current(), g=grade(j.criteria,j.extras), score=scoreFor(j);
-    document.getElementById('j-grade').textContent=g==='Invalid'?'Not in playbook':g||'Not graded yet';
-    document.getElementById('j-grade-help').textContent=g==='Invalid'?'A required criterion is missing. Still log a trade you already took, honestly.':g==='B'?'Only valid if your playbook allows this limitation. Name it briefly.':'The grade follows your answers. Optional extras have to be defined in the playbook beforehand.';
-    document.getElementById('j-score').textContent=score===null?'\u2014':score+'/100';
-    document.getElementById('j-score-help').textContent=score===null?'Three answers are enough. No points for profit or good mood.':'Entry 40 \u00b7 Risk 40 \u00b7 Management/Exit 20. Rates the execution, not the outcome.';
-    document.getElementById('j-pressure-detail').hidden=(!j.pressure || j.pressure==='none') && !j.trigger && !j.action;
-    const snapshot=j.planSnapshot;
-    document.getElementById('j-plan-status').textContent=snapshot?'Plan locked: '+new Date(snapshot.at).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'.')+'. Later changes do not replace this state.':'Optional, before the entry. The timestamp alone does not prove a pre-trade entry.';
-    document.getElementById('j-freeze').disabled=Boolean(snapshot);
     const warning=document.getElementById('j-save-check');
     const missing=[];
     if (!form.result) missing.push('result');
     if (value('f-pnl')==='') missing.push('net P&L');
-    if (!(j.initialRisk>0)) missing.push('original risk for R');
-    if (score===null) missing.push('a complete execution check');
-    if (!g && !form.grade) missing.push('setup grade');
-    if (['A','B'].includes(g) && !j.setupReason) missing.push('the named setup limitation');
-    if (j.pressure && j.pressure!=='none' && (!j.trigger || !j.action)) missing.push('trigger and actual action');
+    if (!(j.initialRisk>0)) missing.push('risk');
+    if (j.profitTarget===null) missing.push('profit target');
+    if (score===null) missing.push('three execution answers');
     if (j.ruleCheck && !j.ruleId) missing.push('the matching weekly rule');
-    if (!value('f-lesson')) missing.push('one concrete lesson');
-    if (snapshot?.initialRisk>0 && j.initialRisk!==snapshot.initialRisk) missing.push('risk differs from the locked plan; R uses that original value');
+    if (!value('f-lesson')) missing.push('lesson');
     const old={...form,...patch(),result:form.result,pnl:num(value('f-pnl'))};
-    warning.textContent=[missing.length?'Still open: '+missing.join(', ')+'.':'The key entries are there.',...issues(old),'Incomplete trades can still be saved; missing values do not count as zero.'].join(' ');
+    warning.textContent=[missing.length?'Still open: '+missing.join(', ')+'.':'Ready to save.',...issues(old)].join(' ');
     const legacy=document.getElementById('j-legacy');
     legacy.hidden=editingTradeId===null;
     if (editingTradeId!==null) document.getElementById('j-legacy-note').textContent='Original values stay untouched until you change them or answer the new check in full.';
   }
-  function freezePlan() {
-    if (form.journalPlanSnapshot) return;
-    const j=current();
-    if (!value('f-exp') || !j.model) {showToast('Enter your model and a short if-then plan.');return;}
-    form.journalPlanSnapshot={at:new Date().toISOString(),model:j.model,bias:form.htfbias||'',biasWhy:value('f-bwhy'),plan:value('f-exp'),invalidation:j.invalidation,management:j.management,criteria:j.criteria,extras:j.extras,grade:grade(j.criteria,j.extras),reason:j.setupReason,initialRisk:j.initialRisk,entry:value('f-entry'),stop:value('f-sl'),target:value('f-tp'),contracts:value('f-contracts')};
-    saveTradeDraftNow(); update();
-  }
   function suggestLesson() {
     const suggestion=focus[value('j-focus')]?.[1];
-    if (!suggestion) {showToast('Write your own if-then rule for this observation.');return;}
+    if (!suggestion) return;
     const field=document.getElementById('f-lesson');
-    if (field.value.trim()) {showToast('Your existing lesson stays as it is.');return;}
-    field.value=suggestion; field.focus(); scheduleTradeDraft(); update();
-  }
-  function adoptRule(id) {
-    const entry=loadLearn().find(e=>String(e.id)===String(id));
-    if (!entry) return;
-    document.getElementById('j-rule-id').value=String(entry.id);
-    document.getElementById('j-rule-check').value='';
-    document.getElementById('j-current-rule').textContent=entry.rule||entry.body;
-    scheduleTradeDraft();
+    if (field.value.trim()) return;
+    field.value=suggestion; scheduleTradeDraft(); update();
   }
   function renderRules() {
     const rules=loadLearn().filter(e=>e.kind==='behavior-rule');
-    const host=document.getElementById('j-rules');
-    host.replaceChildren();
-    rules.slice(0,3).forEach(rule=>{
-      const button=document.createElement('button'); button.type='button'; button.className='btn';
-      button.textContent=rule.title; button.onclick=()=>adoptRule(rule.id); host.append(button);
-    });
-    if (!rules.length) host.textContent='Save a weekly rule in the Playbook or in your weekly review; pick it here on your next trade.';
-    const selected=loadLearn().find(e=>String(e.id)===value('j-rule-id'));
-    document.getElementById('j-current-rule').textContent=selected?(selected.rule||selected.body):value('j-rule-id')?'That rule is no longer in the Playbook.':'';
-  }
-  async function reuseModel() {
-    const previous=(await loadTrades()).find(t=>!t.isNoTrade && t.journal?.model);
-    if (!previous) {showToast('After your first short report you can reuse your model here.');return;}
-    if (value('j-model') || value('j-management')) {showToast('Existing model and management entries stay as they are.');return;}
-    document.getElementById('j-model').value=previous.journal.model;
-    document.getElementById('j-management').value=previous.journal.management||'';
-    scheduleTradeDraft(); update();
+    const storedId=value('j-rule-id');
+    const stored=rules.find(e=>String(e.id)===storedId);
+    const selected=stored||(!storedId?rules[0]:null)||null;
+    if (selected && !storedId) document.getElementById('j-rule-id').value=String(selected.id);
+    const text=selected?(selected.rule||selected.body||''):'';
+    const plan=document.getElementById('j-plan-rule'), follow=document.getElementById('j-rule-follow');
+    document.getElementById('j-current-rule').textContent=text;
+    document.getElementById('j-rule-text').textContent=text;
+    plan.hidden=!text; follow.hidden=!text;
   }
   function playbookTemplate() {
     if (value('ln-title') || value('ln-body')) {showToast('Your unfinished Playbook entry stays as it is.');return;}
@@ -203,30 +171,29 @@ const Journal = (() => {
     const start=new Date(today); start.setDate(start.getDate()-range+1);
     return !isNaN(day) && day>=start && day<=today;
   }
-  async function toLearn() {
+  async function toLearn(silent) {
     if (!await readyLearn()) {showToast('Journal not available yet. Please try again.');return;}
     const rule=value('f-lesson');
     if (!rule) {showToast('Write one concrete lesson first.');return;}
     const entries=loadLearn();
     const existing=entries.find(e=>e.kind==='behavior-rule' && e.rule===rule);
-    if (existing) {showToast('That rule is already in the Playbook.');return;}
+    if (existing) {if(!silent)showToast('That rule is already in the Playbook.');return true;}
     const date=value('f-date');
     const title=(focus[value('j-focus')]?.[0]||'My weekly rule');
     const shown=typeof fmtDate==='function'?fmtDate(date):date;
     const entry={id:Date.now(),date,kind:'behavior-rule',category:'rule',title,rule,
       body:rule+'\n\nFrom trade: '+shown+' \u00b7 '+(form.instrument||'MNQ')+'\nTest: the next ten matching trades. Mark non-matching ones separately.\nWeekly: followed x/y; counter-examples; keep or change.',img:''};
-    const button=document.getElementById('j-to-learn'); button.disabled=true;
     try {
-      if (!await saveLearn([entry,...entries])) {showToast('The Playbook could not be saved. Your lesson stays in the form.');return;}
-      showToast('Weekly rule saved to the Playbook.'); renderRules();
-    } finally {button.disabled=false;}
+      if (!await saveLearn([entry,...entries])) {showToast('The weekly rule could not be saved.');return false;}
+      if(!silent)showToast('Weekly rule saved to the Playbook.'); renderRules(); return true;
+    } catch(e) {console.error('Weekly rule save failed',e);showToast('The weekly rule could not be saved.');return false;}
   }
   function summary(t) {
     const j=t.journal;
     if (!j) return '';
     const usd=v=>typeof fmtUSD==='function'?fmtUSD(v):'$'+v;
     const rr=realizedR(t);
-    const rows=[['Model',j.model],['Environment',j.mode],...criteria.map(([key,label])=>[label,{Yes:'Yes',No:'No'}[j.criteria?.[key]]]),['Extra features',{all:'All present',some:'Optional one missing',limited:'Allowed limitation'}[j.extras]],['Setup reason',j.setupReason],['Invalidation',j.invalidation],['Management',j.management],...['entry','risk','exit'].map(key=>['Execution '+key,{Yes:'Yes',Partial:'Partial',No:'No'}[j.execution?.[key]]]),['Original risk',j.initialRisk>0?usd(j.initialRisk).replace(/^\+/,''):''],['Realized R',rr!==null?(typeof fmtR==='function'?fmtR(rr):rr.toFixed(2)+' R'):''],['Pressure',pressures[j.pressure]||j.pressure],['Trigger',j.trigger],['Action',j.action],['Focus',focus[j.focus]?.[0]],['Weekly rule followed',ruleChecks[j.ruleCheck]]];
+    const rows=[['Model',j.model],['Environment',j.mode],...criteria.map(([key,label])=>[label,{Yes:'Yes',No:'No'}[j.criteria?.[key]]]),['Extra features',{all:'All present',some:'Optional one missing',limited:'Allowed limitation'}[j.extras]],['Setup reason',j.setupReason],['Invalidation',j.invalidation],['Management',j.management],...['entry','risk','exit'].map(key=>['Execution '+key,{Yes:'Yes',Partial:'Partial',No:'No'}[j.execution?.[key]]]),['Risk',j.initialRisk>0?usd(j.initialRisk).replace(/^\+/,''):''],['Profit target',j.profitTarget!==null&&j.profitTarget!==undefined?usd(j.profitTarget).replace(/^\+/,''):''],['Realized R',rr!==null?(typeof fmtR==='function'?fmtR(rr):rr.toFixed(2)+' R'):''],['Psychology',Array.isArray(j.psychology)?j.psychology.join(', '):''],['Pressure',Array.isArray(j.psychology)&&j.psychology.length?'':pressures[j.pressure]||j.pressure],['Trigger',j.trigger],['Action',j.action],['Takeaway',focus[j.focus]?.[0]],['Weekly rule followed',ruleChecks[j.ruleCheck]]];
     const snapshot=j.planSnapshot;
     const lockedAt=snapshot?new Date(snapshot.at):null;
     const lockedLabel=lockedAt&&!isNaN(lockedAt)?lockedAt.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'.'):(snapshot?snapshot.at:'');
@@ -257,11 +224,23 @@ const Journal = (() => {
   }
   function init() {
     document.getElementById('trade-wizard').addEventListener('input',e=>{
-      if (['f-entry','f-sl','f-tp','f-contracts'].includes(e.target.id)) updateRR();
+      if (['j-risk','j-profit-target','f-contracts'].includes(e.target.id)) updateRR();
       update();
     });
     document.getElementById('trade-wizard').addEventListener('change',()=>{scheduleTradeDraft();update();});
     update();
   }
-  return {criteria,focus,pressures,esc,num,value,grade,execution,scoreFor,discipline,realizedR,issues,current,patch,restoreFields,update,freezePlan,suggestLesson,renderRules,reuseModel,playbookTemplate,inScope,toLearn,summary,patterns,learnProgress,init};
+  function choose(id,selected,button) {
+    document.getElementById(id).value=selected;
+    button.closest('.seg').querySelectorAll('.opt').forEach(item=>item.classList.toggle('sel',item===button));
+    scheduleTradeDraft(); update();
+  }
+  function chooseFocus(selected,button) { choose('j-focus',selected,button); suggestLesson(); }
+  function syncChoices() {
+    document.querySelectorAll('[data-journal-input]').forEach(group=>{
+      const selected=value(group.dataset.journalInput);
+      group.querySelectorAll('.opt').forEach(button=>button.classList.toggle('sel',button.dataset.v===selected));
+    });
+  }
+  return {criteria,focus,pressures,esc,num,value,grade,execution,scoreFor,discipline,realizedR,issues,current,patch,restoreFields,update,suggestLesson,renderRules,playbookTemplate,inScope,toLearn,summary,patterns,learnProgress,choose,chooseFocus,syncChoices,init};
 })();
