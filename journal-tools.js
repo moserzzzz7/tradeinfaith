@@ -56,7 +56,8 @@ const Journal = (() => {
     if (t.toPlan === 'Yes' && t.deviated === 'Yes') out.push('Followed the plan and deviated from the plan are both selected.');
     if (t.matchesPlaybook === 'No' && ['A+','A','B'].includes(t.grade)) out.push('A quality grade is set although the playbook is not met.');
     if (t.confirmationPresent === 'No' && t.execQuality >= 4) out.push('High execution rating despite a missing confirmation.');
-    const pnl = num(t.pnl);
+    // Fees can turn a small win negative; the sign check uses the P&L before fees.
+    const pnl = num(t.grossPnl) ?? num(t.pnl);
     if (pnl !== null && ((t.result === 'Win' && pnl < 0) || (t.result === 'Loss' && pnl > 0))) out.push('Result and P&L sign contradict each other.');
     return out;
   }
@@ -100,8 +101,11 @@ const Journal = (() => {
       const states = Object.values(journal.execution);
       result.rulebased = states.every(v=>v==='Yes') ? 'yes':states.includes('No') ? 'no':'partial';
       // Missing a mandatory setup condition is itself a rule violation.
+      // Without any setup answers (the wizard no longer asks for them) the
+      // three execution answers alone decide rule adherence.
+      const setupAnswered = Object.values(journal.criteria).some(Boolean) || Boolean(journal.extras);
       if (assessedGrade === 'Invalid') result.rulebased = 'no';
-      else if (!assessedGrade) result.rulebased = states.includes('No') ? 'no' : '';
+      else if (!assessedGrade && setupAnswered) result.rulebased = states.includes('No') ? 'no' : '';
       result.toPlan = states.every(v=>v==='Yes') ? 'Yes':states.includes('No') ? 'No':'Partial';
       result.deviated = states.every(v=>v==='Yes') ? 'No':'Yes';
       result.execQuality = null; // A computed score must not masquerade as a self-rating.
@@ -124,7 +128,7 @@ const Journal = (() => {
     const warning=document.getElementById('j-save-check');
     const missing=[];
     if (!form.result) missing.push('result');
-    if (value('f-pnl')==='') missing.push('net P&L');
+    if (value('f-pnl')==='') missing.push('P&L');
     if (!(j.initialRisk>0)) missing.push('risk');
     if (j.profitTarget===null) missing.push('profit target');
     if (score===null) missing.push('three execution answers');
