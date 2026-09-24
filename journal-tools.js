@@ -45,6 +45,25 @@ const Journal = (() => {
     const recent = measured.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.id||0)-(a.id||0)).slice(0, DISCIPLINE_WINDOW);
     return Math.round(recent.reduce((sum,t) => sum + ({yes:100,partial:50,no:0}[t.rulebased]),0) / recent.length);
   }
+  // Not journaling is a discipline break too. Every weekday without any entry
+  // (trade or no-trade day) since the last one costs 0.5 points; today does not
+  // count yet. A week away costs 2.0 to 2.5, and the next entry clears it.
+  const IDLE_PENALTY_PER_DAY = 5;
+  function idle(entries, today = new Date()) {
+    const dates = entries.map(t => String(t.date || '')).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    if (!dates.length) return {days:0, penalty:0};
+    const [y,m,d] = dates[dates.length-1].split('-').map(Number);
+    const day = new Date(y, m-1, d+1), end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    let days = 0;
+    for (; day < end; day.setDate(day.getDate()+1)) if (day.getDay() % 6) days++;
+    return {days, penalty: days * IDLE_PENALTY_PER_DAY};
+  }
+  function disciplineNow(entries, today) {
+    const base = discipline(entries);
+    if (base === null) return {score:null, base:null, idleDays:0, penalty:0};
+    const {days, penalty} = idle(entries, today);
+    return {score: Math.max(0, base - penalty), base, idleDays: days, penalty: Math.min(base, penalty)};
+  }
   function realizedR(t) {
     const pnl = num(t.pnl), risk = num(t.journal?.planSnapshot?.initialRisk) ?? num(t.journal?.initialRisk);
     return pnl !== null && risk > 0 ? pnl/risk : null;
@@ -246,5 +265,5 @@ const Journal = (() => {
       group.querySelectorAll('.opt').forEach(button=>button.classList.toggle('sel',button.dataset.v===selected));
     });
   }
-  return {criteria,focus,pressures,esc,num,value,grade,execution,scoreFor,discipline,realizedR,issues,current,patch,restoreFields,update,suggestLesson,renderRules,playbookTemplate,inScope,toLearn,summary,patterns,learnProgress,choose,chooseFocus,syncChoices,init};
+  return {criteria,focus,pressures,esc,num,value,grade,execution,scoreFor,discipline,idle,disciplineNow,realizedR,issues,current,patch,restoreFields,update,suggestLesson,renderRules,playbookTemplate,inScope,toLearn,summary,patterns,learnProgress,choose,chooseFocus,syncChoices,init};
 })();

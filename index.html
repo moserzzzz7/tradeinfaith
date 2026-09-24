@@ -195,17 +195,11 @@
   body.faith-active #faith-bg{display:block}
   #fparts{position:absolute;inset:0;width:100%;height:100%;opacity:.4;will-change:transform}
   .glow-orb{display:none}
-  #faith-float{position:fixed;right:26px;bottom:26px;z-index:60;max-width:280px;pointer-events:none}
-  .float-quote{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:12px 16px;font-size:13px;color:var(--text);opacity:0;transform:translateY(12px);transition:opacity .4s ease,transform .4s ease}
-  .float-quote.show{opacity:1;transform:translateY(0)}
-  .float-quote .fq-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:3px;opacity:.85}
   .faith-wrap{position:relative;z-index:2}
   .hero{position:relative;margin-bottom:26px;padding:6px 0 2px}
   .hero-eyebrow{display:flex;align-items:center;gap:14px;margin-bottom:6px}
   .mini-candles{display:inline-block;opacity:.85}
   .hero-title{font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1.05;color:var(--text)}
-  .hero-sub{font-size:14px;color:var(--muted);margin-top:8px;max-width:460px;line-height:1.6}
-  .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}
   .gcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow-card);transition:border-color .2s}
   .gcard:hover{border-color:var(--border2)}
   .gcard .g-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
@@ -213,13 +207,9 @@
   .gcard .g-val .vs{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0;margin:0 2px}
   .kpi-row+.kpi-row .g-val{font-size:22px}
   .gcard .g-sub{font-size:11px;color:var(--muted);margin-top:3px}
-  .streak-card{display:flex;align-items:center;gap:14px;margin-top:14px;padding:14px 18px;border-radius:16px;background:var(--amber-bg);border:1px solid var(--border)}
-  .streak-flame{font-size:22px;color:var(--amber);display:flex}
   .vchip{display:inline-flex;align-items:center;gap:6px}
-  .tl-icon .ico,.pt-icon .ico{width:18px;height:18px;color:var(--accent)}
+  .pt-icon .ico{width:18px;height:18px;color:var(--accent)}
   .pt-step.done .pt-icon .ico{color:var(--green)}
-  .streak-num{font-size:20px;font-weight:700;color:var(--amber)}
-  .streak-lbl{font-size:12px;color:var(--muted);margin-top:2px}
   .fcard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:20px;box-shadow:var(--shadow-card);position:relative;overflow:hidden}
   .fcard-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:18px;opacity:.85}
   .verse-text{font-size:21px;line-height:1.85;color:var(--text);font-style:italic;letter-spacing:-.2px}
@@ -231,21 +221,24 @@
   .verse-btn:hover:not(:disabled){background:var(--accent);color:#fff;border-color:var(--accent)}
   .verse-btn:disabled{opacity:.6;cursor:default;border-color:var(--border);background:var(--surface2);color:var(--muted)}
   .left-pill{font-size:11px;background:var(--surface3);padding:2px 8px;border-radius:10px}
-  .timeline{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:auto}
-  .tl-step{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;padding:0 6px}
-  .tl-step:not(:last-child)::after{content:'';position:absolute;top:20px;left:62%;right:-38%;height:2px;background:var(--border2)}
-  .tl-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--accent-bg);border:1px solid var(--accent-border);margin-bottom:10px;position:relative;z-index:1;opacity:0;transform:scale(.7);transition:all .3s ease}
-  .tl-icon.show{opacity:1;transform:scale(1)}
-  .tl-label{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-  .tl-val{font-size:12px;color:var(--text);line-height:1.4;word-break:break-word}
-  .insight-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 28px;margin-bottom:20px;position:relative;z-index:2;overflow:hidden;box-shadow:var(--shadow-card)}
-  .insight-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-  .insight-badge{width:30px;height:30px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px}
-  .insight-title{font-size:13px;font-weight:600;color:var(--text)}
-  .insight-item{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text);line-height:1.6}
-  .insight-item:last-child{border-bottom:none}
-  .insight-dot{color:var(--accent);flex-shrink:0;margin-top:3px;font-size:9px}
-  @media (max-width:760px){.stat-cards{grid-template-columns:1fr 1fr}.hero-title{font-size:26px}.timeline{gap:4px}.fcard{padding:22px}}
+  .hero-word{margin-top:14px;max-width:680px}
+  .fv-msg{font-size:13px;color:var(--muted);margin:-10px 0 16px}
+  .fr-meta{font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:10px}
+  .fr-read{font-size:16px;line-height:1.6;max-width:60ch}
+  .fr-words{margin-top:18px}
+  .fr-lab{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .fr-quote{font-size:14px;line-height:1.7;border-left:2px solid var(--border2);padding-left:14px;max-width:64ch;white-space:pre-wrap;overflow-wrap:anywhere}
+  .fr-empty{font-size:13px;color:var(--muted);margin-top:14px;max-width:60ch}
+  .fr-qs{list-style:none;margin-top:22px}
+  .fr-qs li{font-size:14px;line-height:1.6;padding:10px 0;border-top:1px solid var(--border)}
+  .fm-verse{font-size:14px;font-style:italic;line-height:1.7;max-width:60ch;margin-bottom:14px}
+  .fm-verse span{font-style:normal;font-size:12px;color:var(--muted);white-space:nowrap}
+  .fm-row{display:grid;grid-template-columns:52px 1fr;gap:1px 12px;padding:10px 0;border-top:1px solid var(--border)}
+  .fm-date{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+  .fm-what{font-size:14px}
+  .fm-what.loss{color:var(--amber);font-weight:600}
+  .fm-note{grid-column:2;font-size:12px;color:var(--muted)}
+  @media (max-width:760px){.hero-title{font-size:26px}.fcard{padding:22px}}
 
   /* ===== STATS DASHBOARD ===== */
   body.stats-active #faith-bg{display:block}
@@ -304,6 +297,7 @@
   .disc-lab{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);line-height:1.3}
   .disc-val{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-top:6px}
   .disc-u{font-size:12px;font-weight:600;color:var(--muted);margin-left:3px}
+  .disc-idle{margin-top:7px;font-size:11.5px;line-height:1.35;color:var(--red)}
   .disc-meter{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;margin-top:9px}
   .disc-meter>i{display:block;height:100%;width:0;border-radius:3px;transition:width .6s cubic-bezier(.3,.8,.2,1)}
   @media (max-width:760px){.disc-seg{flex-basis:50%}.disc-seg:nth-child(2n+1){border-left:0}}
@@ -677,19 +671,11 @@
   @media(max-width:900px){.stats-hero{grid-template-columns:1fr}.donut-card{justify-content:flex-start}}
 
   /* ===== Cross-page upgrades ===== */
-  .recent-strip{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
-  .recent-strip-lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
-  .recent-dots{display:flex;gap:6px}
-  .recent-dot{width:9px;height:9px;border-radius:50%}
-  .recent-dot.win{background:var(--green)}
-  .recent-dot.loss{background:var(--red)}
-  .recent-dot.be{background:var(--muted)}
-  .recent-strip-wr{margin-left:auto;font-size:12px;color:var(--muted)}
   .filter-bar{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
   .fchip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:500;padding:6px 13px;border-radius:999px;cursor:pointer;font-family:inherit;transition:all .15s}
   .fchip:hover{color:var(--text);border-color:var(--border2)}
   .fchip.active{background:var(--accent);border-color:var(--accent);color:#fff}
-  .verse-picker{display:flex;gap:7px;margin-bottom:14px}
+  .verse-picker{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
   .vchip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:500;padding:6px 14px;border-radius:999px;cursor:pointer;font-family:inherit;transition:all .15s}
   .vchip:hover{color:var(--text);border-color:var(--border2)}
   .vchip.active{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
@@ -857,7 +843,6 @@
 
     <div id="sec-log" class="section active">
       <div class="page-head"><div class="page-title">New Entry</div><div class="page-desc">A few inputs. Clear decisions. One lesson you can check.</div></div>
-      <div class="recent-strip" id="recent-strip"></div>
 
       <div class="mode-toggle">
         <button class="mode-btn active" id="mode-trade" onclick="setMode('trade')"><span data-ico="trend"></span>Trade taken</button>
@@ -1272,7 +1257,6 @@
 <div class="save-indicator" id="save-ind"><span data-ico="checkcircle"></span> Saved</div>
 <div id="img-lightbox" onclick="closeLightbox()"><span class="lightbox-close">✕</span><img id="img-lightbox-img"></div>
 <div id="faith-bg"><canvas id="fparts"></canvas><div class="glow-orb glow-a" id="glow-a"></div><div class="glow-orb glow-b" id="glow-b"></div></div>
-<div id="faith-float"><div class="float-quote" id="fq"></div></div>
 
 <script>
 // ---- Supabase Cloud-Sync ----
@@ -1655,9 +1639,11 @@ function renderSplashDiscipline(){
   const loading=_cache===null;
   const trades=(_cache||[]).filter(t=>!t.isNoTrade);
   const has=!loading&&trades.length>0;
-  const score=has?disciplineScore(trades):0;
+  const now=has?Journal.disciplineNow(_cache):null;
+  const score=has?now.score:0;
   const color=!has?'var(--muted)':score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
   const sub=loading?'Loading your journal &hellip;'
+    :has&&now.penalty?idleNote(now.idleDays,now.penalty)
     :has?'Across all '+trades.length+' trade'+(trades.length!==1?'s':'')+'.'
     :'Log your first trade to see your score.';
   el.innerHTML='<div class="sp-discipline-top"><div class="sp-discipline-label">Discipline Score</div>'+
@@ -1848,8 +1834,7 @@ function switchTab(t,force){
   // Ambient-Canvas anhalten; faith/stats starten ihn in ihrem eigenen Render neu.
   stopAmbient();
   swapSection(document.getElementById('sec-'+t),()=>{
-    if(t==='log')renderRecentStrip();
-    else if(t==='list'){closeDetail();renderList();}
+    if(t==='list'){closeDetail();renderList();}
     else if(t==='stats')setStatsSubView(statsSubView);
     else if(t==='faith')renderFaith();
     else if(t==='playbook')renderLearnList();
@@ -1862,8 +1847,7 @@ function refreshActiveTab(){
   const sec=document.querySelector('.section.active');
   if(!sec)return;
   const t=sec.id.replace('sec-','');
-  if(t==='log')renderRecentStrip();
-  else if(t==='list')renderList();
+  if(t==='list')renderList();
   else if(t==='stats')setStatsSubView(statsSubView);
   else if(t==='faith')renderFaith();
   else if(t==='playbook')renderLearnList();
@@ -2089,7 +2073,6 @@ async function saveQuickTrade(){
     if(!await saveTrades(data)){ showToast('Save failed'); return; }
     qResetForm();
     setMode('trade');
-    renderRecentStrip();
     showToast('Trade saved — open it from All trades to add the plan and the lesson ✓');
   } finally {
     _savingTrade=false;
@@ -2623,17 +2606,6 @@ function clearForm(){
 }
 
 
-async function renderRecentStrip(){
-  const el=document.getElementById('recent-strip'); if(!el)return;
-  const data=(await loadTrades()).filter(t=>!t.isNoTrade).slice(0,8);
-  if(!data.length){ el.style.display='none'; return; }
-  el.style.display='flex';
-  const dots=[...data].reverse().map(t=>'<span class="recent-dot '+rc(t.result)+'" title="'+fmtDate(t.date)+' · '+(t.result||'')+(hasPnl(t)?' · '+fmtUSD(t.pnl):'')+'"></span>').join('');
-  const dec=data.filter(t=>t.result==='Win'||t.result==='Loss');
-  const w=dec.filter(t=>t.result==='Win').length;
-  const wr=dec.length?Math.round(w/dec.length*100):0;
-  el.innerHTML='<span class="recent-strip-lab">Last '+data.length+' trades</span><span class="recent-dots">'+dots+'</span><span class="recent-strip-wr">'+(dec.length?wr+'% win rate · '+w+'/'+dec.length+' decided':'No decided trades')+'</span>';
-}
 let listFilter='all';
 const listFilters={on:'',instrument:'',emotion:'',mode:''};
 function setListFilter(f){ listFilter=f; document.querySelectorAll('#list-filters .fchip').forEach(c=>c.classList.toggle('active',c.dataset.f===f)); renderList(); }
@@ -2771,6 +2743,7 @@ async function deleteTrade(id){ if(!confirm('Delete?'))return; const d=(await lo
 function animateCount(el,target,dur,suffix){ if(!el)return; dur=dur||700; suffix=suffix||''; const t0=performance.now(); function step(now){ const p=Math.min(1,(now-t0)/dur); const ev=1-Math.pow(1-p,3); el.textContent=Math.round(target*ev)+suffix; if(p<1)requestAnimationFrame(step); } requestAnimationFrame(step); }
 
 function disciplineScore(data){ return Journal.discipline(data); }
+function idleNote(days,penalty){ return '&minus;'+(penalty/10).toFixed(1)+' for '+days+' weekday'+(days!==1?'s':'')+' without a journal entry.'; }
 
 // Nicht-Handeln beendet keine Disziplin-Serie.
 const STREAK_GAP_DAYS=3;
@@ -2917,14 +2890,15 @@ function fcardEmpty(title,msg){
 
 // Volle-Breite-Leiste unter den 6 KPI-Kaesteln: Discipline Score (x/10), Anzahl
 // genommener Trades im Zeitraum und die drei Disziplin-Treiber als Prozentwerte.
-function disciplineStripHTML(score,total,rbP,planP,emoP){
+function disciplineStripHTML(score,total,rbP,planP,emoP,idle){
   const col=score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
   const pct=v=>v===null?'–':v+'<span class="disc-u">%</span>';
   const seg=(lab,val)=>'<div class="disc-seg"><div class="disc-lab">'+lab+'</div><div class="disc-val">'+val+'</div></div>';
   return '<div class="disc-strip">'+
     '<div class="disc-seg"><div class="disc-lab">Discipline Score</div>'+
       '<div class="disc-val" style="color:'+col+'">'+(score===null?'—':(score/10).toFixed(1))+'<span class="disc-u">/ 10</span></div>'+
-      '<div class="disc-meter"><i data-w="'+score+'%" style="background:'+col+'"></i></div></div>'+
+      '<div class="disc-meter"><i data-w="'+score+'%" style="background:'+col+'"></i></div>'+
+      (idle&&idle.penalty?'<div class="disc-idle">'+idleNote(idle.days,idle.penalty)+'</div>':'')+'</div>'+
     seg('Trades taken',String(total))+
     seg('Rule-based',pct(rbP))+
     seg('Plan followed',pct(planP))+
@@ -3054,7 +3028,9 @@ async function renderStats(){
   const dec=wins+losses, wr=dec?Math.round(wins/dec*100):0;
   const ruleMeasured=trades.filter(t=>['yes','partial','no'].includes(t.rulebased));
   const rb=ruleMeasured.filter(t=>t.rulebased==='yes').length, rbP=ruleMeasured.length?Math.round(rb/ruleMeasured.length*100):null;
-  const ds=disciplineScore(trades), dStreak=disciplineStreak(trades);
+  // Der Leerlauf-Abzug haengt am letzten Eintrag ueberhaupt, nicht am Zeitraum.
+  const dsBase=disciplineScore(trades), idleNow=Journal.idle(all), dStreak=disciplineStreak(trades);
+  const ds=dsBase===null?null:Math.max(0,dsBase-idleNow.penalty);
   const ntCount=ntDays.length;
   const planSet=trades.filter(t=>t.toPlan);
   const planP=planSet.length?Math.round(planSet.filter(t=>t.toPlan==='Yes').length/planSet.length*100):null;
@@ -3117,7 +3093,7 @@ async function renderStats(){
       kpi('Max drawdown',drawdown===null?'–':(drawdown>0?fmtUSD(-drawdown):'$0'),withNote(pnlTrades.length,drawdown===null?'no P&L recorded':'peak to trough of the P&L curve'),drawdown===null?'var(--muted)':drawdown>0?'var(--red)':'var(--text)')+
       kpi('Rule-based vs deviated',(rbAvg!==null||devAvg!==null)?(rbAvg===null?'–':money(rbAvg))+' <span class="vs">vs</span> '+(devAvg===null?'–':money(devAvg)):'–',(rbAvg!==null||devAvg!==null)?'avg per trade · '+rbPnl.length+' rule-based, '+devPnl.length+' deviated'+(sampleNote(Math.min(rbPnl.length||99,devPnl.length||99))?' · '+sampleNote(Math.min(rbPnl.length||99,devPnl.length||99)):''):'rate rule adherence and log P&L','var(--text)')+
     '</div>'+
-    disciplineStripHTML(ds,total,rbP,planP,emoP)+
+    disciplineStripHTML(ds,total,rbP,planP,emoP,ds===null?null:{days:idleNow.days,penalty:dsBase-ds})+
     // Direkt unter der Disziplin-Leiste, weil der Vers auf genau diese Zahlen
     // antwortet -- nicht als frommer Zusatz irgendwo am Seitenende.
     (function(){
@@ -3385,14 +3361,11 @@ const QUOTES = {
   ]
 };
 
-const FLOAT_LINES = ["Protect capital first.","The market rewards patience.","Wait for confirmation.","Discipline beats emotion.","Not every candle deserves a trade.","Trade your plan, not your feelings.","Risk less, last longer.","Patience is a position.","Let liquidity come to you.","No setup, no trade.","Sit on your hands until A+ aligns.","Process over outcome."];
 
-let faith = { reveals:0, max:3, pool:[], cat:'daily', partRAF:null, miniT:null, floatT:null, floatI:null, particles:[] };
+let faith = { reveals:0, max:3, pool:[], cat:'daily', partRAF:null, miniT:null, particles:[] };
 
 function rcCat(result){ if(!result) return 'daily'; const r=result.toLowerCase(); return r.includes('win')?'win':r.includes('loss')?'loss':'be'; }
-function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function shuffle(a){ return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]); }
-function weekStartMonday(d){ const day=(d.getDay()+6)%7; const m=new Date(d); m.setDate(d.getDate()-day); m.setHours(0,0,0,0); return m; }
 
 // Ein Wort pro Kalendertag, ueberall dasselbe: Startbildschirm und Faith-Tab
 // zeigen denselben Vers, damit der Tag ein Wort hat statt bei jedem Tabwechsel
@@ -3446,46 +3419,73 @@ function tradeScripture(t){
   return pool[Math.abs(Math.round(t.id||0))%pool.length];
 }
 
-function computeFaithStats(data){
-  const wins=data.filter(t=>t.result==='Win').length, losses=data.filter(t=>t.result==='Loss').length, dec=wins+losses;
-  const wr=dec>0?Math.round(wins/dec*100):0;
-  let streak=0; for(const t of data){ if(t.rulebased==='yes') streak++; else break; }
-  const ws=weekStartMonday(new Date());
-  const week=data.filter(t=>{ if(!t.date)return false; const p=t.date.split('-').map(Number); return new Date(p[0],p[1]-1,p[2])>=ws; }).length;
-  return {wins,losses,wr,streak,week};
+// Wie der Trade zustande kam, nicht wie er ausging: Regeltreue x Ergebnis.
+// Genau das, was Stats nicht sagen kann -- ein Satz zu diesem einen Trade.
+function faithRead(t){
+  if(t.isNoTrade) return 'You stayed out. When there is no setup, not trading is the faithful choice.';
+  const c=rcCat(t.result), rb=t.rulebased;
+  if(rb==='partial') return 'Partly by the plan. Name the part you let go of, whatever the result.';
+  if(rb!=='yes'&&rb!=='no') return 'You have not rated whether you followed your rules. Honesty there matters more than the result.';
+  return {
+    'yes|win':'You followed your rules and it paid. Give thanks, and let the process keep the credit.',
+    'yes|loss':'You followed your rules and still lost. That is faithfulness, not failure.',
+    'yes|be':'Rules kept, nothing gained or lost. Patience is a position too.',
+    'yes|daily':'You followed your rules. Log the result when it is in.',
+    'no|win':'A win while you broke your own rules. Be careful what this one teaches you.',
+    'no|loss':'You left your rules and it cost you. Grace covers the loss; the lesson is still yours to keep.',
+    'no|be':'You left the plan and got away even. Name the rule before it costs you.',
+    'no|daily':'You left your rules on this one. Name which one, while it is fresh.'
+  }[rb+'|'+c];
 }
 
-function faithInsights(data){
-  const out=[];
-  const rbW=data.filter(t=>t.rulebased==='yes'&&t.result==='Win').length, rbL=data.filter(t=>t.rulebased==='yes'&&t.result==='Loss').length;
-  const dvW=data.filter(t=>t.rulebased==='no'&&t.result==='Win').length, dvL=data.filter(t=>t.rulebased==='no'&&t.result==='Loss').length;
-  const rbWR=(rbW+rbL)?Math.round(rbW/(rbW+rbL)*100):null, dvWR=(dvW+dvL)?Math.round(dvW/(dvW+dvL)*100):null;
-  const small=n=>sampleNote(n)?' ('+n+' trades, '+sampleNote(n)+')':' ('+n+' trades)';
-  if(rbWR!==null && dvWR!==null && rbWR>dvWR) out.push('Observed so far: '+rbWR+'% wins when you followed your rules'+small(rbW+rbL)+' vs '+dvWR+'% when you deviated'+small(dvW+dvL)+'. A pattern to keep watching, not proof.');
-  else if(rbWR!==null && (rbW+rbL)>=3) out.push('Your rule-based trades won '+rbWR+'% of the time'+small(rbW+rbL)+'. The process is what you control.');
-  const emoLoss={}; data.filter(t=>t.result==='Loss').forEach(t=>psychologyValues(t).forEach(name=>emoLoss[name]=(emoLoss[name]||0)+1));
-  const topEL=Object.entries(emoLoss).sort((a,b)=>b[1]-a[1])[0];
-  const lossesTotal=data.filter(t=>t.result==='Loss').length;
-  if(topEL && topEL[1]>=2) out.push(topEL[1]+' of your '+lossesTotal+' losses were logged while feeling '+emoLabel(topEL[0])+'. Worth noticing that state before the next entry.');
-  const ss={}; data.forEach(t=>(t.setup||[]).forEach(x=>{ if(!ss[x])ss[x]={w:0,l:0}; if(t.result==='Win')ss[x].w++; else if(t.result==='Loss')ss[x].l++; }));
-  const best=Object.entries(ss).map(([n,v])=>({n,dec:v.w+v.l,wr:(v.w+v.l)?Math.round(v.w/(v.w+v.l)*100):0})).filter(x=>x.dec>=2).sort((a,b)=>b.wr-a.wr)[0];
-  if(best && best.wr>=50) out.push('Your strongest setup so far is '+best.n+' at '+best.wr+'% win rate'+small(best.dec)+'. Wait for it.');
-  const worst=Object.entries(ss).map(([n,v])=>({n,dec:v.w+v.l,wr:(v.w+v.l)?Math.round(v.w/(v.w+v.l)*100):0})).filter(x=>x.dec>=2).sort((a,b)=>a.wr-b.wr)[0];
-  if(worst && worst.wr<40 && (!best || worst.n!==best.n)) out.push(worst.n+' sits at a '+worst.wr+'% win rate for you'+small(worst.dec)+'. Be selective with it.');
-  if(!out.length) out.push('Keep logging with honesty. After a handful of trades, real patterns in your discipline appear here.');
-  out.push('"Commit to the LORD whatever you do, and he will establish your plans." — Proverbs 16:3');
-  return out;
+const FAITH_QUESTIONS={
+  win:['Did you win because of your plan, or in spite of it?','Where are you tempted to take the credit for yourself?','What would it look like to hold this win with an open hand?'],
+  loss:['Did you follow your rules? If so, what is there to regret?','What are you believing about yourself right now that is not true?','What would rest look like before your next session?'],
+  be:['Did you manage this trade by plan, or out of fear?','Where do you need patience instead of control?','What did waiting teach you today?'],
+  daily:['What are you waiting for before your next entry?','Whose approval are you trading for?','What would a faithful session look like tomorrow?']
+};
+
+// Letzter Eintrag: Lesart, die eigenen Worte des Traders, Fragen zum Ergebnis.
+function faithReflectionHTML(t){
+  const cat=t.isNoTrade?'daily':rcCat(t.result);
+  const what=t.isNoTrade?'No trade':[t.result,t.instrument,t.direction].filter(Boolean).join(' · ');
+  const words=[
+    ['What went on in your head',t.isNoTrade?t.notes:t.mindset],
+    ['Your lesson',lessonOf(t)]
+  ].filter(w=>String(w[1]||'').trim());
+  return '<div class="fcard"><div class="fcard-title">Your last entry</div>'+
+    '<div class="fr-meta">'+Journal.esc(what)+' · '+fmtDate(t.date)+'</div>'+
+    '<p class="fr-read">'+faithRead(t)+'</p>'+
+    (words.length
+      ? words.map(w=>'<div class="fr-words"><div class="fr-lab">'+w[0]+'</div><div class="fr-quote">'+Journal.esc(String(w[1]).trim())+'</div></div>').join('')
+      : '<p class="fr-empty">No notes on this one yet. Open it in All trades and write down what went on in your head.</p>')+
+    '<ul class="fr-qs">'+FAITH_QUESTIONS[cat].map(q=>'<li>'+q+'</li>').join('')+'</ul>'+
+  '</div>';
 }
 
-function timelineHtml(t){
-  const steps=[
-    {icon:'trend',label:'Trade',val:((t.instrument||'')+' '+(t.direction||'')).trim()||'—'},
-    {icon:'smile',label:'Psychology',val:psychologyValues(t).join(', ')||'—'},
-    {icon:'scale',label:'Decision',val:t.rulebased==='yes'?'Followed rules':t.rulebased==='no'?'Deviated':t.rulebased==='partial'?'Partial':'Not rated'},
-    {icon:'target',label:'Result',val:(t.result||'—')+(hasPnl(t)?' · '+fmtUSD(t.pnl):'')},
-    {icon:'bulb',label:'Lesson',val:(t.lesson||t.better||t.why||'—')}
-  ];
-  return steps.map(s=>{ const v=s.val.length>42?s.val.slice(0,42)+'…':s.val; return '<div class="tl-step"><div class="tl-icon">'+ico(s.icon)+'</div><div class="tl-label">'+s.label+'</div><div class="tl-val">'+Journal.esc(v)+'</div></div>'; }).join('');
+// Treue im Kleinen (Lukas 16,10): Eintraege, bei denen die Entscheidung stimmte,
+// egal wie der Trade ausging. Bewusst eine Liste statt einer Quote -- die Zahl
+// dazu steht schon im Stats-Cockpit.
+function faithfulMoments(data){
+  return data.map(t=>{
+    if(t.isNoTrade) return {t,loss:false,label:'Stayed out',note:(t.noTradeReasons||[]).slice(0,2).join(', ')||'No setup, no trade'};
+    if(t.rulebased!=='yes') return null;
+    const where=((t.instrument||'')+' '+(t.direction||'')).trim();
+    if(t.result==='Loss') return {t,loss:true,label:'Kept your rules through a loss',note:where};
+    return {t,loss:false,label:'Followed your rules',note:[where,t.result].filter(Boolean).join(' · ')};
+  }).filter(Boolean);
+}
+
+function faithfulHTML(data){
+  const moments=faithfulMoments(data), shown=moments.slice(0,6);
+  const luke=Object.values(VERSES).flat().find(v=>v.ref==='Luke 16:10');
+  return '<div class="fcard"><div class="fcard-title">Faithful in little things</div>'+
+    (luke?'<p class="fm-verse">“'+luke.text+'” <span>— '+luke.ref+'</span></p>':'')+
+    (shown.length
+      ? '<div class="fm-list">'+shown.map(m=>'<div class="fm-row"><span class="fm-date">'+fmtDateShort(m.t.date)+'</span><span class="fm-what'+(m.loss?' loss':'')+'">'+m.label+'</span><span class="fm-note">'+Journal.esc(m.note)+'</span></div>').join('')+'</div>'+
+        (moments.length>shown.length?'<div class="fcard-note">'+(moments.length-shown.length)+' more in your journal.</div>':'')
+      : '<p class="fr-empty">Nothing here yet. Follow your rules on the next trade, or stay out when there is no setup. Both count here, win or lose.</p>')+
+  '</div>';
 }
 
 function revealInto(id,item){
@@ -3540,17 +3540,10 @@ function startMini(){
   faith.miniT=setInterval(()=>{ candles.shift(); const last=candles[candles.length-1]; candles.push({o:last.c,c:Math.max(6,Math.min(28,last.c+(Math.random()-0.5)*12))}); draw(); },2600);
 }
 
-function startFloat(){
-  clearTimeout(faith.floatT); clearInterval(faith.floatI);
-  const fq=document.getElementById('fq'); if(!fq) return;
-  function show(){ fq.innerHTML='<div class="fq-label">Discipline</div>'+pick(FLOAT_LINES); fq.classList.add('show'); setTimeout(()=>fq.classList.remove('show'),4000); }
-  faith.floatT=setTimeout(()=>{ show(); faith.floatI=setInterval(show,24000); },6000);
-}
-
 function stopAmbient(){
   document.body.classList.remove('faith-active'); document.body.classList.remove('stats-active');
   cancelAnimationFrame(faith.partRAF);
-  clearInterval(faith.miniT); clearTimeout(faith.floatT); clearInterval(faith.floatI);
+  clearInterval(faith.miniT);
 }
 
 function faithParallax(e){
@@ -3565,14 +3558,17 @@ window.addEventListener('mousemove', faithParallax);
 window.addEventListener('resize', ()=>{ if(document.body.classList.contains('faith-active')){ startParts(); } });
 
 
+const FAITH_TITLES={win:'After a win',loss:'After a loss',be:'After a breakeven',daily:'A word for today'};
+const FAITH_MSGS={win:'Give God the glory. Stay humble.',loss:'A loss is not the end. He is still good.',be:'Trust His timing. Patience is a position.',daily:'Scripture for whatever the day brings.'};
+
 function pickVerseCat(cat){
   const vpool=(VERSES[cat]||VERSES.daily).map(v=>({ref:v.ref,text:v.text,isQuote:false}));
   const qpool=(QUOTES[cat]||[]).map(q=>({ref:q.ref,text:q.text,isQuote:true}));
   faith.pool=shuffle(vpool.concat(qpool)); faith.reveals=0; faith.max=3; faith.cat=cat;
-  const titleMap={win:'After a Win',loss:'After a Loss',be:'After a Breakeven',daily:'Word for Today'};
-  const msgMap={win:'Give God the glory \u2014 stay humble.',loss:'A loss is not the end. He is still good.',be:'Trust His timing. Patience is a position.',daily:'A word for today.'};
-  document.querySelectorAll('#verse-picker .vchip').forEach((c,i)=>c.classList.toggle('active',['win','loss','be','daily'][i]===cat));
-  document.querySelector('.fcard-title').innerHTML='\u2713 '+titleMap[cat]+' \u2014 '+msgMap[cat];
+  document.querySelectorAll('#verse-picker .vchip').forEach(c=>c.classList.toggle('active',c.dataset.cat===cat));
+  const t=document.getElementById('faith-verse-title'), m=document.getElementById('faith-verse-msg');
+  if(t)t.textContent=FAITH_TITLES[cat];
+  if(m)m.textContent=FAITH_MSGS[cat];
   nextVerse();
 }
 async function renderFaith(){
@@ -3583,42 +3579,29 @@ async function renderFaith(){
     el.innerHTML='<div class="empty" style="position:relative;z-index:2"><div class="empty-icon">'+ico('cross')+'</div><p>Log a trade first — then this page wakes up with the word that answers your result.</p></div>';
     setGlow('daily'); startParts(); return;
   }
-  const tradeData=data.filter(t=>!t.isNoTrade), ntData=data.filter(t=>t.isNoTrade);
-  const latest=tradeData.length?tradeData[0]:data[0], cat=rcCat(latest&&latest.result), st=computeFaithStats(tradeData);
-  const vpool=(VERSES[cat]||VERSES.daily).map(v=>({ref:v.ref,text:v.text,isQuote:false}));
-  const qpool=(QUOTES[cat]||[]).map(q=>({ref:q.ref,text:q.text,isQuote:true}));
-  faith.pool=shuffle(vpool.concat(qpool)); faith.reveals=0; faith.max=3; faith.cat=cat;
-  const titleMap={win:'After a Win',loss:'After a Loss',be:'After a Breakeven',daily:'Word for Today'};
-  const msgMap={win:'Give God the glory — stay humble.',loss:'A loss is not the end. He is still good.',be:'Trust His timing. Patience is a position.',daily:'A word for today — log your result for more.'};
+  // Der letzte Eintrag, auch ein No-Trade-Tag: Draussenbleiben ist auch eine Entscheidung.
+  const latest=data[0], cat=latest.isNoTrade?'daily':rcCat(latest.result);
 
   el.innerHTML=
     '<div class="hero">'+
-      '<div class="hero-eyebrow"><span class="hero-title">Faith &amp; Discipline</span><canvas class="mini-candles" id="mini-c" width="84" height="34"></canvas></div>'+
-      '<div class="hero-sub">Trade with conviction. Wait with patience. Accept God\u2019s timing.</div>'+
-      '<div class="stat-cards">'+
-        '<div class="gcard"><div class="g-label">Win rate</div><div class="g-val" style="color:'+(st.wr>=50?'var(--green)':'var(--red)')+'">'+st.wr+'%</div><div class="g-sub">'+st.wins+'W \u00b7 '+st.losses+'L</div></div>'+
-        '<div class="gcard"><div class="g-label">Last trade</div><div class="g-val" style="font-size:18px">'+Journal.esc(latest.result||'\u2014')+(hasPnl(latest)?' <span style="font-size:13px;color:'+(latest.pnl>0?'var(--green)':latest.pnl<0?'var(--red)':'var(--muted)')+'">'+fmtUSD(latest.pnl)+'</span>':'')+'</div><div class="g-sub">'+Journal.esc(latest.instrument||'')+' '+Journal.esc(latest.direction||'')+' \u00b7 '+fmtDate(latest.date)+'</div></div>'+
-        '<div class="gcard"><div class="g-label">Discipline</div><div class="g-val" style="color:var(--amber)">'+st.streak+'</div><div class="g-sub">rule-based in a row</div></div>'+
-        '<div class="gcard"><div class="g-label">This week</div><div class="g-val">'+st.week+'</div><div class="g-sub">trade'+(st.week!==1?'s':'')+' logged</div></div>'+
+      '<div class="hero-eyebrow"><span class="hero-title">Faith</span><canvas class="mini-candles" id="mini-c" width="84" height="34"></canvas></div>'+
+      '<div class="hero-word">'+scripHTML(verseOfDay(),'Word for today, the same one as on your start screen.')+'</div>'+
+    '</div>'+
+    '<div class="fcard">'+
+      '<div class="fcard-title" id="faith-verse-title">'+FAITH_TITLES[cat]+'</div>'+
+      '<p class="fv-msg" id="faith-verse-msg">'+FAITH_MSGS[cat]+'</p>'+
+      '<div class="verse-picker" id="verse-picker">'+
+        ['win','loss','be','daily'].map(k=>'<button class="vchip'+(k===cat?' active':'')+'" data-cat="'+k+'" onclick="pickVerseCat(\''+k+'\')">'+ico({win:'trend',loss:'heart',be:'clock',daily:'sun'}[k])+' '+({win:'Win',loss:'Loss',be:'Breakeven',daily:'Daily'}[k])+'</button>').join('')+
       '</div>'+
-      '<div class="streak-card"><span class="streak-flame">'+ico('flame')+'</span><div><div class="streak-num">'+st.streak+' Trade Discipline Streak</div><div class="streak-lbl">'+(st.streak>0?'Consecutive trades you followed your rules. Keep it alive.':'Follow your rules on the next trade to start a streak.')+'</div></div></div>'+
+      '<div id="faith-verse"></div><button class="verse-btn" id="verse-btn" onclick="nextVerse()"></button>'+
     '</div>'+
-    '<div class="verse-picker" id="verse-picker">'+
-      ['win','loss','be','daily'].map(k=>'<button class="vchip'+(k===cat?' active':'')+'" onclick="pickVerseCat(\''+k+'\')">'+ico({win:'trend',loss:'heart',be:'clock',daily:'sun'}[k])+' '+({win:'Win',loss:'Loss',be:'Breakeven',daily:'Daily'}[k])+'</button>').join('')+
-    '</div>'+
-    '<div class="fcard"><div class="fcard-title">✓ '+titleMap[cat]+' — '+msgMap[cat]+'</div><div id="faith-verse"></div><button class="verse-btn" id="verse-btn" onclick="nextVerse()"></button></div>'+
-    '<div class="fcard"><div class="fcard-title">⟶ Trade Reflection</div><div class="timeline" id="faith-timeline">'+timelineHtml(latest)+'</div></div>'+
-    '<div class="fcard"><div class="fcard-title">✝ Today’s Anchor</div>'+
-      scripHTML(verseOfDay(),'The same verse all day, on your start screen and here.')+
-    '</div>'+
-    '<div class="insight-card"><div class="insight-head"><span class="insight-badge">✦</span><span class="insight-title">Faith Insights — from your journal</span></div>'+
-      faithInsights(data).map(t=>'<div class="insight-item"><span class="insight-dot">◆</span><span>'+t+'</span></div>').join('')+
+    '<div class="grid-2col">'+
+      faithReflectionHTML(latest)+
+      faithfulHTML(data)+
     '</div>';
 
-  window._faithData=data;
-  setGlow(cat); startParts(); startMini(); startFloat();
-  nextVerse();
-  setTimeout(()=>{ document.querySelectorAll('#faith-timeline .tl-icon').forEach((ic,i)=>setTimeout(()=>ic.classList.add('show'), i*140)); },180);
+  pickVerseCat(cat);
+  setGlow(cat); startParts(); startMini();
 }
 
 // ── LEARN ────────────────────────────────────────────────────────────────
