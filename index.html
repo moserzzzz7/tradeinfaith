@@ -207,8 +207,22 @@
   .gcard .g-val .vs{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0;margin:0 2px}
   .kpi-row+.kpi-row .g-val{font-size:22px}
   .kpi-row .g-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .kpi-row.kpi-uneven{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1.2fr)}
-  .r-hint{font-size:12px;color:var(--muted);margin:-6px 0 16px}
+  /* Zweite Ebene: zwei ungleich breite Karten mit kleinen Balkendiagrammen */
+  .kpi-row.kpi-pair{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+  .gcard .g-r{font-size:15px;font-weight:600;color:var(--muted);margin-left:8px;letter-spacing:0}
+  .hbars{margin-top:14px;display:grid;gap:9px}
+  .hbar{display:grid;grid-template-columns:86px minmax(0,1fr) 64px;align-items:center;gap:10px;font-size:12px}
+  .hbar-lab{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hbar-lab small{font-size:10.5px;margin-left:4px}
+  .hbar-val{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text)}
+  .hbar-track{position:relative;height:10px;border-radius:5px;background:var(--surface2)}
+  .hbar-track>i{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:5px;transition:width .6s cubic-bezier(.3,.8,.2,1)}
+  .hbar-track.div::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--border2)}
+  .hbar-track.div>i.pos{left:50%;border-radius:0 5px 5px 0}
+  .hbar-track.div>i.neg{left:auto;right:50%;border-radius:5px 0 0 5px}
+  .hbar-track>i.thin{opacity:.4}
+  .hbar-foot{margin-top:12px;font-size:11px;color:var(--muted)}
+  .hbar-foot b{color:var(--text);font-weight:600}
   .gcard .g-sub{font-size:11px;color:var(--muted);margin-top:3px}
   .vchip{display:inline-flex;align-items:center;gap:6px}
   .pt-icon .ico{width:18px;height:18px;color:var(--accent)}
@@ -328,6 +342,8 @@
   .disc-lab{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);line-height:1.3}
   .disc-val{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-top:6px}
   .disc-u{font-size:12px;font-weight:600;color:var(--muted);margin-left:3px}
+  .disc-bar{height:4px;border-radius:2px;background:var(--surface3);overflow:hidden;margin-top:10px}
+  .disc-bar>i{display:block;height:100%;width:0;border-radius:2px;transition:width .6s cubic-bezier(.3,.8,.2,1)}
   .disc-sub{margin-top:7px;font-size:11.5px;color:var(--muted)}
   .disc-idle{margin-top:7px;font-size:11.5px;line-height:1.35;color:var(--red)}
   .disc-meter{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;margin-top:9px}
@@ -356,7 +372,7 @@
   .pt-prog i{display:block;width:0;height:100%;border-radius:inherit;background:var(--accent);transition:width .6s cubic-bezier(.3,.8,.2,1)}
   .pt-step.done .pt-prog i{background:var(--green)}
   #sec-stats .page-head{position:relative;z-index:2}
-  @media (max-width:760px){.kpi-row,.kpi-row.kpi-uneven{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi-uneven>.gcard:last-child{grid-column:1/-1}.grid-2col{grid-template-columns:1fr}}
+  @media (max-width:760px){.kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi-row.kpi-pair{grid-template-columns:1fr}.grid-2col{grid-template-columns:1fr}}
 
   /* ===== TRADE WIZARD ===== */
   .wz-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:8px}
@@ -2909,56 +2925,18 @@ function fcardEmpty(title,msg){
 function disciplineStripHTML(score,rated,total,rbP,planP,ntCount,idle){
   const col=score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
   const pct=v=>v===null?'–':v+'<span class="disc-u">%</span>';
-  const seg=(lab,val)=>'<div class="disc-seg"><div class="disc-lab">'+lab+'</div><div class="disc-val">'+val+'</div></div>';
+  const seg=(lab,val,extra)=>'<div class="disc-seg"><div class="disc-lab">'+lab+'</div><div class="disc-val">'+val+'</div>'+(extra||'')+'</div>';
+  const share=v=>v===null?'':'<div class="disc-bar"><i data-w="'+v+'%" style="background:'+(v>=75?'var(--green)':v>=50?'var(--amber)':'var(--red)')+'"></i></div>';
   return '<div class="disc-strip">'+
     '<div class="disc-seg"><div class="disc-lab">Discipline Score</div>'+
       '<div class="disc-val" style="color:'+col+'">'+(score===null?'—':(score/10).toFixed(1))+'<span class="disc-u">/ 10</span></div>'+
       '<div class="disc-meter"><i data-w="'+score+'%" style="background:'+col+'"></i></div>'+
       '<div class="disc-sub">'+rated+'/'+total+' rated</div>'+
       (idle&&idle.penalty?'<div class="disc-idle">'+idleNote(idle.days,idle.penalty)+'</div>':'')+'</div>'+
-    seg('Rule-based',pct(rbP))+
-    seg('Plan followed',pct(planP))+
-    seg('No-trade days',String(ntCount))+
+    seg('Rule-based',pct(rbP),share(rbP))+
+    seg('Plan followed',pct(planP),share(planP))+
+    seg('No-trade days',String(ntCount),'<div class="disc-sub">stayed out on purpose</div>')+
   '</div>';
-}
-
-// Ersetzt "Performance by Instrument": trennt Ergebnis nach Regeltreue, damit
-// sichtbar wird, ob Verluste aus der Strategie oder aus dem Abweichen kommen.
-function disciplineGapBlock(trades,showMoney){
-  const defs=[{name:'Rule-based',k:'yes',col:'var(--green)'},{name:'Partial',k:'partial',col:'var(--amber)'},{name:'Deviated',k:'no',col:'var(--red)'}];
-  const rows=defs.map(d=>{
-    const a=trades.filter(t=>t.rulebased===d.k);
-    const w=a.filter(t=>t.result==='Win').length, l=a.filter(t=>t.result==='Loss').length;
-    const wp=a.filter(hasPnl);
-    return {name:d.name,k:d.k,col:d.col,w,l,dec:w+l,wr:(w+l)?Math.round(w/(w+l)*100):0,n:a.length,
-      wp:wp.length, avg:wp.length?wp.reduce((s,t)=>s+pnlOf(t),0)/wp.length:null};
-  }).filter(r=>r.n>0);
-  if(!rows.length) return fcardEmpty('Rule-based vs deviated','Log a few trades and mark whether you followed your rules.');
-  const body=rows.map(r=>{
-    const m=showMoney?'<span class="sbar-money" style="color:'+(r.avg===null?'var(--muted)':r.avg>=0?'var(--green)':'var(--red)')+'">'+(r.avg===null?'–':money(r.avg))+'</span>':'';
-    return '<div class="sbar-row"><span class="sbar-name">'+r.name+'</span>'+
-      '<div class="sbar-track"><div class="sbar-fill" data-w="'+(r.dec?r.wr:0)+'%" style="background:'+r.col+'"></div></div>'+
-      '<span class="sbar-val" style="color:'+r.col+'">'+(r.dec?r.wr+'%':'–')+'</span>'+m+
-      '<span class="sbar-n" title="'+(sampleNote(r.n)||'trades')+'">'+r.n+(sampleNote(r.n)?'<span class="hint-pill">'+sampleNote(r.n)+'</span>':'')+'</span></div>';
-  }).join('');
-  const rb=rows.find(r=>r.k==='yes'), pa=rows.find(r=>r.k==='partial'), dev=rows.find(r=>r.k==='no');
-  const offRules=(pa?pa.n:0)+(dev?dev.n:0);
-  let note;
-  if(showMoney && rb && dev && rb.avg!==null && dev.avg!==null && dev.wp>0){
-    const delta=rb.avg-dev.avg;
-    note=delta>0
-      ? 'Observed: rule-based trades averaged '+money(delta)+' more per trade than deviated ones ('+rb.wp+' vs '+dev.wp+' trades with P&L). Setups, risk and market phase differ; this is not a proven cost of mistakes.'
-      : 'No P&L penalty for deviating in this sample yet ('+rb.wp+' vs '+dev.wp+' trades with P&L). The broken habit is still the risk.';
-  } else if(rb && rb.dec>0 && dev && dev.dec>0){
-    note='Win rate '+rb.wr+'% when rule-based vs '+dev.wr+'% when you deviated ('+rb.dec+' vs '+dev.dec+' decided trades). Descriptive, not causal.';
-  } else if(rb && !offRules){
-    note='Every logged trade followed your rules. That is the baseline to hold.';
-  } else if(!rb){
-    note='No fully rule-based trades logged yet — that run is the benchmark to build.';
-  } else {
-    note='Rule-based trades are the benchmark — keep the deviations rare and measured.';
-  }
-  return '<div class="fcard"><div class="fcard-title">Rule-based vs deviated</div>'+body+'<p class="fcard-note">'+note+'</p></div>';
 }
 
 // FVG/IFVG auf den Concept-Namen zusammenfassen (Timeframe abschneiden), pro Trade
@@ -3105,17 +3083,35 @@ async function renderStats(){
       kpi('Profit factor',profitFactor===null?(grossWin>0?'∞':'–'):profitFactor.toFixed(2),profitFactor===null?(grossWin>0?'no losing trade yet':'no P&L recorded'):'gross win ÷ gross loss',profitFactor===null?'var(--muted)':profitFactor>=1?'var(--green)':'var(--red)',pnlTrades.length,'st-pf')+
       kpi('Max drawdown',drawdown===null?'–':(drawdown>0?fmtUSD(-drawdown):'$0'),drawdown===null?'no P&L recorded':'peak to trough',drawdown===null?'var(--muted)':drawdown>0?'var(--red)':'var(--text)',pnlTrades.length,'st-dd')+
     '</div>'+
-    '<div class="kpi-row'+(showR?'':' kpi-uneven')+'">'+
-      kpi('Expectancy',avgTrade===null?'–':money(avgTrade),avgTrade===null?'no P&L recorded':'per trade',signCol(avgTrade),pnlTrades.length)+
-      kpi('Ø Win / Ø Loss',
-        '<span style="color:'+tone(winPnls.length,winPnls.length?'var(--green)':'var(--muted)')+'">'+(avgWin===null?'–':money(avgWin))+'</span><span class="vs">/</span>'+
-        '<span style="color:'+tone(lossPnls.length,lossPnls.length?'var(--red)':'var(--muted)')+'">'+(avgLoss===null?'–':money(-avgLoss))+'</span>',
-        payoff===null?'payoff needs wins and losses':'payoff '+payoff.toFixed(2),'',winPnls.length+lossPnls.length)+
-      kpi('Rule-based vs deviated',(rbAvg!==null||devAvg!==null)?(rbAvg===null?'–':money(rbAvg))+' <span class="vs">vs</span> '+(devAvg===null?'–':money(devAvg)):'–',(rbAvg!==null||devAvg!==null)?'avg per trade · '+rbPnl.length+' vs '+devPnl.length:'rate rule adherence and log P&L','var(--text)',rnMin===Infinity?undefined:rnMin)+
-      (showR?kpi('Average R',fmtR(avgR),rVals.length+'/'+total+' trades with risk',signCol(avgR))+
-             kpi('Total R',fmtR(totalR),'independent of position size',signCol(totalR)):'')+
+    '<div class="kpi-row kpi-pair">'+
+      (function(){
+        // Erwartung pro Trade, darunter Ø Win und Ø Loss auf gemeinsamer Skala.
+        const n=pnlTrades.length, mx=Math.max(avgWin||0,avgLoss||0)||1;
+        const bar=(lab,cnt,v,col,sign)=>'<div class="hbar" title="'+lab+' over '+cnt+' trade'+(cnt!==1?'s':'')+'"><span class="hbar-lab">'+lab+'<small>('+cnt+')</small></span>'+
+          '<div class="hbar-track"><i class="'+(thin(cnt)?'thin':'')+'" data-w="'+(v===null?0:Math.round(v/mx*100))+'%" style="background:'+col+'"></i></div><span class="hbar-val">'+(v===null?'–':money(sign*v))+'</span></div>';
+        return '<div class="gcard"><div class="g-label">Per trade</div>'+
+          '<div class="g-val" style="color:'+(n?tone(n,signCol(avgTrade)):'var(--muted)')+'">'+(avgTrade===null?'–':money(avgTrade))+(showR?'<span class="g-r">'+fmtR(avgR)+'</span>':'')+'</div>'+
+          '<div class="g-sub">'+(avgTrade===null?'no P&L recorded':'expectancy'+(showR?' · total '+fmtR(totalR):' · R from 10 trades with risk ('+rVals.length+'/10)')+(thin(n)?' · very limited data':''))+'</div>'+
+          (avgWin!==null||avgLoss!==null?'<div class="hbars">'+bar('Ø win',winPnls.length,avgWin,'var(--green)',1)+bar('Ø loss',lossPnls.length,avgLoss,'var(--red)',-1)+'</div>'+
+            '<div class="hbar-foot">'+(payoff===null?'Payoff needs wins and losses':'Payoff <b>'+payoff.toFixed(2)+'</b> · an average win covers '+payoff.toFixed(1)+' average losses')+'</div>':'')+
+        '</div>';
+      })()+
+      (function(){
+        // Divergierende Balken um die Nulllinie: Ergebnis nach Regeltreue.
+        if(rbAvg===null&&devAvg===null) return kpi('Rule-based vs deviated','–','rate rule adherence and log P&L','var(--muted)');
+        const mx=Math.max(Math.abs(rbAvg||0),Math.abs(devAvg||0))||1;
+        const row=(lab,cnt,v)=>'<div class="hbar" title="'+lab+': average over '+cnt+' trade'+(cnt!==1?'s':'')+'"><span class="hbar-lab">'+lab+'<small>('+cnt+')</small></span>'+
+          '<div class="hbar-track div">'+(v===null||v===0?'':'<i class="'+(v>0?'pos':'neg')+(thin(cnt)?' thin':'')+'" data-w="'+Math.round(Math.abs(v)/mx*50)+'%" style="background:'+(v>0?'var(--green)':'var(--red)')+'"></i>')+'</div>'+
+          '<span class="hbar-val">'+(v===null?'–':money(v))+'</span></div>';
+        const gap=rbAvg!==null&&devAvg!==null?rbAvg-devAvg:null;
+        return '<div class="gcard"><div class="g-label">Rule-based vs deviated</div>'+
+          '<div class="g-val" style="color:'+(gap===null?'var(--muted)':tone(rnMin,signCol(gap)))+'">'+(gap===null?'–':money(gap))+'</div>'+
+          '<div class="g-sub">'+(gap===null?'needs both groups with P&L':'difference per trade')+(thin(rnMin)?' · very limited data':'')+'</div>'+
+          '<div class="hbars">'+row('Rule-based',rbPnl.length,rbAvg)+row('Deviated',devPnl.length,devAvg)+'</div>'+
+          '<div class="hbar-foot">Average P&L per trade · partial trades left out</div>'+
+        '</div>';
+      })()+
     '</div>'+
-    (showR?'':'<p class="r-hint">R stats from 10 trades with risk · '+rVals.length+'/10 so far</p>')+
     disciplineStripHTML(ds,ruleMeasured.length,total,rbP,planP,ntCount,ds===null?null:{days:idleNow.days,penalty:dsBase-ds})+
     // Direkt unter der Disziplin-Leiste, weil der Vers auf genau diese Zahlen
     // antwortet -- nicht als frommer Zusatz irgendwo am Seitenende.
@@ -3124,10 +3120,7 @@ async function renderStats(){
       return '<div class="fcard"><div class="fcard-title">✝ Word over your numbers</div>'+scripHTML(sc.item,sc.why)+'</div>';
     })()+
     '<div class="fcard"><div class="fcard-title">Monthly Calendar</div><div id="cal-container">'+calendarHTML(trades,calY,calM)+'</div></div>'+
-    '<div class="grid-2col">'+
-      disciplineGapBlock(trades,anyPnl)+
-      conceptEdgeBlock(trades,anyPnl)+
-    '</div>'+
+    conceptEdgeBlock(trades,anyPnl)+
     '<div class="fcard"><div class="fcard-title">Performance Timeline</div><div class="pt-row">'+perfTimelineHTML(data)+'</div></div>';
 
   // animations
@@ -3135,7 +3128,7 @@ async function renderStats(){
   const pl=el.querySelector('.perf-line'); if(pl){ const len=pl.getTotalLength(); pl.style.strokeDasharray=len; pl.style.strokeDashoffset=len; pl.style.transition='stroke-dashoffset .7s cubic-bezier(.3,.8,.2,1)'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ pl.style.strokeDashoffset='0'; })); }
   const pa=el.querySelector('.perf-area'); if(pa) requestAnimationFrame(()=>requestAnimationFrame(()=>{ pa.style.opacity='1'; }));
   el.querySelectorAll('.donut-seg').forEach(sg=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ sg.style.strokeDasharray=sg.dataset.len+' '+sg.dataset.gap; })));
-  el.querySelectorAll('.sbar-fill,.mbar-fill,.disc-meter>i,.pt-prog>i').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
+  el.querySelectorAll('.sbar-fill,.mbar-fill,.disc-meter>i,.disc-bar>i,.hbar-track>i,.pt-prog>i').forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.width=b.dataset.w; })));
 }
 
 function wrColor(wr){ return wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)'; }
