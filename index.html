@@ -206,6 +206,12 @@
   .gcard .g-val{font-size:26px;font-weight:700;letter-spacing:-.5px;overflow-wrap:anywhere}
   .gcard .g-val .vs{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0;margin:0 2px}
   .kpi-row+.kpi-row .g-val{font-size:22px}
+  .kpi-row .g-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpi-hero{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .kpi-hero .gcard{padding:20px 20px 18px}
+  .kpi-hero .g-val{font-size:30px;letter-spacing:-.8px}
+  .kpi-hero .g-sep{color:var(--muted);font-weight:600;margin:0 4px}
+  .r-hint{font-size:12px;color:var(--muted);margin:-6px 0 16px}
   .gcard .g-sub{font-size:11px;color:var(--muted);margin-top:3px}
   .vchip{display:inline-flex;align-items:center;gap:6px}
   .pt-icon .ico{width:18px;height:18px;color:var(--accent)}
@@ -325,6 +331,7 @@
   .disc-lab{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);line-height:1.3}
   .disc-val{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-top:6px}
   .disc-u{font-size:12px;font-weight:600;color:var(--muted);margin-left:3px}
+  .disc-sub{margin-top:7px;font-size:11.5px;color:var(--muted)}
   .disc-idle{margin-top:7px;font-size:11.5px;line-height:1.35;color:var(--red)}
   .disc-meter{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;margin-top:9px}
   .disc-meter>i{display:block;height:100%;width:0;border-radius:3px;transition:width .6s cubic-bezier(.3,.8,.2,1)}
@@ -352,7 +359,7 @@
   .pt-prog i{display:block;width:0;height:100%;border-radius:inherit;background:var(--accent);transition:width .6s cubic-bezier(.3,.8,.2,1)}
   .pt-step.done .pt-prog i{background:var(--green)}
   #sec-stats .page-head{position:relative;z-index:2}
-  @media (max-width:760px){.kpi-row{grid-template-columns:1fr 1fr}.grid-2col{grid-template-columns:1fr}}
+  @media (max-width:760px){.kpi-row,.kpi-hero{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-2col{grid-template-columns:1fr}}
 
   /* ===== TRADE WIZARD ===== */
   .wz-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:8px}
@@ -405,7 +412,7 @@
   .badge.nt{background:var(--red-bg);color:var(--red)}
   .nt-item{border-left:2px solid rgba(194,59,59,.4)}
   .mode-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
-  @media(max-width:600px){.kpi-row{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
   /* ===== Icons ===== */
   .ico{width:1em;height:1em;display:inline-block;vertical-align:-.15em;flex-shrink:0}
@@ -683,7 +690,7 @@
   .scrip-why{font-size:12px;color:var(--muted);margin-bottom:11px}
   .scrip-text{font-size:14.5px;line-height:1.75;font-style:italic;max-width:64ch}
   .scrip-ref{font-size:11.5px;color:var(--muted);margin-top:7px;font-style:normal}
-  .stats-hero{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:16px}
+  .stats-hero{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:16px}
   .hero-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px 26px;box-shadow:var(--shadow-card);position:relative;overflow:hidden}
   .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
   .hero-lab{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
@@ -2882,9 +2889,9 @@ function fcardEmpty(title,msg){
   return '<div class="fcard"><div class="fcard-title">'+title+'</div><p style="color:var(--muted);font-size:13px">'+(msg||'Not enough data yet.')+'</p></div>';
 }
 
-// Volle-Breite-Leiste unter den 6 KPI-Kaesteln: Discipline Score (x/10), Anzahl
-// genommener Trades im Zeitraum und die drei Disziplin-Treiber als Prozentwerte.
-function disciplineStripHTML(score,total,rbP,planP,emoP,idle){
+// Volle-Breite-Leiste unter den KPI-Zeilen: Discipline Score (x/10) mit Anzahl
+// bewerteter Trades, Regeltreue, Plan-Treue und No-Trade-Tage.
+function disciplineStripHTML(score,rated,total,rbP,planP,ntCount,idle){
   const col=score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
   const pct=v=>v===null?'–':v+'<span class="disc-u">%</span>';
   const seg=(lab,val)=>'<div class="disc-seg"><div class="disc-lab">'+lab+'</div><div class="disc-val">'+val+'</div></div>';
@@ -2892,11 +2899,11 @@ function disciplineStripHTML(score,total,rbP,planP,emoP,idle){
     '<div class="disc-seg"><div class="disc-lab">Discipline Score</div>'+
       '<div class="disc-val" style="color:'+col+'">'+(score===null?'—':(score/10).toFixed(1))+'<span class="disc-u">/ 10</span></div>'+
       '<div class="disc-meter"><i data-w="'+score+'%" style="background:'+col+'"></i></div>'+
+      '<div class="disc-sub">'+rated+'/'+total+' rated</div>'+
       (idle&&idle.penalty?'<div class="disc-idle">'+idleNote(idle.days,idle.penalty)+'</div>':'')+'</div>'+
-    seg('Trades taken',String(total))+
     seg('Rule-based',pct(rbP))+
     seg('Plan followed',pct(planP))+
-    seg('Rule check logged',pct(emoP))+
+    seg('No-trade days',String(ntCount))+
   '</div>';
 }
 
@@ -3028,8 +3035,6 @@ async function renderStats(){
   const ntCount=ntDays.length;
   const planSet=trades.filter(t=>t.toPlan);
   const planP=planSet.length?Math.round(planSet.filter(t=>t.toPlan==='Yes').length/planSet.length*100):null;
-  const checkedRules=trades.filter(t=>['yes','partial','no'].includes(t.rulebased));
-  const emoP=total?Math.round(checkedRules.length/total*100):0;
 
   const pnlTrades=trades.filter(hasPnl), anyPnl=pnlTrades.length>0;
   const totalPnl=pnlTrades.reduce((s,t)=>s+pnlOf(t),0);
@@ -3048,44 +3053,48 @@ async function renderStats(){
   const rbPnl=pnlTrades.filter(t=>t.rulebased==='yes'), devPnl=pnlTrades.filter(t=>t.rulebased==='no');
   const rbAvg=rbPnl.length?rbPnl.reduce((s,t)=>s+pnlOf(t),0)/rbPnl.length:null, devAvg=devPnl.length?devPnl.reduce((s,t)=>s+pnlOf(t),0)/devPnl.length:null;
   const pc=anyPnl?pnlCurveSVG(pnlTrades):perfCurveSVG(trades);
-  const heroCol=anyPnl?(totalPnl>=0?'var(--green)':'var(--red)'):pc.col;
-  const kpi=(lab,val,sub,col)=>'<div class="gcard"><div class="g-label">'+lab+'</div><div class="g-val"'+(col?' style="color:'+col+'"':'')+'>'+val+'</div><div class="g-sub">'+sub+'</div></div>';
-  const withNote=(n,text)=>text+(sampleNote(n)?' · '+sampleNote(n):'');
+  // Unter 10 Werten ist eine Kennzahl nur ein Hinweis: grau statt gruen/rot, mit Vermerk.
+  const THIN=10, thin=n=>n<THIN;
+  const tone=(n,col)=>thin(n)?'var(--muted)':col;
+  const kpi=(lab,val,sub,col,n)=>{
+    const note=n!==undefined&&n>0&&thin(n)?'very limited data':'';
+    const text=sub&&note?sub+' · '+note:(sub||note);
+    const c=n!==undefined&&n>0?tone(n,col):col;
+    return '<div class="gcard"><div class="g-label">'+lab+'</div><div class="g-val"'+(c?' style="color:'+c+'"':'')+'>'+val+'</div><div class="g-sub" title="'+text+'">'+text+'</div></div>';
+  };
+  const signCol=v=>v===null?'var(--muted)':v>0?'var(--green)':v<0?'var(--red)':'var(--text)';
+  const payoff=avgWin!==null&&avgLoss?avgWin/avgLoss:null;
+  const rnMin=Math.min(rbPnl.length||Infinity,devPnl.length||Infinity);
+  const showR=rVals.length>=THIN;
   window._statsTrades=trades;
   const now=new Date(); if(calY===null){calY=now.getFullYear();calM=now.getMonth();}
 
-  el.innerHTML='<div class="stats-hero">'+
+  el.innerHTML=
+    '<div class="kpi-row kpi-hero">'+
+      kpi('Net P&L',anyPnl?money(totalPnl):'–',anyPnl?pnlTrades.length+' trade'+(pnlTrades.length!==1?'s':'')+' with P&L':'no P&L recorded',anyPnl?signCol(totalPnl):'var(--muted)',pnlTrades.length)+
+      kpi('Win rate',dec?wr+'%':'–',wins+'W · '+losses+'L · '+bes+' BE · '+total+' trade'+(total!==1?'s':''),dec?(wr>=50?'var(--green)':'var(--red)'):'var(--muted)',dec)+
+      kpi('Profit factor',profitFactor===null?(grossWin>0?'∞':'–'):profitFactor.toFixed(2),profitFactor===null?(grossWin>0?'no losing trade with P&L yet':'no P&L recorded'):'gross win ÷ gross loss',profitFactor===null?'var(--muted)':profitFactor>=1?'var(--green)':'var(--red)',pnlTrades.length)+
+      kpi('Max drawdown',drawdown===null?'–':(drawdown>0?fmtUSD(-drawdown):'$0'),drawdown===null?'no P&L recorded':'peak to trough',drawdown===null?'var(--muted)':drawdown>0?'var(--red)':'var(--text)',pnlTrades.length)+
+    '</div>'+
+    '<div class="stats-hero">'+
       '<div class="hero-card">'+
-        '<div class="hero-top">'+
-          '<div><div class="hero-lab">'+(anyPnl?'Net P&L':'Net score')+'</div>'+
-            '<div class="hero-num" style="color:'+heroCol+'">'+(anyPnl?money(totalPnl):(pc.last>=0?'+':'')+pc.last)+'</div></div>'+
-          (anyPnl?'<div class="hero-pill" style="color:'+heroCol+';background:'+(totalPnl>=0?'var(--green-bg)':'var(--red-bg)')+'">\u00D8 '+money(avgTrade)+' / trade'+(avgR!==null?' \u00B7 '+fmtR(avgR):'')+'</div>':'')+
-        '</div>'+
+        '<div class="hero-lab">'+(anyPnl?'P&L curve':'Net score · wins − losses')+'</div>'+
         '<div class="hero-curve">'+pc.svg+'</div>'+
-        '<div class="hero-foot"><span>'+(anyPnl?'Cumulative over '+pnlTrades.length+' trade'+(pnlTrades.length!==1?'s':'')+' with P&L'+(trades.length-pnlTrades.length?' \u00B7 '+(trades.length-pnlTrades.length)+' without P&L not counted':''):'Wins \u2212 losses, cumulative \u00B7 no P&L recorded')+'</span><span>'+wins+'W \u00B7 '+losses+'L \u00B7 '+bes+'BE</span></div>'+
-      '</div>'+
-      '<div class="hero-card donut-card">'+
-        '<div class="donut-wrap">'+donutSVG(wins,losses,bes)+'<div class="donut-center"><div class="donut-big" style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</div><div class="donut-cap">Win rate</div></div></div>'+
-        '<div class="legend"><span><span class="dotc" style="background:var(--green)"></span>'+wins+' Wins</span><span><span class="dotc" style="background:var(--red)"></span>'+losses+' Losses</span><span><span class="dotc" style="background:var(--muted)"></span>'+bes+' Breakeven</span></div>'+
+        '<div class="hero-foot"><span>'+(anyPnl?'Cumulative over '+pnlTrades.length+' trade'+(pnlTrades.length!==1?'s':'')+' with P&L'+(trades.length-pnlTrades.length?' \u00B7 '+(trades.length-pnlTrades.length)+' without P&L not counted':''):'Cumulative \u00B7 no P&L recorded')+'</span></div>'+
       '</div>'+
     '</div>'+
     '<div class="kpi-row">'+
-      kpi('Total trades',total,withNote(total,'in selected period'),'var(--accent)')+
-      (anyPnl?kpi('Ø Win',avgWin===null?'–':money(avgWin),withNote(winPnls.length,winPnls.length?winPnls.length+' wins with P&L':'no winning P&L'),winPnls.length?'var(--green)':'var(--muted)'):'')+
-      (anyPnl?kpi('Ø Loss',avgLoss===null?'–':money(-avgLoss),withNote(lossPnls.length,lossPnls.length?lossPnls.length+' losses with P&L':'no losing P&L'),lossPnls.length?'var(--red)':'var(--muted)'):'')+
-      kpi('Rule-based',rbP===null?'—':rbP+'%',withNote(ruleMeasured.length,ruleMeasured.length+'/'+total+' trades rated'),rbP===null?'var(--muted)':rbP>=70?'var(--green)':'var(--amber)')+
-      '<div class="gcard"><div class="g-label">Streak</div><div class="g-val count" data-to="'+dStreak.count+'" style="color:'+(dStreak.count>0?'var(--amber)':'var(--muted)')+'">0</div><div class="g-sub">'+(dStreak.stale?'reset · '+dStreak.gap+' days idle':dStreak.count>0?'rule-based trades · breaks are allowed':'follow your plan to start')+'</div></div>'+
-      '<div class="gcard"><div class="g-label">No-trade days</div><div class="g-val count accent" data-to="'+ntCount+'">0</div><div class="g-sub">discipline days</div></div>'+
+      kpi('Expectancy',avgTrade===null?'–':money(avgTrade),avgTrade===null?'no P&L recorded':'per trade',signCol(avgTrade),pnlTrades.length)+
+      kpi('Ø Win / Ø Loss',
+        '<span style="color:'+tone(winPnls.length,winPnls.length?'var(--green)':'var(--muted)')+'">'+(avgWin===null?'–':money(avgWin))+'</span><span class="vs">/</span>'+
+        '<span style="color:'+tone(lossPnls.length,lossPnls.length?'var(--red)':'var(--muted)')+'">'+(avgLoss===null?'–':money(-avgLoss))+'</span>',
+        payoff===null?'payoff needs wins and losses':'payoff '+payoff.toFixed(2),'',winPnls.length+lossPnls.length)+
+      kpi('Rule-based vs deviated',(rbAvg!==null||devAvg!==null)?(rbAvg===null?'–':money(rbAvg))+' <span class="vs">vs</span> '+(devAvg===null?'–':money(devAvg)):'–',(rbAvg!==null||devAvg!==null)?'avg per trade · '+rbPnl.length+' vs '+devPnl.length:'rate rule adherence and log P&L','var(--text)',rnMin===Infinity?undefined:rnMin)+
+      (showR?kpi('Average R',fmtR(avgR),rVals.length+'/'+total+' trades with risk',signCol(avgR))+
+             kpi('Total R',fmtR(totalR),'independent of position size',signCol(totalR)):'')+
     '</div>'+
-    '<div class="kpi-row">'+
-      kpi('Expectancy',avgTrade===null?'–':money(avgTrade),withNote(pnlTrades.length,avgTrade===null?'no P&L recorded':'per trade · '+pnlTrades.length+' with P&L'),avgTrade===null?'var(--muted)':avgTrade>=0?'var(--green)':'var(--red)')+
-      kpi('Average R',avgR===null?'–':fmtR(avgR),withNote(rVals.length,avgR===null?'log the original risk for R':rVals.length+'/'+total+' trades with risk'),avgR===null?'var(--muted)':avgR>=0?'var(--green)':'var(--red)')+
-      kpi('Total R',totalR===null?'–':fmtR(totalR),withNote(rVals.length,totalR===null?'set a standard risk in Settings':'independent of position size'),totalR===null?'var(--muted)':totalR>=0?'var(--green)':'var(--red)')+
-      kpi('Profit factor',profitFactor===null?(grossWin>0?'∞':'–'):profitFactor.toFixed(2),withNote(pnlTrades.length,profitFactor===null?(grossWin>0?'no losing trade with P&L yet':'no P&L recorded'):'gross win ÷ gross loss'),profitFactor===null?'var(--muted)':profitFactor>=1.5?'var(--green)':profitFactor>=1?'var(--amber)':'var(--red)')+
-      kpi('Max drawdown',drawdown===null?'–':(drawdown>0?fmtUSD(-drawdown):'$0'),withNote(pnlTrades.length,drawdown===null?'no P&L recorded':'peak to trough of the P&L curve'),drawdown===null?'var(--muted)':drawdown>0?'var(--red)':'var(--text)')+
-      kpi('Rule-based vs deviated',(rbAvg!==null||devAvg!==null)?(rbAvg===null?'–':money(rbAvg))+' <span class="vs">vs</span> '+(devAvg===null?'–':money(devAvg)):'–',(rbAvg!==null||devAvg!==null)?'avg per trade · '+rbPnl.length+' rule-based, '+devPnl.length+' deviated'+(sampleNote(Math.min(rbPnl.length||99,devPnl.length||99))?' · '+sampleNote(Math.min(rbPnl.length||99,devPnl.length||99)):''):'rate rule adherence and log P&L','var(--text)')+
-    '</div>'+
-    disciplineStripHTML(ds,total,rbP,planP,emoP,ds===null?null:{days:idleNow.days,penalty:dsBase-ds})+
+    (showR?'':'<p class="r-hint">R stats from 10 trades with risk · '+rVals.length+'/10 so far</p>')+
+    disciplineStripHTML(ds,ruleMeasured.length,total,rbP,planP,ntCount,ds===null?null:{days:idleNow.days,penalty:dsBase-ds})+
     // Direkt unter der Disziplin-Leiste, weil der Vers auf genau diese Zahlen
     // antwortet -- nicht als frommer Zusatz irgendwo am Seitenende.
     (function(){
