@@ -238,6 +238,34 @@
   .fm-what{font-size:14px}
   .fm-what.loss{color:var(--amber);font-weight:600}
   .fm-note{grid-column:2;font-size:12px;color:var(--muted)}
+  .faith-grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .faith-grid .fcard{margin-bottom:0}
+  @media (min-width:1100px){
+    .main:has(#sec-faith.active){padding-bottom:32px}
+    .faith-hero{display:flex;align-items:flex-start;gap:40px;margin-bottom:20px;padding:0}
+    .faith-hero .hero-word{margin-top:4px;flex:1}
+    .faith-grid{grid-template-columns:1.1fr 1.2fr 1fr}
+    .faith-grid .fcard{padding:22px 24px}
+    .faith-grid .fcard-title{margin-bottom:12px}
+    .faith-grid .verse-text{font-size:18px;line-height:1.7}
+    .faith-grid .verse-ref{margin-top:12px}
+    .faith-grid .verse-btn{margin-top:16px;padding:9px 16px}
+    .faith-grid .fr-read{font-size:15px;line-height:1.55}
+    .faith-grid .fr-words{margin-top:12px}
+    .faith-grid .fr-quote{font-size:13.5px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .faith-grid .fr-qs{margin-top:14px}
+    .faith-grid .fr-qs li{font-size:13.5px;padding:7px 0}
+    .faith-grid .fm-verse{font-size:13.5px;margin-bottom:10px}
+    .faith-grid .fm-row{padding:7px 0}
+  }
+  /* Niedrige Laptop-Fenster: lieber etwas weglassen als scrollen */
+  @media (min-width:1100px) and (max-height:820px){
+    .main:has(#sec-faith.active){padding-top:18px;padding-bottom:16px}
+    .faith-hero{margin-bottom:14px}
+    .faith-hero .scrip-why{display:none}
+    .faith-grid .fr-quote{-webkit-line-clamp:2}
+    .faith-grid .fr-qs li:nth-child(n+3),.faith-grid .fm-row:nth-child(n+5){display:none}
+  }
   @media (max-width:760px){.hero-title{font-size:26px}.fcard{padding:22px}}
 
   /* ===== STATS DASHBOARD ===== */
@@ -874,14 +902,14 @@
               <button class="tag" onclick="toggleTag(this)">Liquidity Sweep</button><button class="tag" onclick="toggleTag(this)">Stop Hunt</button><button class="tag" onclick="toggleTag(this)">Judas Swing</button>
             </div></div>
             <div class="tag-group"><div class="tag-group-label">Imbalance / FVG</div>
-              <div class="tf-block"><button class="tag tf-main" data-concept="FVG" onclick="toggleTf(this,'FVG')">FVG</button><div class="tf-row" id="tf-FVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">30m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
-              <div class="tf-block"><button class="tag tf-main" data-concept="IFVG" onclick="toggleTf(this,'IFVG')">IFVG</button><div class="tf-row" id="tf-IFVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">30m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
+              <div class="tf-block"><button class="tag tf-main" data-concept="FVG" onclick="toggleTf(this,'FVG')">FVG</button><div class="tf-row" id="tf-FVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">15s</button><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">30m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
+              <div class="tf-block"><button class="tag tf-main" data-concept="IFVG" onclick="toggleTf(this,'IFVG')">IFVG</button><div class="tf-row" id="tf-IFVG"><span class="tf-hint">Timeframe(s):</span><button class="tf-chip" onclick="toggleChip(this)">15s</button><button class="tf-chip" onclick="toggleChip(this)">30s</button><button class="tf-chip" onclick="toggleChip(this)">1m</button><button class="tf-chip" onclick="toggleChip(this)">2m</button><button class="tf-chip" onclick="toggleChip(this)">3m</button><button class="tf-chip" onclick="toggleChip(this)">5m</button><button class="tf-chip" onclick="toggleChip(this)">15m</button><button class="tf-chip" onclick="toggleChip(this)">30m</button><button class="tf-chip" onclick="toggleChip(this)">1H</button><button class="tf-chip" onclick="toggleChip(this)">4H</button></div></div>
             </div>
             <div class="tag-group"><div class="tag-group-label">Structure / Order Blocks</div><div class="tag-wrap">
               <button class="tag" onclick="toggleTag(this)">OB</button><button class="tag" onclick="toggleTag(this)">Rejection Block</button><button class="tag" onclick="toggleTag(this)">MSS</button><button class="tag" onclick="toggleTag(this)">BOS</button><button class="tag" onclick="toggleTag(this)">CISD</button>
             </div></div>
             <div class="tag-group"><div class="tag-group-label">Targets</div><div class="tag-wrap">
-              <button class="tag" onclick="toggleTag(this)">PDH</button><button class="tag" onclick="toggleTag(this)">PDL</button><button class="tag" onclick="toggleTag(this)">PWH</button><button class="tag" onclick="toggleTag(this)">PWL</button><button class="tag" onclick="toggleTag(this)">Daily Open</button><button class="tag" onclick="toggleTag(this)">Weekly Open</button><button class="tag" onclick="toggleTag(this)">NY Session High</button><button class="tag" onclick="toggleTag(this)">NY Session Low</button><button class="tag" onclick="toggleTag(this)">Asia Session High</button><button class="tag" onclick="toggleTag(this)">Asia Session Low</button><button class="tag" onclick="toggleTag(this)">Equal Highs</button><button class="tag" onclick="toggleTag(this)">Equal Lows</button>
+              <button class="tag" onclick="toggleTag(this)">PDH</button><button class="tag" onclick="toggleTag(this)">PDL</button><button class="tag" onclick="toggleTag(this)">PWH</button><button class="tag" onclick="toggleTag(this)">PWL</button><button class="tag" onclick="toggleTag(this)">Daily Open</button><button class="tag" onclick="toggleTag(this)">Weekly Open</button><button class="tag" onclick="toggleTag(this)">NY Session High</button><button class="tag" onclick="toggleTag(this)">NY Session Low</button><button class="tag" onclick="toggleTag(this)">London Session High</button><button class="tag" onclick="toggleTag(this)">London Session Low</button><button class="tag" onclick="toggleTag(this)">Asia Session High</button><button class="tag" onclick="toggleTag(this)">Asia Session Low</button><button class="tag" onclick="toggleTag(this)">Equal Highs</button><button class="tag" onclick="toggleTag(this)">Equal Lows</button>
             </div></div>
             <div class="tag-group"><div class="tag-group-label">Context</div><div class="tag-wrap">
               <button class="tag" onclick="toggleTag(this)">SMT Divergence</button><button class="tag" onclick="toggleTag(this)">OTE</button><button class="tag" onclick="toggleTag(this)">Silver Bullet</button>
@@ -890,7 +918,7 @@
           </div>
           <div class="card journal-fields">
             <h3 class="card-title">Risk</h3>
-            <div class="grid3"><div class="field"><label for="j-risk">Risk ($)</label><input id="j-risk" type="number" min="0" step="0.01"></div><div class="field"><label for="j-profit-target">Profit target ($)</label><input id="j-profit-target" type="number" min="0" step="0.01"></div><div class="field"><label for="f-contracts">Contracts</label><input id="f-contracts" type="number" min="0" step="1" oninput="autoFees()"></div></div>
+            <div class="grid3"><div class="field"><label for="j-risk">Risk ($)</label><input id="j-risk" type="number" min="0" step="0.01"></div><div class="field"><label for="j-profit-target">Profit target ($)</label><input id="j-profit-target" type="number" min="0" step="0.01"></div><div class="field"><label for="f-contracts">Contracts</label><input id="f-contracts" type="number" min="0" step="1"></div></div>
             <div class="planned-rr">Planned R:R <strong id="rr-label">—</strong></div><p id="rr-detail" class="field-help"></p>
           </div>
           <div hidden aria-hidden="true"><input id="j-mode" value="Live"><input id="j-model"><input id="j-context"><input id="j-trigger"><input id="j-conditions"><input id="j-extras"><input id="j-invalidation"><input id="j-management"><input id="j-grade-reason"><input id="j-pressure"><input id="j-psych-trigger"><input id="j-action"><input id="f-entry"><input id="f-sl"><input id="f-tp"><input id="f-conf"><input id="f-ext"><input id="f-factor"><input id="f-bestrule"><input id="f-mistake"></div>
@@ -899,8 +927,7 @@
         <div class="wz-panel" id="wz-2">
           <div class="card journal-fields">
             <div class="field"><label>Result</label><div class="seg" data-field="result" role="group" aria-label="Result"><button type="button" class="opt" data-v="Win" onclick="choice('result',this);Journal.update()">Win</button><button type="button" class="opt" data-v="Loss" onclick="choice('result',this);Journal.update()">Loss</button><button type="button" class="opt" data-v="Breakeven" onclick="choice('result',this);Journal.update()">Breakeven</button></div></div>
-            <div class="subgrid"><div class="field"><label for="f-pnl">P&amp;L before fees ($)</label><input id="f-pnl" type="number" step="0.01" oninput="updateNetHint()"></div><div class="field"><label for="f-fees">Fees ($)</label><input id="f-fees" type="number" min="0" step="0.01" oninput="feesEdited()"></div></div>
-            <p id="f-net-hint" class="field-help" aria-live="polite" hidden></p>
+            <div class="field"><label for="f-pnl">P&amp;L ($)</label><input id="f-pnl" type="number" step="0.01"></div>
             <div class="journal-check"><label>Entry as planned?</label><div class="seg yn" data-journal-input="j-exec-entry"><button type="button" class="opt" data-v="Yes" onclick="Journal.choose('j-exec-entry','Yes',this)">Yes</button><button type="button" class="opt" data-v="No" onclick="Journal.choose('j-exec-entry','No',this)">No</button></div><input id="j-exec-entry" type="hidden"></div>
             <div class="journal-check"><label>Stop and size as planned?</label><div class="seg yn" data-journal-input="j-exec-risk"><button type="button" class="opt" data-v="Yes" onclick="Journal.choose('j-exec-risk','Yes',this)">Yes</button><button type="button" class="opt" data-v="No" onclick="Journal.choose('j-exec-risk','No',this)">No</button></div><input id="j-exec-risk" type="hidden"></div>
             <div class="journal-check"><label>Exit as planned?</label><div class="seg yn" data-journal-input="j-exec-exit"><button type="button" class="opt" data-v="Yes" onclick="Journal.choose('j-exec-exit','Yes',this)">Yes</button><button type="button" class="opt" data-v="No" onclick="Journal.choose('j-exec-exit','No',this)">No</button></div><input id="j-exec-exit" type="hidden"></div>
@@ -1174,13 +1201,10 @@
       </div>
 
       <div class="card">
-        <div class="card-title">Risk and fees</div>
-        <p class="field-help" style="margin-bottom:14px">New trades start with this risk, so every trade can be measured in R. Fees are deducted from the P&amp;L you enter. Trades you already saved stay untouched.</p>
-        <div class="subgrid" style="margin-bottom:14px">
-          <div class="field"><label for="set-default-risk">Standard risk per trade ($)</label><input id="set-default-risk" type="number" min="0" step="0.01" placeholder="e.g. 200"></div>
-          <div class="field"><label for="set-fee-contract">Fees per contract, round trip ($)</label><input id="set-fee-contract" type="number" min="0" step="0.01" placeholder="e.g. 1.24"></div>
-        </div>
-        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="saveTradingDefaults()">Save risk and fees</button></div>
+        <div class="card-title">Standard risk</div>
+        <p class="field-help" style="margin-bottom:14px">New trades start with this risk, so every trade can be measured in R. Trades you already saved stay untouched.</p>
+        <div class="field" style="margin-bottom:14px"><label for="set-default-risk">Standard risk per trade ($)</label><input id="set-default-risk" type="number" min="0" step="0.01" placeholder="e.g. 200"></div>
+        <div class="btn-row" style="margin-top:0;justify-content:flex-start"><button class="btn btn-primary" onclick="saveTradingDefaults()">Save risk</button></div>
       </div>
 
       <div class="card">
@@ -1333,28 +1357,23 @@ async function saveStandardSetup(){
   showToast('Standard setup saved ✓');
 }
 
-// Standard-Risiko und Gebuehren pro Kontrakt (Round Trip). Beide wirken nur auf
-// neue Eingaben; gespeicherte Trades behalten ihre Werte.
+// Standard-Risiko wirkt nur auf neue Eingaben; gespeicherte Trades behalten ihre Werte.
 function positiveSetting(v){ const n=Journal.num(v); return n!==null&&n>0?n:null; }
 function defaultRisk(){ return positiveSetting(_settingsCache.defaultRisk); }
-function feePerContract(){ return positiveSetting(_settingsCache.feePerContract); }
-function feesFor(contracts){
-  const rate=feePerContract(), qty=Journal.num(contracts);
-  return rate!==null&&qty!==null&&qty>0 ? Math.round(rate*qty*100)/100 : null;
-}
 async function saveTradingDefaults(){
-  const risk=Journal.value('set-default-risk'), fee=Journal.value('set-fee-contract');
-  if((risk&&positiveSetting(risk)===null)||(fee&&positiveSetting(fee)===null)){ showToast('Use amounts above zero, or leave the field empty.'); return; }
-  const next={..._settingsCache,defaultRisk:positiveSetting(risk),feePerContract:positiveSetting(fee)};
+  const risk=Journal.value('set-default-risk');
+  if(risk&&positiveSetting(risk)===null){ showToast('Use an amount above zero, or leave the field empty.'); return; }
+  const next={..._settingsCache,defaultRisk:positiveSetting(risk)};
+  delete next.feePerContract;
   if(currentUser){
     try{
       const {error}=await sb.from('journal_data').update({settings:next,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
       if(error)throw error;
-    }catch(e){ console.error('Risk and fee settings sync failed',e); showToast('Could not save — check your connection'); return; }
+    }catch(e){ console.error('Risk settings sync failed',e); showToast('Could not save — check your connection'); return; }
   }
   _settingsCache=next;
   applyTradeDefaults(); qApplyDefaults();
-  showToast('Risk and fees saved ✓');
+  showToast('Standard risk saved ✓');
 }
 
 function showAuthError(msg){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.display='block'; }
@@ -1972,7 +1991,7 @@ function setMode(mode){
 /* ===== Quick capture =====
    Das Geld und der Chart: Risk und Take Profit als Betraege, dazu ein optionaler
    Screenshot. Das Ergebnis bestimmt das Vorzeichen -- Win = +TP, Loss = -Risk,
-   Breakeven = 0. Fees bleiben aussen vor. Schreibt einen echten Trade, keinen
+   Breakeven = 0. Schreibt einen echten Trade, keinen
    Draft; Plan und Lesson kommen spaeter im vollen Wizard dazu. */
 let qForm={'q-instrument':'MNQ','q-direction':'Long'};
 function qChoice(field,btn){ const grp=btn.parentElement; grp.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); qForm[field]=btn.dataset.v; qUpdateNotice(); }
@@ -2025,12 +2044,10 @@ function qUpdateNotice(){
   const n=document.getElementById('q-save-check'); if(!n)return;
   const result=qForm['q-result'], risk=qMoney('q-risk'), tp=qMoney('q-tp');
   if(!result){ n.textContent='Pick a result to save. Risk and take profit are just the amounts — enter them without a sign.'; return; }
-  const gross=qPnl(result,risk,tp);
-  if(gross===null){ n.textContent='Result is enough to save. Add '+(result==='Win'?'the take profit':'the risk')+' to record the amount.'; return; }
-  const fees=feesFor(Journal.value('q-contracts')), pnl=netFromGross(gross,fees);
+  const pnl=qPnl(result,risk,tp);
+  if(pnl===null){ n.textContent='Result is enough to save. Add '+(result==='Win'?'the take profit':'the risk')+' to record the amount.'; return; }
   const r=risk>0?pnl/risk:null;
-  n.textContent='Saves as '+fmtUSD(pnl)+(r===null?'':' · '+fmtR(r))+'. The sign follows the result; '+
-    (fees?'fees of '+fmtUSD(fees).replace(/^\+/,'')+' are deducted.':feePerContract()?'add contracts to deduct fees.':'set fees per contract in Settings to deduct them.');
+  n.textContent='Saves as '+fmtUSD(pnl)+(r===null?'':' · '+fmtR(r))+'. The sign follows the result.';
 }
 function quickToFull(){
   const result=qForm['q-result'], risk=qMoney('q-risk'), tp=qMoney('q-tp'), pnl=qPnl(result,risk,tp);
@@ -2043,7 +2060,7 @@ function quickToFull(){
     if(risk>0&&riskEl&&(!riskEl.value||Journal.num(riskEl.value)===defaultRisk())) riskEl.value=risk;
     if(tp>=0) set('j-profit-target',tp);
     set('f-contracts',Journal.value('q-contracts'));
-    autoFees(); updateNetHint(); updateRR();
+    updateRR();
     scheduleTradeDraft(); Journal.update();
   }
   showToast('Amounts carried over — add the plan, execution and lesson.');
@@ -2052,8 +2069,8 @@ async function saveQuickTrade(){
   if(_savingTrade)return;
   const result=qForm['q-result'];
   if(!['Win','Loss','Breakeven'].includes(result)){ showToast('Pick a result. Nothing else is required.'); return; }
-  const risk=qMoney('q-risk'), tp=qMoney('q-tp'), gross=qPnl(result,risk,tp);
-  const contracts=Journal.value('q-contracts'), fees=feesFor(contracts), pnl=netFromGross(gross,fees);
+  const risk=qMoney('q-risk'), tp=qMoney('q-tp'), pnl=qPnl(result,risk,tp);
+  const contracts=Journal.value('q-contracts');
   _savingTrade=true;
   const btn=document.querySelector('#quick-form .wz-nav .btn-primary'); if(btn)btn.disabled=true;
   try{
@@ -2067,7 +2084,6 @@ async function saveQuickTrade(){
       quickCapture:true
     };
     if(Journal.num(contracts)>0) t.contracts=contracts;
-    if(gross!==null&&fees>0){ t.grossPnl=gross; t.fees=fees; }
     if(risk>0) t.journal={version:1,initialRisk:risk};
     data.unshift(t);
     if(!await saveTrades(data)){ showToast('Save failed'); return; }
@@ -2137,7 +2153,7 @@ function collectTradeDraft(){
   const fields={};
   document.querySelectorAll('#trade-wizard input:not([type=file]),#trade-wizard textarea,#trade-wizard select').forEach(el=>{ if(el.id)fields[el.id]=el.type==='checkbox'?el.checked:el.value; });
   const setupButtons=[...document.querySelectorAll('#setup-tags button')];
-  return {v:TRADE_DRAFT_VERSION,savedAt:Date.now(),layout:3,step:curStep,form:{...form},fields,selectedSetupIndexes:setupButtons.map((button,index)=>button.classList.contains('sel')?index:-1).filter(index=>index>=0),psychology:getPsychology(),emotion:getEmo()};
+  return {v:TRADE_DRAFT_VERSION,savedAt:Date.now(),layout:4,step:curStep,form:{...form},fields,selectedSetupIndexes:setupButtons.map((button,index)=>button.classList.contains('sel')?index:-1).filter(index=>index>=0),psychology:getPsychology(),emotion:getEmo()};
 }
 function saveTradeDraftNow(){
   if(_tradeDraftSuspended)return;
@@ -2182,7 +2198,7 @@ function restoreTradeDraft(){
 // Entwurf-Restore als auch vom Bearbeiten gespeicherter Trades genutzt.
 function applyTradeDraft(draft){
   clearForm();
-  if (draft.v===2 && draft.layout!==3 && draft.step>1) draft={...draft,step:draft.step===5?3:draft.step===4||draft.step===3?2:1};
+  if (draft.v===2 && !(draft.layout>=3) && draft.step>1) draft={...draft,step:draft.step===5?3:draft.step===4||draft.step===3?2:1};
   Object.entries(draft.fields||{}).forEach(([id,value])=>{ const el=document.getElementById(id); if(!el||el.type==='file')return; if(el.type==='checkbox')el.checked=Boolean(value); else el.value=value; });
   Object.entries(draft.form||{}).forEach(([field,value])=>{
     const seg=[...document.querySelectorAll('#trade-wizard .seg')].find(el=>el.dataset.field===field);
@@ -2193,7 +2209,9 @@ function applyTradeDraft(draft){
     if(dot){ rate(field,dot); return; }
     form[field]=value;
   });
-  const setupButtons=[...document.querySelectorAll('#setup-tags button')];
+  let setupButtons=[...document.querySelectorAll('#setup-tags button')];
+  // Aeltere Entwuerfe zaehlen ohne die spaeter ergaenzten 15s-Chips und London-Targets.
+  if(!(draft.layout>=4))setupButtons=setupButtons.filter(b=>!['15s','London Session High','London Session Low'].includes(b.textContent.trim()));
   (draft.selectedSetupIndexes||[]).forEach(index=>{
     const button=setupButtons[index]; if(!button)return;
     if(button.classList.contains('tf-main'))toggleTf(button,button.dataset.concept);
@@ -2202,7 +2220,7 @@ function applyTradeDraft(draft){
   });
   const psychology=Array.isArray(draft.psychology)?draft.psychology:(draft.emotion?[draft.emotion]:[]);
   psychology.forEach(saved=>{ const emotion=[...document.querySelectorAll('#psychology-chips .emo')].find(el=>emoLabel(emoValue(el))===emoLabel(saved)); if(emotion)emotion.classList.add('sel'); });
-  Journal.syncChoices(); updateExec(); updateSetupQ(); updateRR(); autoFees(); updateNetHint(); Journal.update(); Journal.renderRules();
+  Journal.syncChoices(); updateExec(); updateSetupQ(); updateRR(); Journal.update(); Journal.renderRules();
   goStep(Math.max(1,Math.min(STEPS,Number(draft.step)||1)),true);
 }
 function discardTradeDraft(){
@@ -2242,8 +2260,7 @@ function tradeToDraft(t){
     'f-conf':t.confirmations||'', 'f-contracts':str(t.contracts),
     'f-entry':str(t.entry), 'f-sl':str(t.stopLoss), 'f-tp':str(t.takeProfit),
     'f-ext':t.externalFactors||t.news||'', 'f-mind':t.mindset||'',
-    // Mit erfassten Gebuehren steht im Feld wieder der Betrag vor Gebuehren.
-    'f-pnl':str(Journal.num(t.fees)>0&&Journal.num(t.grossPnl)!==null?t.grossPnl:t.pnl), 'f-fees':Journal.num(t.fees)>0?str(t.fees):'',
+    'f-pnl':str(t.pnl),
     'f-factor':t.biggestFactor||t.why||'', 'f-bestrule':t.bestRule||'',
     'f-mistake':t.worstMistake||'', 'f-lesson':t.lesson||t.better||''
   };
@@ -2284,7 +2301,7 @@ function tradeToDraft(t){
   wForm.psychologyDirty=false;
   wForm.journalSetupAssessed=t.journal?.setupAssessed||false;
   wForm.journalExecutionAssessed=t.journal?.executionAssessed||false;
-  return {v:TRADE_DRAFT_VERSION,layout:3,step:1,form:wForm,fields,selectedSetupIndexes:sel,psychology:psychologyValues(t),emotion:t.emotion||''};
+  return {v:TRADE_DRAFT_VERSION,layout:4,step:1,form:wForm,fields,selectedSetupIndexes:sel,psychology:psychologyValues(t),emotion:t.emotion||''};
 }
 
 function enterEditUI(t){
@@ -2431,30 +2448,11 @@ function updateRR(){
 
 function plannedRR(){ const c=rrCalc(); return c.state==='ok' ? +c.rr.toFixed(2) : null; }
 
-// P&L wird vor Gebuehren erfasst; gespeichert wird netto, damit alle
-// Auswertungen ohne Sonderfall die echten Kosten enthalten.
-function netFromGross(gross,fees){ return gross===null?null:fees>0?Math.round((gross-fees)*100)/100:gross; }
-function updateNetHint(){
-  const el=document.getElementById('f-net-hint'); if(!el)return;
-  const gross=Journal.num(Journal.value('f-pnl')), fees=Journal.num(Journal.value('f-fees'));
-  el.textContent=gross!==null&&fees>0?'Saves as '+fmtUSD(netFromGross(gross,fees))+' net.':'';
-  el.hidden=!el.textContent;
-}
-// Gebuehren folgen den Kontrakten, bis sie von Hand geaendert werden. Beim
-// Bearbeiten gespeicherter Trades nie: deren P&L kann die Kosten schon enthalten.
-function autoFees(){
-  if(editingTradeId!==null||form.feesManual)return;
-  const el=document.getElementById('f-fees'); if(!el)return;
-  const fees=feesFor(Journal.value('f-contracts'));
-  el.value=fees===null?'':String(fees);
-  updateNetHint();
-}
-function feesEdited(){ form.feesManual=true; updateNetHint(); }
 function applyTradeDefaults(){
   if(editingTradeId!==null)return;
   const risk=document.getElementById('j-risk'), dr=defaultRisk();
   if(risk&&!risk.value&&dr!==null)risk.value=String(dr);
-  autoFees(); updateRR(); Journal.update();
+  updateRR(); Journal.update();
 }
 
 function updateSetupQ(){ const map={'A+':100,'A':80,'B':60}; let s=map[form.grade]||0; if(s&&form.matchesPlaybook==='No')s-=15; if(s&&form.proWouldTake==='No')s-=15; s=Math.max(0,s); const col=s>=90?'var(--green)':s>=70?'var(--accent)':'var(--amber)'; const f=document.getElementById('setq-fill'),l=document.getElementById('setq-label'); if(f){f.style.width=s+'%';f.style.background=col;} if(l){l.textContent=form.grade?('Grade '+form.grade):'—';l.style.color=form.grade?col:'var(--muted)';} }
@@ -2478,9 +2476,7 @@ async function saveTrade(){
     const saveWeeklyRule=Boolean(document.getElementById('j-save-rule')?.checked);
     const data=[...(await loadTrades())];
     const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
-    const grossPnl=Journal.num(g('f-pnl')), feesVal=Journal.num(g('f-fees'));
-    const withFees=grossPnl!==null&&feesVal>0;
-    const pnlVal=netFromGross(grossPnl,feesVal);
+    const pnlVal=Journal.num(g('f-pnl'));
 
     const t={
       id:editingTradeId!==null?editingTradeId:Date.now(),
@@ -2504,7 +2500,6 @@ async function saveTrade(){
       screenshot:getImg(),
       ...Journal.patch()
     };
-    if(withFees){ t.grossPnl=grossPnl; t.fees=feesVal; }
     if(editingTradeId!==null){
       const idx=data.findIndex(x=>x.id===editingTradeId);
       if(idx<0){ showToast('Trade no longer exists — editing cancelled'); finishEdit(); return; }
@@ -2514,8 +2509,8 @@ async function saveTrade(){
       const original=data[idx];
       if(g('j-profit-target')==='' && original.plannedRR!==undefined) delete patch.plannedRR;
       const originalJournal=original.journal||{};
-      // Gebuehren entfernt: die alten Felder muessen mit weg, sonst widersprechen sie dem P&L.
-      if(!withFees)['grossPnl','fees'].forEach(k=>{ if(Object.prototype.hasOwnProperty.call(original,k))patch[k]=undefined; });
+      // Alte Gebuehren-Aufteilung faellt beim Speichern weg; das P&L im Feld ist bereits netto.
+      ['grossPnl','fees'].forEach(k=>{ if(Object.prototype.hasOwnProperty.call(original,k))patch[k]=undefined; });
       if(!Object.prototype.hasOwnProperty.call(originalJournal,'profitTarget')&&g('j-profit-target')==='')delete patch.journal.profitTarget;
       if(!Object.prototype.hasOwnProperty.call(originalJournal,'psychology')&&JSON.stringify(patch.journal.psychology||[])===JSON.stringify(psychologyValues(original)))delete patch.journal.psychology;
       if(!Object.prototype.hasOwnProperty.call(originalJournal,'mode')&&!g('j-mode'))delete patch.journal.mode;
@@ -2600,7 +2595,6 @@ function clearForm(){
   const en=document.getElementById('exec-num'); if(en){en.textContent='0';en.style.color='var(--muted)';}
   const sf=document.getElementById('setq-fill'); if(sf)sf.style.width='0%';
   const sl=document.getElementById('setq-label'); if(sl){sl.textContent='—';sl.style.color='var(--muted)';}
-  updateNetHint();
   Journal.update(); Journal.renderRules();
   applyTradeDefaults();
 }
@@ -2715,7 +2709,7 @@ async function openDetail(id){
   const rrRow=(t.entry!==undefined&&t.entry!==null&&t.stopLoss!==undefined&&t.stopLoss!==null)
     ? (t.entry+' → SL '+t.stopLoss+(t.takeProfit!==undefined&&t.takeProfit!==null?' → TP '+t.takeProfit:'')
        +(t.plannedRR?'  ·  1 : '+t.plannedRR.toFixed(1):'')) : '';
-  const setupRows=[row('Concepts',(t.setup&&t.setup.length)?t.setup.join(', '):''),row('Confirmations',t.confirmations),row('Grade',t.grade),row('Contracts',t.contracts),row('P&L before fees',Journal.num(t.fees)>0&&Journal.num(t.grossPnl)!==null?fmtUSD(t.grossPnl):''),row('Fees',Journal.num(t.fees)>0?fmtUSD(-t.fees):''),row('Entry / stop / target',rrRow),row('Matches playbook',yn(t.matchesPlaybook)),row('Pro would take',t.proWouldTake)].filter(Boolean).join('');
+  const setupRows=[row('Concepts',(t.setup&&t.setup.length)?t.setup.join(', '):''),row('Confirmations',t.confirmations),row('Grade',t.grade),row('Contracts',t.contracts),row('Entry / stop / target',rrRow),row('Matches playbook',yn(t.matchesPlaybook)),row('Pro would take',t.proWouldTake)].filter(Boolean).join('');
   const execRows=[row('To plan',yn(t.toPlan)),row('Chased entry',yn(t.chased)),row('Patience',yn(t.patience)),row('Confirmation',yn(t.confirmationPresent)),row('Execution',stars(t.execQuality)),row('Followed rules',t.rulebased==='yes'?'Yes':t.rulebased==='no'?'No':t.rulebased==='partial'?'Partial':''),row('External/News',t.externalFactors||t.news)].filter(Boolean).join('');
   const psyRows=[row('Focus',stars(t.preFocus)),row('Patience',stars(t.prePatience)),row('Energy',stars(t.preEnergy)),row('Mental state',t.preState),row('Doubts',yn(t.doubts)),row('Deviated',yn(t.deviated)),row('Satisfied',yn(t.satisfied)),row('Psychology',psychologyValues(t).join(', ')),row('Notes',t.mindset)].filter(Boolean).join('');
   const revRows=[row('Biggest factor',t.biggestFactor||t.why),row('Best rule',t.bestRule),row('Worst mistake',t.worstMistake),row('Key lesson & adjustment',t.lesson)].filter(Boolean).join('');
@@ -3047,7 +3041,6 @@ async function renderStats(){
   const rVals=trades.map(Journal.realizedR).filter(v=>v!==null);
   const totalR=rVals.length?rVals.reduce((a,b)=>a+b,0):null;
   const avgR=rVals.length?totalR/rVals.length:null;
-  const feeTrades=trades.filter(t=>Journal.num(t.fees)>0), totalFees=feeTrades.reduce((s,t)=>s+Number(t.fees),0);
   const grossWin=pnlTrades.filter(t=>pnlOf(t)>0).reduce((s,t)=>s+pnlOf(t),0);
   const grossLoss=pnlTrades.filter(t=>pnlOf(t)<0).reduce((s,t)=>s+Math.abs(pnlOf(t)),0);
   const profitFactor=grossLoss>0?grossWin/grossLoss:null;
@@ -3088,7 +3081,6 @@ async function renderStats(){
       kpi('Expectancy',avgTrade===null?'–':money(avgTrade),withNote(pnlTrades.length,avgTrade===null?'no P&L recorded':'per trade · '+pnlTrades.length+' with P&L'),avgTrade===null?'var(--muted)':avgTrade>=0?'var(--green)':'var(--red)')+
       kpi('Average R',avgR===null?'–':fmtR(avgR),withNote(rVals.length,avgR===null?'log the original risk for R':rVals.length+'/'+total+' trades with risk'),avgR===null?'var(--muted)':avgR>=0?'var(--green)':'var(--red)')+
       kpi('Total R',totalR===null?'–':fmtR(totalR),withNote(rVals.length,totalR===null?'set a standard risk in Settings':'independent of position size'),totalR===null?'var(--muted)':totalR>=0?'var(--green)':'var(--red)')+
-      (feeTrades.length?kpi('Fees',fmtUSD(-totalFees),feeTrades.length+' trade'+(feeTrades.length!==1?'s':'')+' · already in net P&L','var(--text)'):'')+
       kpi('Profit factor',profitFactor===null?(grossWin>0?'∞':'–'):profitFactor.toFixed(2),withNote(pnlTrades.length,profitFactor===null?(grossWin>0?'no losing trade with P&L yet':'no P&L recorded'):'gross win ÷ gross loss'),profitFactor===null?'var(--muted)':profitFactor>=1.5?'var(--green)':profitFactor>=1?'var(--amber)':'var(--red)')+
       kpi('Max drawdown',drawdown===null?'–':(drawdown>0?fmtUSD(-drawdown):'$0'),withNote(pnlTrades.length,drawdown===null?'no P&L recorded':'peak to trough of the P&L curve'),drawdown===null?'var(--muted)':drawdown>0?'var(--red)':'var(--text)')+
       kpi('Rule-based vs deviated',(rbAvg!==null||devAvg!==null)?(rbAvg===null?'–':money(rbAvg))+' <span class="vs">vs</span> '+(devAvg===null?'–':money(devAvg)):'–',(rbAvg!==null||devAvg!==null)?'avg per trade · '+rbPnl.length+' rule-based, '+devPnl.length+' deviated'+(sampleNote(Math.min(rbPnl.length||99,devPnl.length||99))?' · '+sampleNote(Math.min(rbPnl.length||99,devPnl.length||99)):''):'rate rule adherence and log P&L','var(--text)')+
@@ -3477,13 +3469,13 @@ function faithfulMoments(data){
 }
 
 function faithfulHTML(data){
-  const moments=faithfulMoments(data), shown=moments.slice(0,6);
+  const moments=faithfulMoments(data), shown=moments.slice(0,5);
   const luke=Object.values(VERSES).flat().find(v=>v.ref==='Luke 16:10');
   return '<div class="fcard"><div class="fcard-title">Faithful in little things</div>'+
     (luke?'<p class="fm-verse">“'+luke.text+'” <span>— '+luke.ref+'</span></p>':'')+
     (shown.length
       ? '<div class="fm-list">'+shown.map(m=>'<div class="fm-row"><span class="fm-date">'+fmtDateShort(m.t.date)+'</span><span class="fm-what'+(m.loss?' loss':'')+'">'+m.label+'</span><span class="fm-note">'+Journal.esc(m.note)+'</span></div>').join('')+'</div>'+
-        (moments.length>shown.length?'<div class="fcard-note">'+(moments.length-shown.length)+' more in your journal.</div>':'')
+        (moments.length>4?'<div class="fcard-note">'+moments.length+' in your journal so far.</div>':'')
       : '<p class="fr-empty">Nothing here yet. Follow your rules on the next trade, or stay out when there is no setup. Both count here, win or lose.</p>')+
   '</div>';
 }
@@ -3583,10 +3575,12 @@ async function renderFaith(){
   const latest=data[0], cat=latest.isNoTrade?'daily':rcCat(latest.result);
 
   el.innerHTML=
-    '<div class="hero">'+
+    // Kopf und drei Spalten: auf dem Desktop passt der Tab ohne Scrollen auf eine Seite.
+    '<div class="hero faith-hero">'+
       '<div class="hero-eyebrow"><span class="hero-title">Faith</span><canvas class="mini-candles" id="mini-c" width="84" height="34"></canvas></div>'+
-      '<div class="hero-word">'+scripHTML(verseOfDay(),'Word for today, the same one as on your start screen.')+'</div>'+
+      '<div class="hero-word">'+scripHTML(verseOfDay(),'Word for today')+'</div>'+
     '</div>'+
+    '<div class="faith-grid">'+
     '<div class="fcard">'+
       '<div class="fcard-title" id="faith-verse-title">'+FAITH_TITLES[cat]+'</div>'+
       '<p class="fv-msg" id="faith-verse-msg">'+FAITH_MSGS[cat]+'</p>'+
@@ -3595,7 +3589,6 @@ async function renderFaith(){
       '</div>'+
       '<div id="faith-verse"></div><button class="verse-btn" id="verse-btn" onclick="nextVerse()"></button>'+
     '</div>'+
-    '<div class="grid-2col">'+
       faithReflectionHTML(latest)+
       faithfulHTML(data)+
     '</div>';
@@ -4380,7 +4373,7 @@ async function startApp(){
   updateStatus();
   Journal.renderRules();
   renderStandardSetup();
-  // Einstellungen sind erst jetzt geladen -- Standard-Risiko und Gebuehren nachtragen.
+  // Einstellungen sind erst jetzt geladen -- Standard-Risiko nachtragen.
   applyTradeDefaults(); qApplyDefaults();
   renderSplashDiscipline();
   refreshActiveTab();
@@ -4407,8 +4400,8 @@ function renderSettings(){
   if(pw1)pw1.value=''; if(pw2)pw2.value='';
   const ss=getStandardSetup();
   SETUP_KEYS.forEach(key=>{ const el=document.getElementById('set-setup-'+key); if(el)el.value=ss[key]||''; });
-  const dr=document.getElementById('set-default-risk'), fc=document.getElementById('set-fee-contract');
-  if(dr)dr.value=defaultRisk()??''; if(fc)fc.value=feePerContract()??'';
+  const dr=document.getElementById('set-default-risk');
+  if(dr)dr.value=defaultRisk()??'';
   cancelDeleteAccount();
 }
 

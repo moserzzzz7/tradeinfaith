@@ -108,26 +108,24 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   await run(`await editTrade(_cache[0].id);setField('j-exec-entry','');await saveTrade();`);
   assert.equal(await run('_cache[0].executionScore'),null,'Cleared modern assessment must not keep its previous score');
   assert.equal(await run('_cache[0].rulebased'),'','Incomplete check must not claim rule compliance');
-  // Standard risk and fees: new trades start with the risk, fees follow the contracts, P&L is stored net.
+  // Standard risk: new trades start with the risk; fees are no longer tracked, the P&L is stored as entered.
   await run(`_cache=[];_settingsCache={defaultRisk:200,feePerContract:1.5};clearForm();`);
   assert.equal(await run('Journal.value("j-risk")'),'200','Standard risk prefills a new trade');
-  await run(`setField('f-contracts','3');`);
-  assert.equal(await run('Journal.value("f-fees")'),'4.5','Fees follow the contracts');
-  await run(`setField('f-pnl','100');form.result='Win';setField('j-exec-entry','Yes');setField('j-exec-risk','Yes');setField('j-exec-exit','Yes');`);
-  assert.ok((await run('document.getElementById("f-net-hint").textContent')).includes('+$95.5'),'Net hint shows P&L after fees');
+  assert.equal(await run('document.getElementById("f-fees")'),null,'No fee field in the wizard');
+  await run(`setField('f-contracts','3');setField('f-pnl','100');form.result='Win';setField('j-exec-entry','Yes');setField('j-exec-risk','Yes');setField('j-exec-exit','Yes');await saveTrade();`);
+  assert.deepEqual(await run('(()=>{const s=JSON.parse(JSON.stringify(_cache[0]));return [s.pnl,"fees" in s,"grossPnl" in s]})()'),[100,false,false],'P&L is saved as entered');
+  assert.equal(await run('Journal.realizedR(_cache[0])'),100/200);
+  await run(`_cache[0]={..._cache[0],pnl:95.5,grossPnl:100,fees:4.5};await editTrade(_cache[0].id);`);
+  assert.equal(await run('Journal.value("f-pnl")'),'95.5','Editing an old trade with fees shows the net P&L');
   await run('await saveTrade();');
-  assert.deepEqual(await run('[_cache[0].pnl,_cache[0].grossPnl,_cache[0].fees]'),[95.5,100,4.5]);
-  assert.equal(await run('Journal.realizedR(_cache[0])'),95.5/200,'R is measured after fees');
-  await run('await editTrade(_cache[0].id);');
-  assert.deepEqual(await run('[Journal.value("f-pnl"),Journal.value("f-fees")]'),['100','4.5'],'Editing shows the P&L before fees');
-  await run(`setField('f-contracts','5');`);
-  assert.equal(await run('Journal.value("f-fees")'),'4.5','Saved fees are not recalculated while editing');
-  await run(`setField('f-fees','');await saveTrade();`);
-  assert.deepEqual(await run('(()=>{const s=JSON.parse(JSON.stringify(_cache[0]));return [s.pnl,"fees" in s,"grossPnl" in s]})()'),[100,false,false],'Removing fees removes the stored breakdown');
+  assert.deepEqual(await run('(()=>{const s=JSON.parse(JSON.stringify(_cache[0]));return [s.pnl,"fees" in s,"grossPnl" in s]})()'),[95.5,false,false],'Saving drops the old fee breakdown');
   await run(`_cache=[];setMode('quick');qResetForm();`);
   assert.equal(await run('Journal.value("q-risk")'),'200','Standard risk prefills quick capture');
   await run(`qChoice('q-result',document.querySelector('#quick-form .opt[data-v="Loss"]'));setField('q-contracts','2');await saveQuickTrade();`);
-  assert.deepEqual(await run('[_cache[0].pnl,_cache[0].grossPnl,_cache[0].fees,_cache[0].contracts]'),[-203,-200,3,'2']);
+  assert.deepEqual(await run('[_cache[0].pnl,"fees" in _cache[0],_cache[0].contracts]'),[-200,false,'2']);
+  // 15s timeframe and London targets are selectable tags.
+  await run(`setMode('trade');clearForm();toggleTf(document.querySelector('.tf-main[data-concept="IFVG"]'),'IFVG');[...document.querySelectorAll('#tf-IFVG .tf-chip')].find(b=>b.textContent==='15s').click();[...document.querySelectorAll('#setup-tags .tag')].find(b=>b.textContent==='London Session High').click();`);
+  assert.deepEqual(await run('getSetup().sort()'),['IFVG 15s','London Session High'].sort());
   await run(`_settingsCache={};qResetForm();setMode('trade');clearForm();`);
   assert.equal(await run('Journal.value("j-risk")'),'','Without a standard risk the field stays empty');
   // Round-trip a historical record with old aliases, unsupported tags and unknown fields.
@@ -311,7 +309,6 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   assert.ok(statsText.includes('+1R'),'Average R = (3 + -1) / 2');
   assert.ok(statsText.includes('Total R')&&statsText.includes('+2R'),'Total R = 3 + -1');
   assert.ok(statsText.includes('2/3 trades with risk'),'R coverage is visible');
-  assert.ok(!statsText.includes('already in net P&L'),'No fee KPI without fees');
   assert.ok(statsText.includes('Expectancy'),'Expectancy KPI');
   assert.ok(statsText.includes('+$200'),'Expectancy = 400 / 2 trades with P&L');
   assert.ok(statsText.includes('early indication'),'Small samples are labelled');
